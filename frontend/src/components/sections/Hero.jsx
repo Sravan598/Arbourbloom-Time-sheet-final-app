@@ -102,14 +102,14 @@ const Hero = () => {
             </motion.div>
           </motion.div>
 
-          {/* Right Column - 3D Logo */}
+          {/* Right Column - Animated Logo */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
             className="relative"
           >
-            <Logo3D />
+            <AnimatedLogo />
           </motion.div>
         </div>
       </div>
