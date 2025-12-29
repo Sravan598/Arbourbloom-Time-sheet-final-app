@@ -114,7 +114,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <div className="font-semibold text-brand-dark">Visit Us</div>
-                  <div className="text-gray-600">123 Innovation Drive<br />San Francisco, CA 94102</div>
+                  <div className="text-gray-600">5005 W Royal Ln, Ste 298<br />Irving, Texas 75063</div>
                 </div>
               </div>
             </div>
