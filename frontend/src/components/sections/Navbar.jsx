@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogIn } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 const navLinks = [
@@ -45,7 +46,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <motion.a 
-            href="#"
+            href="/"
             className="flex items-center space-x-2"
             whileHover={{ scale: 1.02 }}
           >
@@ -70,16 +71,27 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <Button 
-              variant="primary" 
-              size="sm"
-              onClick={() => scrollToSection('#contact')}
-              data-testid="nav-get-started-btn"
-            >
-              Get Started
-            </Button>
+          {/* Auth Buttons */}
+          <div className="hidden md:flex items-center gap-3">
+            <Link to="/login">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                data-testid="nav-login-btn"
+              >
+                <LogIn className="w-4 h-4 mr-2" />
+                Login
+              </Button>
+            </Link>
+            <Link to="/signup">
+              <Button 
+                variant="primary" 
+                size="sm"
+                data-testid="nav-signup-btn"
+              >
+                Sign Up Free
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -112,13 +124,24 @@ const Navbar = () => {
                   {link.name}
                 </button>
               ))}
-              <Button 
-                variant="primary" 
-                className="w-full mt-4"
-                onClick={() => scrollToSection('#contact')}
-              >
-                Get Started
-              </Button>
+              <div className="pt-4 space-y-2">
+                <Link to="/login" className="block">
+                  <Button 
+                    variant="secondary" 
+                    className="w-full"
+                  >
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/signup" className="block">
+                  <Button 
+                    variant="primary" 
+                    className="w-full"
+                  >
+                    Sign Up Free
+                  </Button>
+                </Link>
+              </div>
             </div>
           </motion.div>
         )}
