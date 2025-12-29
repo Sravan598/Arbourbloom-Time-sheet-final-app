@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play } from 'lucide-react';
 import { Button } from '../ui/Button';
@@ -66,15 +67,16 @@ const Hero = () => {
               transition={{ delay: 0.5 }}
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
             >
-              <Button 
-                variant="primary" 
-                size="lg"
-                onClick={() => scrollToSection('#contact')}
-                data-testid="hero-get-started-btn"
-              >
-                Get Started
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
+              <Link to="/signup">
+                <Button 
+                  variant="primary" 
+                  size="lg"
+                  data-testid="hero-get-started-btn"
+                >
+                  Get Started
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
               <Button 
                 variant="secondary" 
                 size="lg"
