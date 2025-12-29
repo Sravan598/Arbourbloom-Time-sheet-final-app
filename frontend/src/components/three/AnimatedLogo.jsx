@@ -133,8 +133,8 @@ const AnimatedLogo = () => {
                 }}
                 className="absolute w-2 h-2 bg-brand-red rounded-full"
                 style={{
-                  top: `${20 + Math.random() * 60}%`,
-                  left: `${10 + Math.random() * 80}%`,
+                  top: `${20 + (i * 10)}%`,
+                  left: `${10 + (i * 13)}%`,
                 }}
               />
             ))}
