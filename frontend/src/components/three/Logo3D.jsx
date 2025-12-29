@@ -1,14 +1,10 @@
-import React, { useRef, Suspense, useMemo, useState, useEffect } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import React, { useRef, Suspense, useState, useEffect } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { 
   Float, 
   Environment, 
   PerspectiveCamera,
-  useTexture,
   RoundedBox,
-  Text3D,
-  Center,
-  MeshTransmissionMaterial,
   Sparkles
 } from '@react-three/drei';
 import * as THREE from 'three';
@@ -17,27 +13,6 @@ import * as THREE from 'three';
 const LightningBolt = ({ position, rotation, scale }) => {
   const meshRef = useRef();
   
-  const shape = useMemo(() => {
-    const s = new THREE.Shape();
-    s.moveTo(0, 1);
-    s.lineTo(0.3, 0.3);
-    s.lineTo(0.15, 0.3);
-    s.lineTo(0.4, -0.5);
-    s.lineTo(0.1, 0);
-    s.lineTo(0.25, 0);
-    s.lineTo(0, 1);
-    return s;
-  }, []);
-
-  const extrudeSettings = useMemo(() => ({
-    steps: 1,
-    depth: 0.1,
-    bevelEnabled: true,
-    bevelThickness: 0.02,
-    bevelSize: 0.02,
-    bevelSegments: 3
-  }), []);
-
   useFrame((state) => {
     if (meshRef.current) {
       meshRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
@@ -46,7 +21,7 @@ const LightningBolt = ({ position, rotation, scale }) => {
 
   return (
     <mesh ref={meshRef} position={position} rotation={rotation} scale={scale}>
-      <extrudeGeometry args={[shape, extrudeSettings]} />
+      <coneGeometry args={[0.3, 0.8, 4]} />
       <meshStandardMaterial 
         color="#C0C0C0" 
         metalness={0.9} 
@@ -124,19 +99,12 @@ const LogoMesh = ({ mousePosition }) => {
       <group ref={groupRef}>
         {/* Glass plaque background */}
         <RoundedBox args={[4, 1.8, 0.3]} radius={0.15} smoothness={4} position={[0, 0, -0.2]}>
-          <MeshTransmissionMaterial
-            backside
-            samples={4}
-            thickness={0.5}
-            chromaticAberration={0.1}
-            anisotropy={0.3}
-            distortion={0.1}
-            distortionScale={0.2}
-            temporalDistortion={0.1}
-            iridescence={0.5}
-            iridescenceIOR={1}
-            iridescenceThicknessRange={[0, 1400]}
+          <meshPhysicalMaterial
             color="#ffffff"
+            transmission={0.6}
+            roughness={0.1}
+            metalness={0}
+            thickness={0.5}
             transparent
             opacity={0.3}
           />
@@ -196,7 +164,7 @@ const Scene = ({ mousePosition }) => {
     <>
       <PerspectiveCamera makeDefault position={[0, 0, 6]} fov={45} />
       <ambientLight intensity={0.5} />
-      <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+      <directionalLight position={[10, 10, 5]} intensity={1} />
       <directionalLight position={[-10, -10, -5]} intensity={0.3} color="#CC0000" />
       <pointLight position={[0, 5, 5]} intensity={0.5} color="#ffffff" />
       <spotLight position={[5, 5, 5]} angle={0.3} penumbra={1} intensity={0.5} color="#CC0000" />
@@ -217,6 +185,36 @@ const LoadingFallback = () => (
     </div>
   </div>
 );
+
+// Error Boundary for 3D
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+          <div className="text-center p-8">
+            <img 
+              src="https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png" 
+              alt="CORtracker" 
+              className="w-48 mx-auto mb-4 opacity-80"
+            />
+            <p className="text-gray-600">Experience our interactive demo</p>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // Main export component
 const Logo3D = () => {
@@ -239,19 +237,21 @@ const Logo3D = () => {
 
   return (
     <div ref={containerRef} className="w-full h-[500px] md:h-[600px]">
-      <Suspense fallback={<LoadingFallback />}>
-        <Canvas
-          dpr={[1, 1.5]}
-          gl={{ 
-            antialias: true, 
-            alpha: true,
-            powerPreference: 'high-performance'
-          }}
-          style={{ background: 'transparent' }}
-        >
-          <Scene mousePosition={mousePosition} />
-        </Canvas>
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingFallback />}>
+          <Canvas
+            dpr={[1, 1.5]}
+            gl={{ 
+              antialias: true, 
+              alpha: true,
+              powerPreference: 'high-performance'
+            }}
+            style={{ background: 'transparent' }}
+          >
+            <Scene mousePosition={mousePosition} />
+          </Canvas>
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 };
