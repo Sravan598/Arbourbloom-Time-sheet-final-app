@@ -237,7 +237,7 @@ def deserialize_datetime(obj, fields):
             if field in obj and isinstance(obj[field], str):
                 try:
                     obj[field] = datetime.fromisoformat(obj[field])
-                except:
+                except (ValueError, TypeError):
                     pass
     return obj
 
