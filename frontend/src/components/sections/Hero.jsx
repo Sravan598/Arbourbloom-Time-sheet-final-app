@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play } from 'lucide-react';
 import { Button } from '../ui/Button';
-import Logo3D from '../three/Logo3D';
+import AnimatedLogo from '../three/AnimatedLogo';
 
 const Hero = () => {
   const scrollToSection = (href) => {
