@@ -1,18 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Play } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '../ui/Button';
 import AnimatedLogo from '../three/AnimatedLogo';
 
 const Hero = () => {
-  const scrollToSection = (href) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Background decorative elements */}
@@ -65,7 +58,7 @@ const Hero = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+              className="flex justify-center lg:justify-start"
             >
               <Link to="/signup">
                 <Button 
@@ -77,30 +70,6 @@ const Hero = () => {
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
-              <Button 
-                variant="secondary" 
-                size="lg"
-                onClick={() => scrollToSection('#how-it-works')}
-                data-testid="hero-watch-demo-btn"
-              >
-                <Play className="mr-2 w-5 h-5" />
-                Watch Demo
-              </Button>
-            </motion.div>
-
-            {/* Trust indicators */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-              className="mt-12 pt-8 border-t border-gray-200"
-            >
-              <p className="text-sm text-gray-500 mb-4">Trusted by 10,000+ companies worldwide</p>
-              <div className="flex items-center justify-center lg:justify-start gap-8 opacity-60">
-                <div className="text-2xl font-bold text-gray-400">Forbes</div>
-                <div className="text-2xl font-bold text-gray-400">TechCrunch</div>
-                <div className="text-2xl font-bold text-gray-400">Wired</div>
-              </div>
             </motion.div>
           </motion.div>
 
