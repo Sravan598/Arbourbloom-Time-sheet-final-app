@@ -80,10 +80,10 @@ const Contact = () => {
             transition={{ duration: 0.6 }}
           >
             <h3 className="text-2xl font-bold text-brand-dark mb-6">
-              Let's start a conversation
+              Let&apos;s start a conversation
             </h3>
             <p className="text-gray-600 mb-8">
-              Whether you're looking for a demo, have questions about our platform, 
+              Whether you&apos;re looking for a demo, have questions about our platform, 
               or want to discuss enterprise solutions, our team is here to help.
             </p>
 
