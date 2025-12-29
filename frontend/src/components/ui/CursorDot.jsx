@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, useSpring, useMotionValue } from 'framer-motion';
 
 /**
@@ -102,29 +102,68 @@ const CursorDot = () => {
   }
 
   return (
-    <motion.div
-      className="cursor-dot"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '8px',
-        height: '8px',
-        backgroundColor: '#CC0000',
-        borderRadius: '50%',
-        pointerEvents: 'none',
-        zIndex: 99999,
-        x: smoothX,
-        y: smoothY,
-        translateX: '-50%',
-        translateY: '-50%',
-        opacity: isVisible ? 0.9 : 0,
-        boxShadow: '0 0 10px rgba(204, 0, 0, 0.5), 0 0 20px rgba(204, 0, 0, 0.3)',
-      }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: isVisible ? 0.9 : 0 }}
-      transition={{ duration: 0.15 }}
-    />
+    <>
+      {/* Outer glow ring */}
+      <motion.div
+        className="cursor-dot-outer"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '28px',
+          height: '28px',
+          border: '2px solid rgba(255, 0, 0, 0.4)',
+          borderRadius: '50%',
+          pointerEvents: 'none',
+          zIndex: 99998,
+          x: smoothX,
+          y: smoothY,
+          translateX: '-50%',
+          translateY: '-50%',
+          opacity: isVisible ? 1 : 0,
+        }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ 
+          opacity: isVisible ? 1 : 0,
+          scale: isVisible ? 1 : 0.8
+        }}
+        transition={{ duration: 0.2 }}
+      />
+      
+      {/* Main red dot */}
+      <motion.div
+        className="cursor-dot"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '12px',
+          height: '12px',
+          background: 'linear-gradient(135deg, #FF3333 0%, #CC0000 50%, #990000 100%)',
+          borderRadius: '50%',
+          pointerEvents: 'none',
+          zIndex: 99999,
+          x: smoothX,
+          y: smoothY,
+          translateX: '-50%',
+          translateY: '-50%',
+          opacity: isVisible ? 1 : 0,
+          boxShadow: `
+            0 0 8px rgba(255, 0, 0, 0.8),
+            0 0 16px rgba(255, 0, 0, 0.6),
+            0 0 24px rgba(255, 0, 0, 0.4),
+            0 0 32px rgba(204, 0, 0, 0.3),
+            inset 0 0 4px rgba(255, 255, 255, 0.3)
+          `,
+        }}
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ 
+          opacity: isVisible ? 1 : 0,
+          scale: isVisible ? 1 : 0.5
+        }}
+        transition={{ duration: 0.15 }}
+      />
+    </>
   );
 };
 
