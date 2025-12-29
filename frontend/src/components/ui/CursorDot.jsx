@@ -103,33 +103,6 @@ const CursorDot = () => {
 
   return (
     <>
-      {/* Outer glow ring */}
-      <motion.div
-        className="cursor-dot-outer"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '28px',
-          height: '28px',
-          border: '2px solid rgba(255, 0, 0, 0.4)',
-          borderRadius: '50%',
-          pointerEvents: 'none',
-          zIndex: 99998,
-          x: smoothX,
-          y: smoothY,
-          translateX: '-50%',
-          translateY: '-50%',
-          opacity: isVisible ? 1 : 0,
-        }}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ 
-          opacity: isVisible ? 1 : 0,
-          scale: isVisible ? 1 : 0.8
-        }}
-        transition={{ duration: 0.2 }}
-      />
-      
       {/* Main red dot */}
       <motion.div
         className="cursor-dot"
