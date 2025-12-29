@@ -94,7 +94,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <div className="font-semibold text-brand-dark">Email Us</div>
-                  <div className="text-gray-600">support@cortracker.com</div>
+                  <div className="text-gray-600">Hr@cortracker360.com</div>
                 </div>
               </div>
 
