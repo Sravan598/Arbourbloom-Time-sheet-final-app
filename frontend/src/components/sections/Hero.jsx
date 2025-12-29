@@ -72,7 +72,7 @@ const Hero = () => {
                 onClick={() => scrollToSection('#contact')}
                 data-testid="hero-get-started-btn"
               >
-                Start Free Trial
+                Get Started
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               <Button 
