@@ -4,10 +4,6 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '..
 
 const faqs = [
   {
-    question: 'How does the 14-day free trial work?',
-    answer: 'You can sign up and use all features of your chosen plan for 14 days without providing payment information. At the end of the trial, you can upgrade to a paid plan or your account will be paused until you subscribe.',
-  },
-  {
     question: 'Can employees clock in from their mobile devices?',
     answer: 'Yes! CORtracker has native iOS and Android apps that allow employees to clock in/out from anywhere. You can enable GPS verification to ensure employees are at approved locations when clocking in.',
   },
@@ -24,8 +20,12 @@ const faqs = [
     answer: 'Security is our top priority. We use 256-bit SSL encryption, SOC 2 Type II certified data centers, and regular security audits. All data is backed up daily with 99.9% uptime guarantee.',
   },
   {
-    question: 'Can I switch plans later?',
-    answer: "Yes, you can upgrade or downgrade your plan at any time. When upgrading, you'll have immediate access to new features. When downgrading, changes take effect at the start of your next billing cycle.",
+    question: 'How do I get started with CORtracker?',
+    answer: 'Getting started is easy! Simply contact our team through the form below and we will guide you through the setup process. Our team will help you configure departments, add employees, and customize settings for your organization.',
+  },
+  {
+    question: 'What kind of support do you offer?',
+    answer: 'We offer comprehensive support including email, phone, and live chat. Enterprise customers get a dedicated account manager. Our help center also has extensive documentation and video tutorials.',
   },
 ];
 
