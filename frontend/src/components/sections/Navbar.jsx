@@ -117,7 +117,7 @@ const Navbar = () => {
                 className="w-full mt-4"
                 onClick={() => scrollToSection('#contact')}
               >
-                Get Started Free
+                Get Started
               </Button>
             </div>
           </motion.div>
