@@ -78,7 +78,7 @@ const Navbar = () => {
               onClick={() => scrollToSection('#contact')}
               data-testid="nav-get-started-btn"
             >
-              Get Started Free
+              Get Started
             </Button>
           </div>
 
