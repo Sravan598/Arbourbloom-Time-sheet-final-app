@@ -8,7 +8,7 @@ import {
   Smartphone, 
   Zap 
 } from 'lucide-react';
-import { Card, CardContent } from '../ui/Card';
+import TiltCard from '../ui/TiltCard';
 
 const features = [
   {
@@ -107,8 +107,16 @@ const Features = () => {
         >
           {features.map((feature, index) => (
             <motion.div key={index} variants={itemVariants}>
-              <Card className="h-full" data-testid={`feature-card-${index}`}>
-                <CardContent>
+              <TiltCard 
+                className="h-full"
+                tiltAmount={8}
+                glareOpacity={0.1}
+                scale={1.03}
+              >
+                <div 
+                  className="bg-white rounded-3xl p-6 h-full border border-gray-100"
+                  data-testid={`feature-card-${index}`}
+                >
                   <div className={`w-14 h-14 ${feature.bgColor} rounded-2xl flex items-center justify-center mb-6`}>
                     <feature.icon className={`w-7 h-7 ${feature.color}`} />
                   </div>
@@ -118,8 +126,8 @@ const Features = () => {
                   <p className="text-gray-600 leading-relaxed">
                     {feature.description}
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </TiltCard>
             </motion.div>
           ))}
         </motion.div>
