@@ -1,6 +1,28 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin } from 'lucide-react';
+import TiltCard from '../ui/TiltCard';
+
+const contactInfo = [
+  {
+    icon: Mail,
+    title: 'Email Us',
+    content: 'Hr@cortracker360.com',
+    href: 'mailto:Hr@cortracker360.com',
+  },
+  {
+    icon: Phone,
+    title: 'Call Us',
+    content: '+1 9472286910',
+    href: 'tel:+19472286910',
+  },
+  {
+    icon: MapPin,
+    title: 'Visit Us',
+    content: '5005 W Royal Ln, Ste 298\nIrving, Texas 75063',
+    href: null,
+  },
+];
 
 const Contact = () => {
   return (
@@ -27,63 +49,40 @@ const Contact = () => {
 
         {/* Contact Info Cards */}
         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-          {/* Email */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="bg-gray-50 rounded-3xl p-8 text-center hover:shadow-lg transition-shadow"
-          >
-            <div className="w-16 h-16 bg-brand-red/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Mail className="w-8 h-8 text-brand-red" />
-            </div>
-            <h3 className="font-semibold text-brand-dark text-lg mb-2">Email Us</h3>
-            <a 
-              href="mailto:Hr@cortracker360.com" 
-              className="text-gray-600 hover:text-brand-red transition-colors"
+          {contactInfo.map((info, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
             >
-              Hr@cortracker360.com
-            </a>
-          </motion.div>
-
-          {/* Phone */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="bg-gray-50 rounded-3xl p-8 text-center hover:shadow-lg transition-shadow"
-          >
-            <div className="w-16 h-16 bg-brand-red/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Phone className="w-8 h-8 text-brand-red" />
-            </div>
-            <h3 className="font-semibold text-brand-dark text-lg mb-2">Call Us</h3>
-            <a 
-              href="tel:+19472286910" 
-              className="text-gray-600 hover:text-brand-red transition-colors"
-            >
-              +1 9472286910
-            </a>
-          </motion.div>
-
-          {/* Address */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="bg-gray-50 rounded-3xl p-8 text-center hover:shadow-lg transition-shadow"
-          >
-            <div className="w-16 h-16 bg-brand-red/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <MapPin className="w-8 h-8 text-brand-red" />
-            </div>
-            <h3 className="font-semibold text-brand-dark text-lg mb-2">Visit Us</h3>
-            <p className="text-gray-600">
-              5005 W Royal Ln, Ste 298<br />
-              Irving, Texas 75063
-            </p>
-          </motion.div>
+              <TiltCard
+                tiltAmount={10}
+                glareOpacity={0.15}
+                scale={1.05}
+              >
+                <div className="bg-gray-50 rounded-3xl p-8 text-center h-full border border-gray-100">
+                  <div className="w-16 h-16 bg-brand-red/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <info.icon className="w-8 h-8 text-brand-red" />
+                  </div>
+                  <h3 className="font-semibold text-brand-dark text-lg mb-2">{info.title}</h3>
+                  {info.href ? (
+                    <a 
+                      href={info.href}
+                      className="text-gray-600 hover:text-brand-red transition-colors"
+                    >
+                      {info.content}
+                    </a>
+                  ) : (
+                    <p className="text-gray-600 whitespace-pre-line">
+                      {info.content}
+                    </p>
+                  )}
+                </div>
+              </TiltCard>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
