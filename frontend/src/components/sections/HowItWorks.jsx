@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { UserPlus, Timer, FileText } from 'lucide-react';
+import TiltCard from '../ui/TiltCard';
 
 const steps = [
   {
@@ -64,30 +65,40 @@ const HowItWorks = () => {
               >
                 {/* Timeline dot - above the card */}
                 <div className="hidden lg:flex justify-center mb-6">
-                  <div className="w-8 h-8 bg-brand-red rounded-full border-4 border-white shadow-lg flex items-center justify-center">
+                  <motion.div 
+                    className="w-8 h-8 bg-brand-red rounded-full border-4 border-white shadow-lg flex items-center justify-center"
+                    whileHover={{ scale: 1.2 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                  >
                     <span className="text-white text-xs font-bold">{index + 1}</span>
-                  </div>
+                  </motion.div>
                 </div>
 
-                <div className="bg-white rounded-3xl p-8 shadow-xl shadow-gray-100/50 border border-gray-100 relative">
-                  {/* Step number badge - mobile only */}
-                  <div className="lg:hidden absolute -top-4 left-8 bg-gradient-to-r from-brand-red to-brand-red-dark text-white text-sm font-bold px-4 py-2 rounded-full">
-                    Step {step.number}
-                  </div>
+                <TiltCard
+                  tiltAmount={6}
+                  glareOpacity={0.12}
+                  scale={1.02}
+                >
+                  <div className="bg-white rounded-3xl p-8 border border-gray-100 relative">
+                    {/* Step number badge - mobile only */}
+                    <div className="lg:hidden absolute -top-4 left-8 bg-gradient-to-r from-brand-red to-brand-red-dark text-white text-sm font-bold px-4 py-2 rounded-full">
+                      Step {step.number}
+                    </div>
 
-                  {/* Icon */}
-                  <div className="w-16 h-16 bg-brand-red/10 rounded-2xl flex items-center justify-center mb-6 mt-2 lg:mt-0">
-                    <step.icon className="w-8 h-8 text-brand-red" />
-                  </div>
+                    {/* Icon */}
+                    <div className="w-16 h-16 bg-brand-red/10 rounded-2xl flex items-center justify-center mb-6 mt-2 lg:mt-0">
+                      <step.icon className="w-8 h-8 text-brand-red" />
+                    </div>
 
-                  {/* Content */}
-                  <h3 className="text-xl font-bold text-brand-dark mb-3">
-                    {step.title}
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    {step.description}
-                  </p>
-                </div>
+                    {/* Content */}
+                    <h3 className="text-xl font-bold text-brand-dark mb-3">
+                      {step.title}
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
+                </TiltCard>
               </motion.div>
             ))}
           </div>
