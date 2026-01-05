@@ -119,7 +119,7 @@ const Signup = () => {
             >
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
               <p className="text-red-700 text-sm">{localError || error}</p>
-            </motion.div>
+            </div>
           )}
 
           {/* Form */}
