@@ -100,15 +100,9 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white border-t border-gray-100"
-          >
-            <div className="px-4 py-4 space-y-2">
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-white border-t border-gray-100">
+          <div className="px-4 py-4 space-y-2">
               {navLinks.map((link) => (
                 <button
                   key={link.name}
