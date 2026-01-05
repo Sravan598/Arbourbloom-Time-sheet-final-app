@@ -255,7 +255,7 @@ const Signup = () => {
                   <p className="mt-1 text-xs text-gray-500">
                     Leave empty to sign up as an Employee
                   </p>
-                </motion.div>
+                </div>
               )}
             </div>
 
