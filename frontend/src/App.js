@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import CursorDot from './components/ui/CursorDot';
-import { FloatingParticles, ScrollProgress, ParallaxBackground } from './components/ui/ParallaxEffects';
 
 // Pages
 import Home from './pages/Home';
@@ -20,17 +19,8 @@ function App() {
   return (
     <AuthProvider>
       <div className="App antialiased">
-        {/* Scroll Progress Bar */}
-        <ScrollProgress />
-        
         {/* Custom Red Dot Cursor Follower */}
         <CursorDot />
-        
-        {/* Floating Particles Background */}
-        <FloatingParticles count={15} color="#CC0000" />
-        
-        {/* Parallax Background Elements */}
-        <ParallaxBackground />
         
         <BrowserRouter>
           <Routes>
