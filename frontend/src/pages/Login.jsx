@@ -214,7 +214,7 @@ const Login = () => {
             ← Back to Home
           </Link>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
