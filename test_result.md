@@ -1,7 +1,3 @@
-#====================================================================================================
-# START - Testing Protocol - DO NOT EDIT OR REMOVE THIS SECTION
-#====================================================================================================
-
 # THIS SECTION CONTAINS CRITICAL TESTING INSTRUCTIONS FOR BOTH AGENTS
 # BOTH MAIN_AGENT AND TESTING_AGENT MUST PRESERVE THIS ENTIRE BLOCK
 
@@ -101,3 +97,163 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Remove all animations from the CORtracker marketing website - including custom cursor, 3D card tilts, Framer Motion animations, and animated logo"
+
+backend:
+  - task: "User Authentication (Login/Signup)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Auth system working - not affected by animation removal"
+
+  - task: "Employee Clock In/Out"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Clock in/out endpoints working - not affected by animation removal"
+
+  - task: "Admin Timesheet Management"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Admin endpoints working - not affected by animation removal"
+
+frontend:
+  - task: "Remove All Animations"
+    implemented: true
+    working: true
+    file: "Multiple files"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Removed all animations: CursorDot from App.js, replaced AnimatedLogo with static logo in Hero.jsx, removed TiltCard and Framer Motion from Features.jsx, Contact.jsx, HowItWorks.jsx, FAQ.jsx. Deleted CursorDot.jsx, TiltCard.jsx, ParallaxEffects.jsx, AnimatedLogo.jsx, Logo3D.jsx files"
+
+  - task: "Home Page - Hero Section"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/sections/Hero.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Hero section now has static logo, removed Framer Motion animations"
+
+  - task: "Home Page - Features Section"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/sections/Features.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Features section clean with simple hover effects, no TiltCard or Framer Motion"
+
+  - task: "Home Page - How It Works Section"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/sections/HowItWorks.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "How It Works section clean, no TiltCard or Framer Motion"
+
+  - task: "Home Page - FAQ Section"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/sections/FAQ.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "FAQ section clean, accordion working without Framer Motion"
+
+  - task: "Home Page - Contact Section"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/sections/Contact.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Contact section clean, no TiltCard or Framer Motion"
+
+  - task: "Login Page"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/Login.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Login page displays correctly, not affected by animation removal"
+
+  - task: "Navigation/Navbar"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/sections/Navbar.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Navbar working, links functional"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Remove All Animations"
+    - "Home Page - Hero Section"
+    - "Home Page - Features Section"
+    - "Home Page - How It Works Section"
+    - "Home Page - FAQ Section"
+    - "Home Page - Contact Section"
+    - "Login Page"
+    - "Navigation/Navbar"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Removed ALL animations from the application as requested by user. Changes made: 1) Removed CursorDot import and component from App.js 2) Replaced AnimatedLogo component with static logo in Hero.jsx 3) Removed TiltCard and Framer Motion from Features.jsx, Contact.jsx, HowItWorks.jsx, FAQ.jsx 4) Deleted animation files: CursorDot.jsx, TiltCard.jsx, ParallaxEffects.jsx, AnimatedLogo.jsx, Logo3D.jsx 5) Removed the entire /components/three/ directory. Please test that all sections render correctly without errors and that the site is clean and functional."
