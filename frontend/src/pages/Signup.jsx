@@ -114,10 +114,7 @@ const Signup = () => {
         <div className="bg-white rounded-3xl shadow-xl p-8">
           {/* Error Message */}
           {(error || localError) && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start gap-3"
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start gap-3"
               data-testid="signup-error"
             >
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
