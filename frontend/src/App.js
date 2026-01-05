@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import CursorDot from './components/ui/CursorDot';
 
 // Pages
 import Home from './pages/Home';
@@ -19,8 +18,6 @@ function App() {
   return (
     <AuthProvider>
       <div className="App antialiased">
-        {/* Custom Red Dot Cursor Follower */}
-        <CursorDot />
         
         <BrowserRouter>
           <Routes>
