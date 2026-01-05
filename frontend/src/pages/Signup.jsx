@@ -294,7 +294,7 @@ const Signup = () => {
             ← Back to Home
           </Link>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
