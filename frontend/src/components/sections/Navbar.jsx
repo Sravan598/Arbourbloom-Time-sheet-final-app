@@ -50,19 +50,18 @@ const Navbar = () => {
               alt="CORtracker" 
               className="h-10 w-auto"
             />
-          </motion.a>
+          </a>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
-              <motion.button
+              <button
                 key={link.name}
                 onClick={() => scrollToSection(link.href)}
                 className="text-brand-dark hover:text-brand-red font-medium transition-colors"
-                whileHover={{ y: -2 }}
               >
                 {link.name}
-              </motion.button>
+              </button>
             ))}
           </div>
 
