@@ -235,13 +235,13 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Performance Insights Dashboard"
+    - "Performance Insights API"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "Implemented Announcements Board feature. Backend: Added AnnouncementPriority enum, Announcement/AnnouncementCreate/AnnouncementUpdate/AnnouncementResponse models. API endpoints: POST /api/admin/announcements, GET /api/announcements, GET /api/admin/announcements, PUT /api/admin/announcements/{id}, DELETE /api/admin/announcements/{id}, POST /api/announcements/{id}/mark-read, GET /api/announcements/unread-count. Frontend: Created AdminAnnouncementsSection.jsx (create/edit/delete with modal), AnnouncementsSection.jsx (view/expand/mark-read). Test: 1) Admin creates announcement with priority/pin 2) Employee sees announcement with unread badge 3) Employee expands to read, marks as read 4) Admin can edit/delete. Credentials: Admin: admin@company.com/password123, Employee: employee@test.com/password123"
-  - agent: "testing"
-    message: "ANNOUNCEMENTS BOARD TESTING COMPLETED. ✅ ADMIN FUNCTIONALITY: Login successful, can create announcements with all features (title, message, priority, pin), success messages work, delete functionality works. ❌ Edit functionality partially working (modal opens but update verification unclear). ✅ EMPLOYEE FUNCTIONALITY: Login successful, can view announcements section with unread count badge, section is collapsible, announcements display properly, click to expand works. ✅ INTEGRATION: Backend APIs working correctly, frontend-backend communication successful. Minor issue: Admin edit flow needs verification, but core functionality is working."
+    message: "Implemented Performance Insights feature. Backend: Added 6 new API endpoints under /api/admin/performance/ for overview metrics, weekly trends, attendance patterns, top performers, leave analysis, and individual employee performance. Frontend: Created PerformanceInsights.jsx page with full analytics dashboard including: 4 metric cards with trend indicators, weekly hours bar chart, clock-in distribution bars, top performers with medals, needs attention alerts, leave analysis with utilization progress. Added route /admin/performance and Insights navigation link. Test: 1) Login as admin 2) Click 'Insights' in header 3) Verify all sections load with data 4) Try changing period (7/30/90 days). Credentials: admin@company.com/password123"
