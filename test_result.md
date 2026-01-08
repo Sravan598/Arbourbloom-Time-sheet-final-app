@@ -329,8 +329,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Document Section - Employee UI"
-    - "Document Section - Admin UI"
+    - "Employee Sidebar Layout - Dashboard and Timesheet"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
