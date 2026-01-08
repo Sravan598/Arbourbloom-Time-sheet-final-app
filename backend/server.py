@@ -2455,6 +2455,523 @@ async def get_pending_leave_count(admin: dict = Depends(require_admin)):
     return {"pending_count": count}
 
 
+# ============== PERFORMANCE INSIGHTS ROUTES ==============
+
+@api_router.get("/admin/performance/overview")
+async def get_performance_overview(
+    days: int = 30,
+    admin: dict = Depends(require_admin)
+):
+    """Get overview performance metrics for the specified period"""
+    now = datetime.now(timezone.utc)
+    start_date = now - timedelta(days=days)
+    previous_start = start_date - timedelta(days=days)
+    
+    # Get all employees
+    employees = await db.users.find({"role": "EMPLOYEE"}, {"_id": 0}).to_list(1000)
+    total_employees = len(employees)
+    
+    if total_employees == 0:
+        return {
+            "attendance_rate": 0,
+            "attendance_change": 0,
+            "avg_hours_per_day": 0,
+            "avg_hours_change": 0,
+            "avg_break_minutes": 0,
+            "avg_break_change": 0,
+            "overtime_rate": 0,
+            "overtime_change": 0,
+            "total_employees": 0,
+            "period_days": days
+        }
+    
+    # Get timesheets for current period
+    current_timesheets = await db.timesheets.find({
+        "clock_in_at": {"$gte": start_date.isoformat()},
+        "clock_out_at": {"$ne": None}
+    }, {"_id": 0}).to_list(10000)
+    
+    # Get timesheets for previous period (for comparison)
+    previous_timesheets = await db.timesheets.find({
+        "clock_in_at": {"$gte": previous_start.isoformat(), "$lt": start_date.isoformat()},
+        "clock_out_at": {"$ne": None}
+    }, {"_id": 0}).to_list(10000)
+    
+    # Calculate current metrics
+    current_total_minutes = sum(ts.get("total_minutes", 0) or 0 for ts in current_timesheets)
+    current_work_days = len(set(ts.get("clock_in_at", "")[:10] for ts in current_timesheets if ts.get("clock_in_at")))
+    
+    # Previous period metrics
+    previous_total_minutes = sum(ts.get("total_minutes", 0) or 0 for ts in previous_timesheets)
+    previous_work_days = len(set(ts.get("clock_in_at", "")[:10] for ts in previous_timesheets if ts.get("clock_in_at")))
+    
+    # Average hours per day
+    avg_hours_current = (current_total_minutes / 60 / max(current_work_days, 1)) if current_work_days > 0 else 0
+    avg_hours_previous = (previous_total_minutes / 60 / max(previous_work_days, 1)) if previous_work_days > 0 else 0
+    avg_hours_change = avg_hours_current - avg_hours_previous
+    
+    # Attendance rate (days worked / expected work days)
+    # Assuming 5 work days per week
+    expected_work_days = (days // 7) * 5 + min(days % 7, 5)
+    unique_employee_days = len(set((ts.get("user_id"), ts.get("clock_in_at", "")[:10]) for ts in current_timesheets))
+    expected_total_days = expected_work_days * total_employees
+    attendance_rate = (unique_employee_days / max(expected_total_days, 1)) * 100
+    
+    # Previous attendance
+    prev_expected_days = expected_work_days * total_employees
+    prev_unique_days = len(set((ts.get("user_id"), ts.get("clock_in_at", "")[:10]) for ts in previous_timesheets))
+    prev_attendance_rate = (prev_unique_days / max(prev_expected_days, 1)) * 100
+    attendance_change = attendance_rate - prev_attendance_rate
+    
+    # Get breaks for current period
+    current_breaks = await db.breaks.find({
+        "start_time": {"$gte": start_date.isoformat()},
+        "end_time": {"$ne": None}
+    }, {"_id": 0}).to_list(10000)
+    
+    previous_breaks = await db.breaks.find({
+        "start_time": {"$gte": previous_start.isoformat(), "$lt": start_date.isoformat()},
+        "end_time": {"$ne": None}
+    }, {"_id": 0}).to_list(10000)
+    
+    # Calculate average break time
+    def calc_break_minutes(breaks_list):
+        total = 0
+        for b in breaks_list:
+            if b.get("start_time") and b.get("end_time"):
+                try:
+                    start = datetime.fromisoformat(b["start_time"].replace("Z", "+00:00"))
+                    end = datetime.fromisoformat(b["end_time"].replace("Z", "+00:00"))
+                    total += (end - start).total_seconds() / 60
+                except:
+                    pass
+        return total
+    
+    current_break_total = calc_break_minutes(current_breaks)
+    prev_break_total = calc_break_minutes(previous_breaks)
+    
+    avg_break_current = current_break_total / max(len(current_breaks), 1) if current_breaks else 0
+    avg_break_previous = prev_break_total / max(len(previous_breaks), 1) if previous_breaks else 0
+    avg_break_change = avg_break_current - avg_break_previous
+    
+    # Overtime rate (employees with >40h in any week)
+    # Group timesheets by user and week
+    from collections import defaultdict
+    weekly_hours = defaultdict(lambda: defaultdict(float))
+    
+    for ts in current_timesheets:
+        user_id = ts.get("user_id")
+        if ts.get("clock_in_at"):
+            try:
+                clock_in = datetime.fromisoformat(ts["clock_in_at"].replace("Z", "+00:00"))
+                week_num = clock_in.isocalendar()[1]
+                weekly_hours[user_id][week_num] += (ts.get("total_minutes", 0) or 0) / 60
+            except:
+                pass
+    
+    overtime_employees = set()
+    for user_id, weeks in weekly_hours.items():
+        for week, hours in weeks.items():
+            if hours > 40:
+                overtime_employees.add(user_id)
+    
+    overtime_rate = (len(overtime_employees) / max(total_employees, 1)) * 100
+    
+    # Previous overtime rate
+    prev_weekly_hours = defaultdict(lambda: defaultdict(float))
+    for ts in previous_timesheets:
+        user_id = ts.get("user_id")
+        if ts.get("clock_in_at"):
+            try:
+                clock_in = datetime.fromisoformat(ts["clock_in_at"].replace("Z", "+00:00"))
+                week_num = clock_in.isocalendar()[1]
+                prev_weekly_hours[user_id][week_num] += (ts.get("total_minutes", 0) or 0) / 60
+            except:
+                pass
+    
+    prev_overtime_employees = set()
+    for user_id, weeks in prev_weekly_hours.items():
+        for week, hours in weeks.items():
+            if hours > 40:
+                prev_overtime_employees.add(user_id)
+    
+    prev_overtime_rate = (len(prev_overtime_employees) / max(total_employees, 1)) * 100
+    overtime_change = overtime_rate - prev_overtime_rate
+    
+    return {
+        "attendance_rate": round(attendance_rate, 1),
+        "attendance_change": round(attendance_change, 1),
+        "avg_hours_per_day": round(avg_hours_current, 1),
+        "avg_hours_change": round(avg_hours_change, 1),
+        "avg_break_minutes": round(avg_break_current, 0),
+        "avg_break_change": round(avg_break_change, 0),
+        "overtime_rate": round(overtime_rate, 1),
+        "overtime_change": round(overtime_change, 1),
+        "total_employees": total_employees,
+        "period_days": days
+    }
+
+
+@api_router.get("/admin/performance/weekly-trends")
+async def get_weekly_trends(
+    weeks: int = 8,
+    admin: dict = Depends(require_admin)
+):
+    """Get weekly hours trends for the specified number of weeks"""
+    now = datetime.now(timezone.utc)
+    
+    # Calculate start of each week
+    trends = []
+    for i in range(weeks - 1, -1, -1):
+        week_start = now - timedelta(weeks=i, days=now.weekday())
+        week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_end = week_start + timedelta(days=7)
+        
+        # Get timesheets for this week
+        timesheets = await db.timesheets.find({
+            "clock_in_at": {"$gte": week_start.isoformat(), "$lt": week_end.isoformat()},
+            "clock_out_at": {"$ne": None}
+        }, {"_id": 0}).to_list(10000)
+        
+        total_minutes = sum(ts.get("total_minutes", 0) or 0 for ts in timesheets)
+        unique_employees = len(set(ts.get("user_id") for ts in timesheets))
+        
+        avg_hours = (total_minutes / 60 / max(unique_employees, 1)) if unique_employees > 0 else 0
+        
+        trends.append({
+            "week": f"Wk{weeks - i}",
+            "week_start": week_start.strftime("%b %d"),
+            "avg_hours": round(avg_hours, 1),
+            "total_hours": round(total_minutes / 60, 1),
+            "employees_active": unique_employees
+        })
+    
+    return {"trends": trends, "target_hours": 40}
+
+
+@api_router.get("/admin/performance/attendance-patterns")
+async def get_attendance_patterns(
+    days: int = 30,
+    admin: dict = Depends(require_admin)
+):
+    """Get attendance patterns for the specified period"""
+    now = datetime.now(timezone.utc)
+    start_date = now - timedelta(days=days)
+    
+    # Get timesheets for the period
+    timesheets = await db.timesheets.find({
+        "clock_in_at": {"$gte": start_date.isoformat()}
+    }, {"_id": 0}).to_list(10000)
+    
+    # Clock-in time distribution
+    early_count = 0  # Before 8:30 AM
+    ontime_count = 0  # 8:30 - 9:00 AM
+    late_count = 0  # After 9:00 AM
+    
+    # Day of week distribution
+    day_counts = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}  # Mon-Sun
+    day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    
+    for ts in timesheets:
+        if ts.get("clock_in_at"):
+            try:
+                clock_in = datetime.fromisoformat(ts["clock_in_at"].replace("Z", "+00:00"))
+                hour = clock_in.hour
+                minute = clock_in.minute
+                time_decimal = hour + minute / 60
+                
+                if time_decimal < 8.5:
+                    early_count += 1
+                elif time_decimal < 9:
+                    ontime_count += 1
+                else:
+                    late_count += 1
+                
+                day_counts[clock_in.weekday()] += 1
+            except:
+                pass
+    
+    total_clockins = early_count + ontime_count + late_count
+    
+    clock_in_distribution = [
+        {"label": "Before 8:30 AM", "count": early_count, "percentage": round(early_count / max(total_clockins, 1) * 100, 0)},
+        {"label": "8:30 - 9:00 AM", "count": ontime_count, "percentage": round(ontime_count / max(total_clockins, 1) * 100, 0)},
+        {"label": "After 9:00 AM", "count": late_count, "percentage": round(late_count / max(total_clockins, 1) * 100, 0)}
+    ]
+    
+    # Sort days by activity
+    day_activity = [(day_names[i], day_counts[i]) for i in range(7)]
+    day_activity_sorted = sorted(day_activity, key=lambda x: x[1], reverse=True)
+    
+    busiest_days = [{"day": d[0], "count": d[1]} for d in day_activity_sorted[:3]]
+    quietest_day = day_activity_sorted[-1] if day_activity_sorted else ("N/A", 0)
+    
+    return {
+        "clock_in_distribution": clock_in_distribution,
+        "busiest_days": busiest_days,
+        "quietest_day": {"day": quietest_day[0], "count": quietest_day[1]},
+        "total_clockins": total_clockins
+    }
+
+
+@api_router.get("/admin/performance/top-performers")
+async def get_top_performers(
+    days: int = 30,
+    limit: int = 5,
+    admin: dict = Depends(require_admin)
+):
+    """Get top performers and those needing attention"""
+    now = datetime.now(timezone.utc)
+    start_date = now - timedelta(days=days)
+    
+    # Get all employees
+    employees = await db.users.find({"role": "EMPLOYEE"}, {"_id": 0}).to_list(1000)
+    employee_map = {e["id"]: e for e in employees}
+    
+    # Get timesheets for the period
+    timesheets = await db.timesheets.find({
+        "clock_in_at": {"$gte": start_date.isoformat()},
+        "clock_out_at": {"$ne": None}
+    }, {"_id": 0}).to_list(10000)
+    
+    # Calculate hours per employee
+    from collections import defaultdict
+    employee_hours = defaultdict(float)
+    employee_days = defaultdict(set)
+    
+    for ts in timesheets:
+        user_id = ts.get("user_id")
+        if user_id:
+            employee_hours[user_id] += (ts.get("total_minutes", 0) or 0) / 60
+            if ts.get("clock_in_at"):
+                employee_days[user_id].add(ts["clock_in_at"][:10])
+    
+    # Calculate weeks in period
+    weeks_in_period = max(days / 7, 1)
+    target_hours = 40 * weeks_in_period
+    
+    # Build performance list
+    performance_list = []
+    for emp_id, hours in employee_hours.items():
+        emp = employee_map.get(emp_id, {})
+        percentage = (hours / target_hours) * 100 if target_hours > 0 else 0
+        performance_list.append({
+            "id": emp_id,
+            "name": emp.get("name", "Unknown"),
+            "total_hours": round(hours, 1),
+            "target_hours": round(target_hours, 1),
+            "percentage": round(percentage, 0),
+            "days_worked": len(employee_days[emp_id])
+        })
+    
+    # Sort by percentage
+    sorted_by_perf = sorted(performance_list, key=lambda x: x["percentage"], reverse=True)
+    
+    top_performers = sorted_by_perf[:limit]
+    needs_attention = [p for p in sorted_by_perf if p["percentage"] < 90][-limit:]
+    needs_attention.reverse()
+    
+    return {
+        "top_performers": top_performers,
+        "needs_attention": needs_attention,
+        "target_hours": round(target_hours, 1),
+        "period_days": days
+    }
+
+
+@api_router.get("/admin/performance/leave-analysis")
+async def get_leave_analysis(
+    days: int = 30,
+    admin: dict = Depends(require_admin)
+):
+    """Get leave and absence analysis for the specified period"""
+    now = datetime.now(timezone.utc)
+    start_date = now - timedelta(days=days)
+    
+    # Get leave requests for the period
+    leave_requests = await db.leave_requests.find({
+        "status": "APPROVED",
+        "start_date": {"$gte": start_date.strftime("%Y-%m-%d")}
+    }, {"_id": 0}).to_list(1000)
+    
+    # Count by leave type
+    leave_by_type = {"VACATION": 0, "SICK": 0, "PERSONAL": 0, "OTHER": 0}
+    
+    for lr in leave_requests:
+        leave_type = lr.get("leave_type", "OTHER")
+        if leave_type in leave_by_type:
+            leave_by_type[leave_type] += 1
+        else:
+            leave_by_type["OTHER"] += 1
+    
+    total_leaves = sum(leave_by_type.values())
+    
+    leave_usage = [
+        {"type": "Vacation", "count": leave_by_type["VACATION"], "percentage": round(leave_by_type["VACATION"] / max(total_leaves, 1) * 100, 0)},
+        {"type": "Sick Leave", "count": leave_by_type["SICK"], "percentage": round(leave_by_type["SICK"] / max(total_leaves, 1) * 100, 0)},
+        {"type": "Personal", "count": leave_by_type["PERSONAL"], "percentage": round(leave_by_type["PERSONAL"] / max(total_leaves, 1) * 100, 0)},
+        {"type": "Other", "count": leave_by_type["OTHER"], "percentage": round(leave_by_type["OTHER"] / max(total_leaves, 1) * 100, 0)}
+    ]
+    
+    # Get all employees for leave balance analysis
+    employees = await db.users.find({"role": "EMPLOYEE"}, {"_id": 0}).to_list(1000)
+    
+    # Get leave balances
+    current_year = now.year
+    balances = await db.leave_balances.find({"year": current_year}, {"_id": 0}).to_list(1000)
+    
+    total_vacation_available = 0
+    total_vacation_used = 0
+    employees_with_high_balance = 0
+    
+    for bal in balances:
+        vacation_total = bal.get("vacation_total", 15)
+        vacation_used = bal.get("vacation_used", 0)
+        total_vacation_available += vacation_total
+        total_vacation_used += vacation_used
+        
+        # High balance = more than 80% unused
+        if vacation_total > 0 and (vacation_total - vacation_used) / vacation_total > 0.8:
+            employees_with_high_balance += 1
+    
+    utilization_rate = (total_vacation_used / max(total_vacation_available, 1)) * 100
+    
+    return {
+        "leave_usage": leave_usage,
+        "total_leaves": total_leaves,
+        "utilization_rate": round(utilization_rate, 1),
+        "employees_with_high_balance": employees_with_high_balance,
+        "total_employees": len(employees),
+        "period_days": days
+    }
+
+
+@api_router.get("/admin/performance/employee/{employee_id}")
+async def get_employee_performance(
+    employee_id: str,
+    days: int = 30,
+    admin: dict = Depends(require_admin)
+):
+    """Get detailed performance metrics for a specific employee"""
+    now = datetime.now(timezone.utc)
+    start_date = now - timedelta(days=days)
+    
+    # Get employee
+    employee = await db.users.find_one({"id": employee_id}, {"_id": 0})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Get timesheets for this employee
+    timesheets = await db.timesheets.find({
+        "user_id": employee_id,
+        "clock_in_at": {"$gte": start_date.isoformat()},
+        "clock_out_at": {"$ne": None}
+    }, {"_id": 0}).to_list(1000)
+    
+    # Get all employees' timesheets for comparison
+    all_timesheets = await db.timesheets.find({
+        "clock_in_at": {"$gte": start_date.isoformat()},
+        "clock_out_at": {"$ne": None}
+    }, {"_id": 0}).to_list(10000)
+    
+    # Calculate metrics
+    total_minutes = sum(ts.get("total_minutes", 0) or 0 for ts in timesheets)
+    total_hours = total_minutes / 60
+    days_worked = len(set(ts.get("clock_in_at", "")[:10] for ts in timesheets if ts.get("clock_in_at")))
+    
+    # Team average
+    from collections import defaultdict
+    team_hours = defaultdict(float)
+    for ts in all_timesheets:
+        team_hours[ts.get("user_id")] += (ts.get("total_minutes", 0) or 0) / 60
+    
+    team_avg_hours = sum(team_hours.values()) / max(len(team_hours), 1)
+    hours_vs_team = total_hours - team_avg_hours
+    
+    # Calculate weeks and target
+    weeks_in_period = max(days / 7, 1)
+    target_hours = 40 * weeks_in_period
+    percentage = (total_hours / target_hours) * 100 if target_hours > 0 else 0
+    
+    # Punctuality (clock-ins before 9 AM)
+    on_time_count = 0
+    late_count = 0
+    for ts in timesheets:
+        if ts.get("clock_in_at"):
+            try:
+                clock_in = datetime.fromisoformat(ts["clock_in_at"].replace("Z", "+00:00"))
+                if clock_in.hour < 9:
+                    on_time_count += 1
+                else:
+                    late_count += 1
+            except:
+                pass
+    
+    punctuality = (on_time_count / max(on_time_count + late_count, 1)) * 100
+    
+    # Calculate team average punctuality
+    team_ontime = 0
+    team_late = 0
+    for ts in all_timesheets:
+        if ts.get("clock_in_at"):
+            try:
+                clock_in = datetime.fromisoformat(ts["clock_in_at"].replace("Z", "+00:00"))
+                if clock_in.hour < 9:
+                    team_ontime += 1
+                else:
+                    team_late += 1
+            except:
+                pass
+    
+    team_punctuality = (team_ontime / max(team_ontime + team_late, 1)) * 100
+    punctuality_vs_team = punctuality - team_punctuality
+    
+    # Get breaks
+    breaks = await db.breaks.find({
+        "user_id": employee_id,
+        "start_time": {"$gte": start_date.isoformat()},
+        "end_time": {"$ne": None}
+    }, {"_id": 0}).to_list(1000)
+    
+    total_break_minutes = 0
+    for b in breaks:
+        if b.get("start_time") and b.get("end_time"):
+            try:
+                start = datetime.fromisoformat(b["start_time"].replace("Z", "+00:00"))
+                end = datetime.fromisoformat(b["end_time"].replace("Z", "+00:00"))
+                total_break_minutes += (end - start).total_seconds() / 60
+            except:
+                pass
+    
+    avg_break = total_break_minutes / max(len(breaks), 1) if breaks else 0
+    
+    # Performance score (simple calculation)
+    # Based on: hours worked (50%), punctuality (30%), attendance (20%)
+    attendance_score = min(days_worked / (days * 5 / 7), 1) * 100  # Assuming 5 work days per week
+    hours_score = min(percentage, 100)
+    performance_score = (hours_score * 0.5 + punctuality * 0.3 + attendance_score * 0.2)
+    
+    return {
+        "employee": {
+            "id": employee["id"],
+            "name": employee.get("name", "Unknown"),
+            "email": employee.get("email", "")
+        },
+        "performance_score": round(performance_score, 0),
+        "metrics": {
+            "total_hours": round(total_hours, 1),
+            "target_hours": round(target_hours, 1),
+            "percentage": round(percentage, 0),
+            "hours_vs_team": round(hours_vs_team, 1),
+            "days_worked": days_worked,
+            "punctuality": round(punctuality, 0),
+            "punctuality_vs_team": round(punctuality_vs_team, 0),
+            "avg_break_minutes": round(avg_break, 0)
+        },
+        "period_days": days
+    }
+
+
 # ============== ANNOUNCEMENT ROUTES ==============
 
 @api_router.post("/admin/announcements", response_model=AnnouncementResponse)
