@@ -185,7 +185,7 @@ const ChatPanel = ({ isOpen, onClose, currentUser }) => {
               className="h-4 w-auto"
             />
           </div>
-          <h2 className="font-semibold text-white text-lg">Chat</h2>
+          <h2 className="font-semibold text-white text-lg">CORChat</h2>
         </div>
         <button
           onClick={onClose}
