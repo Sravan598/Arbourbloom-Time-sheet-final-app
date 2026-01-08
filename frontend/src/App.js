@@ -81,6 +81,14 @@ function App() {
               } 
             />
             <Route 
+              path="/admin/employees" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <Employees />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/admin/timesheets" 
               element={
                 <ProtectedRoute requiredRole="ADMIN">
