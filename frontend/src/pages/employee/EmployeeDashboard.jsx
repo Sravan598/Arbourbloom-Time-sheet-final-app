@@ -35,6 +35,9 @@ const EmployeeDashboard = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [clockInNote, setClockInNote] = useState('');
+  const [clockOutNote, setClockOutNote] = useState('');
+  const [showNoteInput, setShowNoteInput] = useState(false);
 
   const fetchCurrentShift = useCallback(async () => {
     try {
