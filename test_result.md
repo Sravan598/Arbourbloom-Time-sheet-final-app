@@ -330,9 +330,24 @@ metadata:
   test_sequence: 4
   run_ui: true
 
+  - task: "Admin Sidebar Layout - Dashboard, Performance, Timesheets"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/admin/AdminSidebar.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented AdminSidebar component with Dashboard, Performance Insights, All Timesheets, Employee Docs navigation. Added to AdminDashboard, PerformanceInsights, and AdminTimesheets pages. Sidebar is 256px wide, fixed position, with active state highlighting using purple background."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: Admin sidebar layout fully functional across all admin pages. ✅ Admin login (admin@company.com/password123) successful ✅ Sidebar width: 256px (correct w-64 Tailwind class) ✅ Navigation items: Dashboard, Performance Insights, All Timesheets, Employee Docs (all present and working) ✅ Active state highlighting: Working with purple background (bg-purple-100 text-purple-700 font-medium) ✅ Navigation flow: Dashboard → Performance Insights → All Timesheets → Dashboard (smooth transitions) ✅ Sidebar consistency: Same 256px fixed layout across all admin pages ✅ Header design: Minimal with profile dropdown in top-right corner only ✅ Profile dropdown: Working correctly with My Profile, Settings, Logout options ✅ Admin badge: Visible at bottom of sidebar with 'Full access to all features' text ✅ Employee Docs functionality: Scrolls to documents section on dashboard page ✅ No page flicker during navigation ✅ All test scenarios from review request completed successfully. Admin sidebar layout is production-ready."
+
 test_plan:
   current_focus:
-    - "Employee Sidebar Layout - Dashboard and Timesheet"
+    - "Admin Sidebar Layout - Dashboard, Performance, Timesheets"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -352,3 +367,7 @@ agent_communication:
     message: "TESTING: Employee sidebar layout for Dashboard and Timesheet pages. Testing scope: 1) Employee Dashboard (/employee/dashboard) - verify left sidebar with Dashboard, My Timesheet, Documents links and proper highlighting 2) Employee Timesheet (/employee/timesheet) - verify same sidebar appears with correct highlighting 3) Navigation flow between pages using sidebar links 4) Header profile dropdown functionality. Using credentials: employee@test.com/password123"
   - agent: "testing"
     message: "COMPLETED: Employee sidebar layout testing successful. All test scenarios verified: ✅ Employee login (employee@test.com/password123) successful ✅ Sidebar width: 256px (correct w-64 Tailwind class) ✅ Navigation items: Dashboard, My Timesheet, Documents (all present and clickable) ✅ Active state highlighting: Working with red background (bg-brand-red/10 text-brand-red font-medium) when page is active ✅ Navigation flow: Dashboard → My Timesheet → Documents → Dashboard (smooth transitions) ✅ Sidebar consistency: Same 256px fixed layout across all employee pages ✅ Header design: Minimal with profile dropdown in top-right corner only ✅ Profile dropdown: Working with My Profile, Settings, Logout options ✅ Documents page: Shows PIN verification modal (expected behavior, sidebar hidden during modal) ✅ No page flicker during navigation ✅ All test scenarios from review request completed successfully. Employee sidebar layout is fully functional and production-ready."
+  - agent: "testing"
+    message: "TESTING: Admin sidebar layout implementation for CORtracker application. Testing scope: 1) Admin Dashboard (/admin/dashboard) - verify left sidebar with Dashboard, Performance Insights, All Timesheets, Employee Docs and proper highlighting 2) Performance Insights (/admin/performance) - verify same sidebar appears with correct highlighting 3) All Timesheets (/admin/timesheets) - verify same sidebar appears with correct highlighting 4) Navigation flow between all admin pages 5) Admin badge verification 6) Header profile dropdown functionality. Using credentials: admin@company.com/password123"
+  - agent: "testing"
+    message: "COMPLETED: Admin sidebar layout testing successful. All test scenarios verified: ✅ Admin login (admin@company.com/password123) successful ✅ Sidebar width: 256px (correct w-64 Tailwind class) ✅ Navigation items: Dashboard, Performance Insights, All Timesheets, Employee Docs (all present and clickable) ✅ Active state highlighting: Working with purple background (bg-purple-100 text-purple-700 font-medium) when page is active ✅ Navigation flow: Dashboard → Performance Insights → All Timesheets → Dashboard (smooth transitions with proper highlighting) ✅ Sidebar consistency: Same 256px fixed layout across all admin pages ✅ Header design: Minimal with profile dropdown in top-right corner only ✅ Profile dropdown: Working with My Profile, Settings, Logout options ✅ Admin badge: Visible at bottom of sidebar with purple styling and 'Full access to all features' text ✅ Employee Docs functionality: Scrolls to documents section on dashboard page ✅ No page flicker during navigation ✅ All test scenarios from review request completed successfully. Admin sidebar layout is fully functional and production-ready."
