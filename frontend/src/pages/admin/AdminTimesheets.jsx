@@ -14,7 +14,8 @@ import {
   X,
   Save,
   History,
-  User
+  User,
+  MessageSquare
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -328,6 +329,7 @@ const AdminTimesheets = () => {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-brand-dark">Clock In</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-brand-dark">Clock Out</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-brand-dark">Duration</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-brand-dark">Notes</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-brand-dark">Status</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-brand-dark">Actions</th>
                   </tr>
@@ -362,6 +364,18 @@ const AdminTimesheets = () => {
                       </td>
                       <td className="px-6 py-4 font-medium text-brand-dark">
                         {formatDuration(ts.total_minutes)}
+                      </td>
+                      <td className="px-6 py-4">
+                        {ts.notes ? (
+                          <div className="flex items-start gap-1 max-w-[180px]">
+                            <MessageSquare className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                            <span className="text-sm text-gray-600 truncate" title={ts.notes}>
+                              {ts.notes}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-sm">-</span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         {ts.clock_out_at ? (
