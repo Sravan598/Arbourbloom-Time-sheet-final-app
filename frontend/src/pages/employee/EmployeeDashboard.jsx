@@ -336,8 +336,9 @@ const EmployeeDashboard = () => {
           </motion.div>
         </div>
 
-        {/* Leave/PTO Section */}
-        <div className="mt-8">
+        {/* Break Timer & Leave/PTO Sections */}
+        <div className="mt-8 grid lg:grid-cols-2 gap-8">
+          <BreakTimerSection isClockedIn={isClockedIn} />
           <LeavePTOSection />
         </div>
       </main>
