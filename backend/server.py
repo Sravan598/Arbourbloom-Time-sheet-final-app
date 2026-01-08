@@ -103,6 +103,49 @@ class EmergencyContact(BaseModel):
     relation: Optional[str] = None
 
 
+# Document model
+class Document(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    filename: str
+    original_filename: str
+    file_data: str  # Base64 encoded
+    file_size: int  # In bytes
+    file_type: str  # MIME type
+    category: str = "Other"
+    description: Optional[str] = None
+    uploaded_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class DocumentUpload(BaseModel):
+    filename: str
+    file_data: str  # Base64 encoded
+    file_type: str
+    category: str = "Other"
+    description: Optional[str] = None
+
+
+class DocumentResponse(BaseModel):
+    id: str
+    filename: str
+    original_filename: str
+    file_size: int
+    file_type: str
+    category: str
+    description: Optional[str]
+    uploaded_at: datetime
+
+
+class SetPinRequest(BaseModel):
+    pin: str = Field(..., min_length=4, max_length=6)
+
+
+class VerifyPinRequest(BaseModel):
+    pin: str
+
+
 class UserBase(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
