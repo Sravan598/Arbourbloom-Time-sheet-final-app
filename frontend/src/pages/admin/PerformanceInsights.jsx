@@ -70,6 +70,30 @@ const PerformanceInsights = () => {
     navigate('/login');
   };
 
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      const response = await axios.get(`${API}/admin/performance/export-pdf?days=${period}`, {
+        responseType: 'blob'
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `CORtracker_Performance_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to export PDF:', err);
+      alert('Failed to export PDF. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const MetricCard = ({ title, value, unit, change, icon: Icon, color }) => {
     const isPositive = change > 0;
     const isNeutral = change === 0;
