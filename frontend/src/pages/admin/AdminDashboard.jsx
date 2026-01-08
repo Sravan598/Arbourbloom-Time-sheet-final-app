@@ -331,73 +331,11 @@ const AdminDashboard = () => {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Employees List */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-2xl shadow-lg p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-brand-dark">Employees</h2>
-              <Button variant="outline" size="sm">
-                <UserPlus className="w-4 h-4 mr-2" />
-                Add Employee
-              </Button>
-            </div>
-            
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search employees..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
-              />
-            </div>
-            
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {filteredEmployees.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">No employees found</p>
-              ) : (
-                filteredEmployees.map((emp) => (
-                  <div key={emp.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-brand-red/10 rounded-full flex items-center justify-center">
-                        <span className="text-brand-red font-semibold">
-                          {emp.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-brand-dark">{emp.name}</p>
-                        <p className="text-sm text-gray-500">{emp.email}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        emp.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      }`}>
-                        {emp.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                      <button
-                        onClick={() => handleToggleUserActive(emp.id, emp.is_active)}
-                        className="p-1 text-gray-400 hover:text-brand-dark"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </motion.div>
-
           {/* Pending Correction Requests */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.4 }}
             className="bg-white rounded-2xl shadow-lg p-6"
           >
             <div className="flex items-center justify-between mb-6">
