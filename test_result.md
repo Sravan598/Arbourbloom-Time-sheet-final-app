@@ -206,15 +206,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Quick Notes for Clock In/Out"
-    - "Employee Timesheet Notes Display"
-    - "Admin Timesheet Notes Display"
+    - "Admin Announcements Section"
+    - "Employee Announcements Section"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "Implemented Quick Notes feature for Clock In/Out. Changes: 1) Added toggle button and textarea to EmployeeDashboard.jsx for adding notes when clocking in/out 2) Added Notes column to EmployeeTimesheet.jsx table 3) Added Notes column to AdminTimesheets.jsx table 4) Notes display with MessageSquare icon in Today's Activity section. Backend was already prepared with ClockInRequest/ClockOutRequest models accepting notes. Please test: a) Employee can add note when clocking in b) Employee can add note when clocking out c) Notes appear in Today's Activity d) Notes appear in Employee Timesheet table e) Notes appear in Admin Timesheets table. Test credentials: Employee: employee@test.com/password123, Admin: admin@company.com/password123"
-  - agent: "main"
-    message: "Quick Notes feature VERIFIED WORKING via manual screenshots. Testing agent had selector timing issues but feature is fully functional: 1) Toggle button 'Add a quick note (optional)' visible and working 2) Textarea expands with placeholder and 200 char limit 3) Notes saved on clock in/out 4) Notes displayed in Today's Activity with MessageSquare icon 5) Notes column visible in Employee Timesheet 6) Notes column visible in Admin Timesheets. All components working correctly."
+    message: "Implemented Announcements Board feature. Backend: Added AnnouncementPriority enum, Announcement/AnnouncementCreate/AnnouncementUpdate/AnnouncementResponse models. API endpoints: POST /api/admin/announcements, GET /api/announcements, GET /api/admin/announcements, PUT /api/admin/announcements/{id}, DELETE /api/admin/announcements/{id}, POST /api/announcements/{id}/mark-read, GET /api/announcements/unread-count. Frontend: Created AdminAnnouncementsSection.jsx (create/edit/delete with modal), AnnouncementsSection.jsx (view/expand/mark-read). Test: 1) Admin creates announcement with priority/pin 2) Employee sees announcement with unread badge 3) Employee expands to read, marks as read 4) Admin can edit/delete. Credentials: Admin: admin@company.com/password123, Employee: employee@test.com/password123"
