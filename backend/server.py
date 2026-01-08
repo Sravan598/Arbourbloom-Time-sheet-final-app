@@ -713,6 +713,160 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     )
 
 
+# ============== PROFILE ROUTES ==============
+
+@api_router.get("/profile")
+async def get_profile(current_user: dict = Depends(get_current_user)):
+    """Get current user's full profile"""
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "password_hash": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Parse created_at
+    created_at = user.get("created_at")
+    if isinstance(created_at, str):
+        created_at = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+    
+    return user
+
+
+@api_router.put("/profile")
+async def update_profile(
+    profile_data: ProfileUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update current user's profile"""
+    update_fields = {}
+    
+    if profile_data.name is not None:
+        update_fields["name"] = profile_data.name
+    if profile_data.phone is not None:
+        update_fields["phone"] = profile_data.phone
+    if profile_data.date_of_birth is not None:
+        update_fields["date_of_birth"] = profile_data.date_of_birth
+    if profile_data.address is not None:
+        update_fields["address"] = profile_data.address
+    if profile_data.city is not None:
+        update_fields["city"] = profile_data.city
+    if profile_data.state is not None:
+        update_fields["state"] = profile_data.state
+    if profile_data.country is not None:
+        update_fields["country"] = profile_data.country
+    if profile_data.time_zone is not None:
+        update_fields["time_zone"] = profile_data.time_zone
+    if profile_data.theme_preference is not None:
+        update_fields["theme_preference"] = profile_data.theme_preference
+    if profile_data.emergency_contact is not None:
+        update_fields["emergency_contact"] = profile_data.emergency_contact.model_dump()
+    if profile_data.notification_preferences is not None:
+        update_fields["notification_preferences"] = profile_data.notification_preferences.model_dump()
+    
+    if update_fields:
+        await db.users.update_one({"id": current_user["id"]}, {"$set": update_fields})
+    
+    # Return updated profile
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "password_hash": 0})
+    return user
+
+
+@api_router.put("/profile/change-password")
+async def change_password(
+    password_data: PasswordChange,
+    current_user: dict = Depends(get_current_user)
+):
+    """Change user's password"""
+    # Get user with password hash
+    user = await db.users.find_one({"id": current_user["id"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Verify current password
+    if not bcrypt.checkpw(password_data.current_password.encode('utf-8'), user["password_hash"].encode('utf-8')):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    # Hash new password
+    new_hash = bcrypt.hashpw(password_data.new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    # Update password
+    await db.users.update_one({"id": current_user["id"]}, {"$set": {"password_hash": new_hash}})
+    
+    return {"message": "Password changed successfully"}
+
+
+@api_router.post("/profile/upload-image")
+async def upload_profile_image(
+    current_user: dict = Depends(get_current_user),
+    image_data: dict = None
+):
+    """Upload profile image (base64 encoded)"""
+    from fastapi import Body
+    return {"message": "Use the /profile/image endpoint with base64 data"}
+
+
+@api_router.put("/profile/image")
+async def update_profile_image(
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update profile image with base64 data"""
+    body = await request.json()
+    image_data = body.get("image")
+    
+    if not image_data:
+        raise HTTPException(status_code=400, detail="Image data is required")
+    
+    # Validate it's a base64 image
+    if not image_data.startswith("data:image"):
+        raise HTTPException(status_code=400, detail="Invalid image format. Must be base64 encoded.")
+    
+    # Store the base64 image directly (for simplicity)
+    # In production, you'd upload to S3/CloudStorage
+    await db.users.update_one({"id": current_user["id"]}, {"$set": {"profile_image": image_data}})
+    
+    return {"message": "Profile image updated successfully", "image": image_data}
+
+
+@api_router.delete("/profile/image")
+async def delete_profile_image(current_user: dict = Depends(get_current_user)):
+    """Delete profile image"""
+    await db.users.update_one({"id": current_user["id"]}, {"$set": {"profile_image": None}})
+    return {"message": "Profile image deleted successfully"}
+
+
+@api_router.put("/admin/employees/{employee_id}/work-info")
+async def update_employee_work_info(
+    employee_id: str,
+    work_info: AdminProfileUpdate,
+    admin: dict = Depends(require_admin)
+):
+    """Admin can update employee's work information"""
+    # Check if employee exists
+    employee = await db.users.find_one({"id": employee_id, "role": "EMPLOYEE"}, {"_id": 0})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    update_fields = {}
+    if work_info.employee_id is not None:
+        update_fields["employee_id"] = work_info.employee_id
+    if work_info.department is not None:
+        update_fields["department"] = work_info.department
+    if work_info.job_title is not None:
+        update_fields["job_title"] = work_info.job_title
+    if work_info.employment_type is not None:
+        update_fields["employment_type"] = work_info.employment_type
+    if work_info.join_date is not None:
+        update_fields["join_date"] = work_info.join_date
+    if work_info.work_location is not None:
+        update_fields["work_location"] = work_info.work_location
+    
+    if update_fields:
+        await db.users.update_one({"id": employee_id}, {"$set": update_fields})
+    
+    # Return updated employee
+    updated = await db.users.find_one({"id": employee_id}, {"_id": 0, "password_hash": 0})
+    return updated
+
+
 # ============== EMPLOYEE ROUTES ==============
 class ClockInRequest(BaseModel):
     notes: Optional[str] = None
