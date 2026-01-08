@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ArrowLeft,
   LogOut,
   TrendingUp,
   TrendingDown,
@@ -16,18 +15,22 @@ import {
   ChevronDown,
   BarChart3,
   PieChart,
-  Download
+  Download,
+  User,
+  Settings
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
+import AdminSidebar from '../../components/admin/AdminSidebar';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const PerformanceInsights = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const profileDropdownRef = useRef(null);
   
   const [period, setPeriod] = useState(30);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,6 +40,32 @@ const PerformanceInsights = () => {
   const [patterns, setPatterns] = useState(null);
   const [performers, setPerformers] = useState(null);
   const [leaveAnalysis, setLeaveAnalysis] = useState(null);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [profileData, setProfileData] = useState(null);
+
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get(`${API}/profile`);
+        setProfileData(response.data);
+      } catch (err) {
+        console.error('Failed to fetch profile:', err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
