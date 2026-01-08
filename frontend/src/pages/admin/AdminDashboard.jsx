@@ -6,14 +6,12 @@ import {
   Users, 
   Clock, 
   AlertCircle,
-  FileText,
   TrendingUp,
   UserPlus,
   Search,
   CheckCircle,
   XCircle,
   MoreVertical,
-  BarChart3,
   User,
   ChevronDown,
   Settings
@@ -26,6 +24,7 @@ import AdminProjectsSection from '../../components/admin/AdminProjectsSection';
 import AdminTeamProgressSection from '../../components/admin/AdminTeamProgressSection';
 import AdminAnnouncementsSection from '../../components/admin/AdminAnnouncementsSection';
 import AdminEmployeeDocuments from '../../components/admin/AdminEmployeeDocuments';
+import AdminSidebar from '../../components/admin/AdminSidebar';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
