@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for CORtracker Document Section
-Tests PIN management, document operations, and admin access APIs
+Backend API Testing for CORtracker Application
+Tests Document Section APIs and CORChat Phase 1 APIs
 """
 
 import requests
