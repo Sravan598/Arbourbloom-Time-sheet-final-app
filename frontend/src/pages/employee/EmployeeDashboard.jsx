@@ -109,8 +109,12 @@ const EmployeeDashboard = () => {
     setSuccess('');
     
     try {
-      await axios.post(`${API}/employee/clock-in`);
+      await axios.post(`${API}/employee/clock-in`, { 
+        notes: clockInNote || null 
+      });
       setSuccess('Successfully clocked in!');
+      setClockInNote('');
+      setShowNoteInput(false);
       await fetchCurrentShift();
       await fetchTodayPunches();
     } catch (err) {
@@ -126,8 +130,12 @@ const EmployeeDashboard = () => {
     setSuccess('');
     
     try {
-      await axios.post(`${API}/employee/clock-out`);
+      await axios.post(`${API}/employee/clock-out`, {
+        notes: clockOutNote || null
+      });
       setSuccess('Successfully clocked out!');
+      setClockOutNote('');
+      setShowNoteInput(false);
       await fetchCurrentShift();
       await fetchTodayPunches();
     } catch (err) {
