@@ -4832,7 +4832,7 @@ async def get_dm_threads(current_user: dict = Depends(get_current_user)):
     return result
 
 
-@api_router.post("/chat/dm/{user_id}")
+@api_router.post("/chat/dm/{user_id}", response_model=DMThreadResponse)
 async def start_dm_thread(
     user_id: str,
     current_user: dict = Depends(get_current_user)
@@ -4852,7 +4852,27 @@ async def start_dm_thread(
     }, {"_id": 0})
     
     if existing_thread:
-        return existing_thread
+        # Convert to response format
+        other_user_id = user_id if user_id != current_user["id"] else existing_thread["participants"][0]
+        other_user_name = existing_thread.get("participant_names", {}).get(other_user_id, "Unknown")
+        other_user_image = existing_thread.get("participant_images", {}).get(other_user_id, "")
+        
+        created_at = existing_thread.get("created_at")
+        if isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at)
+        
+        return DMThreadResponse(
+            id=existing_thread["id"],
+            participants=existing_thread["participants"],
+            participant_names=existing_thread.get("participant_names", {}),
+            participant_images=existing_thread.get("participant_images", {}),
+            other_user_id=other_user_id,
+            other_user_name=other_user_name,
+            other_user_image=other_user_image,
+            last_message=existing_thread.get("last_message"),
+            unread_count=0,
+            created_at=created_at
+        )
     
     # Create new thread
     thread = DMThread(
@@ -4873,7 +4893,19 @@ async def start_dm_thread(
     
     await db.chat_dm_threads.insert_one(doc)
     
-    return doc
+    # Return response format
+    return DMThreadResponse(
+        id=thread.id,
+        participants=thread.participants,
+        participant_names=thread.participant_names,
+        participant_images=thread.participant_images,
+        other_user_id=user_id,
+        other_user_name=target_user.get("name", "Unknown"),
+        other_user_image=target_user.get("profile_image") or "",
+        last_message=None,
+        unread_count=0,
+        created_at=thread.created_at
+    )
 
 
 @api_router.get("/chat/dm/{thread_id}/messages", response_model=List[ChatMessageResponse])
