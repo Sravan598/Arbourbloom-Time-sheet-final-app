@@ -1403,6 +1403,246 @@ async def get_time_summary(
     return result
 
 
+# ============== WEEKLY PROGRESS ROUTES ==============
+
+class DailyHours(BaseModel):
+    date: str
+    day_name: str
+    minutes_worked: int
+    hours_worked: float
+
+
+class WeeklyProgressResponse(BaseModel):
+    user_id: str
+    user_name: Optional[str] = None
+    week_start: str
+    week_end: str
+    total_minutes: int
+    total_hours: float
+    goal_hours: float
+    progress_percent: float
+    status: str  # ON_TRACK, BEHIND, OVERTIME, COMPLETED
+    daily_breakdown: List[DailyHours]
+    break_minutes: int
+
+
+@api_router.get("/progress/weekly", response_model=WeeklyProgressResponse)
+async def get_weekly_progress(current_user: dict = Depends(get_current_user)):
+    """Get current user's weekly hours progress"""
+    # Get the start of the current week (Monday)
+    today = datetime.now(timezone.utc)
+    week_start = today - timedelta(days=today.weekday())
+    week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_end = week_start + timedelta(days=6, hours=23, minutes=59, seconds=59)
+    
+    # Default goal is 40 hours
+    goal_hours = 40.0
+    
+    # Get all timesheets for this week
+    timesheets = await db.timesheets.find({
+        "user_id": current_user["id"],
+        "clock_in_at": {
+            "$gte": week_start.isoformat(),
+            "$lte": week_end.isoformat()
+        }
+    }, {"_id": 0}).to_list(100)
+    
+    # Get all breaks for this week
+    breaks = await db.breaks.find({
+        "user_id": current_user["id"],
+        "status": "COMPLETED",
+        "created_at": {
+            "$gte": week_start.isoformat(),
+            "$lte": week_end.isoformat()
+        }
+    }, {"_id": 0}).to_list(200)
+    
+    # Calculate total break minutes
+    total_break_minutes = sum(b.get("duration_minutes", 0) for b in breaks)
+    
+    # Calculate daily breakdown
+    daily_data = {}
+    day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    
+    for i in range(7):
+        day_date = week_start + timedelta(days=i)
+        date_str = day_date.strftime("%Y-%m-%d")
+        daily_data[date_str] = {
+            "date": date_str,
+            "day_name": day_names[i],
+            "minutes_worked": 0
+        }
+    
+    # Sum up minutes from timesheets
+    for ts in timesheets:
+        clock_in = ts.get("clock_in_at")
+        if isinstance(clock_in, str):
+            clock_in = datetime.fromisoformat(clock_in)
+        
+        date_str = clock_in.strftime("%Y-%m-%d")
+        
+        if ts.get("total_minutes"):
+            if date_str in daily_data:
+                daily_data[date_str]["minutes_worked"] += ts["total_minutes"]
+        elif ts.get("clock_out_at") is None:
+            # Active shift - calculate current duration
+            now = datetime.now(timezone.utc)
+            duration = int((now - clock_in).total_seconds() / 60)
+            if date_str in daily_data:
+                daily_data[date_str]["minutes_worked"] += duration
+    
+    # Convert to list and calculate hours
+    daily_breakdown = []
+    total_minutes = 0
+    
+    for date_str in sorted(daily_data.keys()):
+        data = daily_data[date_str]
+        minutes = data["minutes_worked"]
+        total_minutes += minutes
+        daily_breakdown.append(DailyHours(
+            date=data["date"],
+            day_name=data["day_name"],
+            minutes_worked=minutes,
+            hours_worked=round(minutes / 60, 1)
+        ))
+    
+    # Subtract breaks from total
+    net_minutes = max(0, total_minutes - total_break_minutes)
+    total_hours = round(net_minutes / 60, 1)
+    
+    # Calculate progress
+    goal_minutes = goal_hours * 60
+    progress_percent = round((net_minutes / goal_minutes) * 100, 1) if goal_minutes > 0 else 0
+    
+    # Determine status
+    if progress_percent >= 100:
+        if progress_percent > 100:
+            status = "OVERTIME"
+        else:
+            status = "COMPLETED"
+    elif progress_percent >= 70:
+        status = "ON_TRACK"
+    else:
+        # Check if we're behind based on day of week
+        days_passed = today.weekday() + 1
+        expected_percent = (days_passed / 5) * 100  # Assuming 5 work days
+        if progress_percent < expected_percent - 20:
+            status = "BEHIND"
+        else:
+            status = "ON_TRACK"
+    
+    return WeeklyProgressResponse(
+        user_id=current_user["id"],
+        user_name=current_user.get("name"),
+        week_start=week_start.strftime("%Y-%m-%d"),
+        week_end=week_end.strftime("%Y-%m-%d"),
+        total_minutes=net_minutes,
+        total_hours=total_hours,
+        goal_hours=goal_hours,
+        progress_percent=min(progress_percent, 150),  # Cap at 150%
+        status=status,
+        daily_breakdown=daily_breakdown,
+        break_minutes=total_break_minutes
+    )
+
+
+@api_router.get("/admin/progress/team")
+async def get_team_weekly_progress(admin: dict = Depends(require_admin)):
+    """Get weekly progress for all employees (admin only)"""
+    # Get all active employees
+    employees = await db.users.find(
+        {"role": "EMPLOYEE", "is_active": True},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(200)
+    
+    # Get the start of the current week (Monday)
+    today = datetime.now(timezone.utc)
+    week_start = today - timedelta(days=today.weekday())
+    week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_end = week_start + timedelta(days=6, hours=23, minutes=59, seconds=59)
+    
+    goal_hours = 40.0
+    goal_minutes = goal_hours * 60
+    
+    team_progress = []
+    
+    for emp in employees:
+        user_id = emp["id"]
+        
+        # Get timesheets for this employee this week
+        timesheets = await db.timesheets.find({
+            "user_id": user_id,
+            "clock_in_at": {
+                "$gte": week_start.isoformat(),
+                "$lte": week_end.isoformat()
+            }
+        }, {"_id": 0}).to_list(50)
+        
+        # Get breaks
+        breaks = await db.breaks.find({
+            "user_id": user_id,
+            "status": "COMPLETED",
+            "created_at": {
+                "$gte": week_start.isoformat(),
+                "$lte": week_end.isoformat()
+            }
+        }, {"_id": 0}).to_list(100)
+        
+        total_break_minutes = sum(b.get("duration_minutes", 0) for b in breaks)
+        
+        # Calculate total minutes
+        total_minutes = 0
+        for ts in timesheets:
+            if ts.get("total_minutes"):
+                total_minutes += ts["total_minutes"]
+            elif ts.get("clock_out_at") is None:
+                # Active shift
+                clock_in = ts.get("clock_in_at")
+                if isinstance(clock_in, str):
+                    clock_in = datetime.fromisoformat(clock_in)
+                duration = int((datetime.now(timezone.utc) - clock_in).total_seconds() / 60)
+                total_minutes += duration
+        
+        net_minutes = max(0, total_minutes - total_break_minutes)
+        total_hours = round(net_minutes / 60, 1)
+        progress_percent = round((net_minutes / goal_minutes) * 100, 1) if goal_minutes > 0 else 0
+        
+        # Determine status
+        if progress_percent >= 100:
+            status = "OVERTIME" if progress_percent > 100 else "COMPLETED"
+        elif progress_percent >= 70:
+            status = "ON_TRACK"
+        else:
+            days_passed = today.weekday() + 1
+            expected_percent = (days_passed / 5) * 100
+            status = "BEHIND" if progress_percent < expected_percent - 20 else "ON_TRACK"
+        
+        team_progress.append({
+            "user_id": user_id,
+            "user_name": emp.get("name", "Unknown"),
+            "user_email": emp.get("email"),
+            "total_hours": total_hours,
+            "goal_hours": goal_hours,
+            "progress_percent": min(progress_percent, 150),
+            "status": status
+        })
+    
+    # Sort by progress (lowest first to highlight those behind)
+    team_progress.sort(key=lambda x: x["progress_percent"])
+    
+    return {
+        "week_start": week_start.strftime("%Y-%m-%d"),
+        "week_end": week_end.strftime("%Y-%m-%d"),
+        "team_progress": team_progress,
+        "summary": {
+            "total_employees": len(team_progress),
+            "on_track": len([p for p in team_progress if p["status"] in ["ON_TRACK", "COMPLETED"]]),
+            "behind": len([p for p in team_progress if p["status"] == "BEHIND"]),
+            "overtime": len([p for p in team_progress if p["status"] == "OVERTIME"])
+        }
+    }
+
+
 # ============== BREAK ROUTES ==============
 
 @api_router.post("/breaks/start", response_model=BreakResponse)
