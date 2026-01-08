@@ -25,6 +25,7 @@ import AdminLeaveSection from '../../components/admin/AdminLeaveSection';
 import AdminProjectsSection from '../../components/admin/AdminProjectsSection';
 import AdminTeamProgressSection from '../../components/admin/AdminTeamProgressSection';
 import AdminAnnouncementsSection from '../../components/admin/AdminAnnouncementsSection';
+import AdminEmployeeDocuments from '../../components/admin/AdminEmployeeDocuments';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -485,6 +486,11 @@ const AdminDashboard = () => {
         <div className="mt-8 grid lg:grid-cols-2 gap-8">
           <AdminTeamProgressSection />
           <AdminProjectsSection />
+        </div>
+
+        {/* Employee Documents Section */}
+        <div className="mt-8">
+          <AdminEmployeeDocuments />
         </div>
       </main>
     </div>
