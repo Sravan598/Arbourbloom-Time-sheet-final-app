@@ -2455,6 +2455,255 @@ async def get_pending_leave_count(admin: dict = Depends(require_admin)):
     return {"pending_count": count}
 
 
+# ============== ANNOUNCEMENT ROUTES ==============
+
+@api_router.post("/admin/announcements", response_model=AnnouncementResponse)
+async def create_announcement(
+    announcement_data: AnnouncementCreate,
+    admin: dict = Depends(require_admin)
+):
+    """Create a new announcement (admin only)"""
+    announcement = Announcement(
+        title=announcement_data.title,
+        message=announcement_data.message,
+        priority=announcement_data.priority,
+        is_pinned=announcement_data.is_pinned,
+        expires_at=announcement_data.expires_at,
+        created_by=admin["id"],
+        created_by_name=admin.get("name")
+    )
+    
+    announcement_doc = announcement.model_dump()
+    announcement_doc["created_at"] = announcement_doc["created_at"].isoformat()
+    announcement_doc["updated_at"] = announcement_doc["updated_at"].isoformat()
+    if announcement_doc["expires_at"]:
+        announcement_doc["expires_at"] = announcement_doc["expires_at"].isoformat()
+    
+    await db.announcements.insert_one(announcement_doc)
+    
+    return AnnouncementResponse(
+        id=announcement.id,
+        title=announcement.title,
+        message=announcement.message,
+        priority=announcement.priority.value,
+        is_pinned=announcement.is_pinned,
+        created_by=announcement.created_by,
+        created_by_name=announcement.created_by_name,
+        expires_at=announcement.expires_at,
+        is_read=False,
+        read_count=0,
+        created_at=announcement.created_at,
+        updated_at=announcement.updated_at
+    )
+
+
+@api_router.get("/announcements", response_model=List[AnnouncementResponse])
+async def get_announcements(current_user: dict = Depends(get_current_user)):
+    """Get all active announcements for the current user"""
+    now = datetime.now(timezone.utc)
+    
+    # Query for active announcements (not expired)
+    query = {
+        "$or": [
+            {"expires_at": None},
+            {"expires_at": {"$gt": now.isoformat()}}
+        ]
+    }
+    
+    announcements = await db.announcements.find(query, {"_id": 0}).sort([
+        ("is_pinned", -1),  # Pinned first
+        ("priority", -1),   # Then by priority (URGENT > IMPORTANT > NORMAL)
+        ("created_at", -1)  # Then by newest
+    ]).to_list(100)
+    
+    result = []
+    for ann in announcements:
+        created_at = ann.get("created_at")
+        if isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at)
+        
+        updated_at = ann.get("updated_at")
+        if isinstance(updated_at, str):
+            updated_at = datetime.fromisoformat(updated_at)
+        
+        expires_at = ann.get("expires_at")
+        if expires_at and isinstance(expires_at, str):
+            expires_at = datetime.fromisoformat(expires_at)
+        
+        read_by = ann.get("read_by", [])
+        is_read = current_user["id"] in read_by
+        
+        result.append(AnnouncementResponse(
+            id=ann["id"],
+            title=ann["title"],
+            message=ann["message"],
+            priority=ann.get("priority", "NORMAL"),
+            is_pinned=ann.get("is_pinned", False),
+            created_by=ann["created_by"],
+            created_by_name=ann.get("created_by_name"),
+            expires_at=expires_at,
+            is_read=is_read,
+            read_count=len(read_by),
+            created_at=created_at,
+            updated_at=updated_at
+        ))
+    
+    return result
+
+
+@api_router.get("/admin/announcements", response_model=List[AnnouncementResponse])
+async def get_all_announcements_admin(admin: dict = Depends(require_admin)):
+    """Get all announcements including expired (admin only)"""
+    announcements = await db.announcements.find({}, {"_id": 0}).sort([
+        ("created_at", -1)
+    ]).to_list(200)
+    
+    result = []
+    for ann in announcements:
+        created_at = ann.get("created_at")
+        if isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at)
+        
+        updated_at = ann.get("updated_at")
+        if isinstance(updated_at, str):
+            updated_at = datetime.fromisoformat(updated_at)
+        
+        expires_at = ann.get("expires_at")
+        if expires_at and isinstance(expires_at, str):
+            expires_at = datetime.fromisoformat(expires_at)
+        
+        read_by = ann.get("read_by", [])
+        
+        result.append(AnnouncementResponse(
+            id=ann["id"],
+            title=ann["title"],
+            message=ann["message"],
+            priority=ann.get("priority", "NORMAL"),
+            is_pinned=ann.get("is_pinned", False),
+            created_by=ann["created_by"],
+            created_by_name=ann.get("created_by_name"),
+            expires_at=expires_at,
+            is_read=True,  # Admin doesn't need read status
+            read_count=len(read_by),
+            created_at=created_at,
+            updated_at=updated_at
+        ))
+    
+    return result
+
+
+@api_router.put("/admin/announcements/{announcement_id}", response_model=AnnouncementResponse)
+async def update_announcement(
+    announcement_id: str,
+    update_data: AnnouncementUpdate,
+    admin: dict = Depends(require_admin)
+):
+    """Update an announcement (admin only)"""
+    announcement = await db.announcements.find_one({"id": announcement_id}, {"_id": 0})
+    
+    if not announcement:
+        raise HTTPException(status_code=404, detail="Announcement not found")
+    
+    update_fields = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    
+    if update_data.title is not None:
+        update_fields["title"] = update_data.title
+    if update_data.message is not None:
+        update_fields["message"] = update_data.message
+    if update_data.priority is not None:
+        update_fields["priority"] = update_data.priority.value
+    if update_data.is_pinned is not None:
+        update_fields["is_pinned"] = update_data.is_pinned
+    if update_data.expires_at is not None:
+        update_fields["expires_at"] = update_data.expires_at.isoformat()
+    
+    await db.announcements.update_one({"id": announcement_id}, {"$set": update_fields})
+    
+    updated = await db.announcements.find_one({"id": announcement_id}, {"_id": 0})
+    
+    created_at = updated.get("created_at")
+    if isinstance(created_at, str):
+        created_at = datetime.fromisoformat(created_at)
+    
+    updated_at = updated.get("updated_at")
+    if isinstance(updated_at, str):
+        updated_at = datetime.fromisoformat(updated_at)
+    
+    expires_at = updated.get("expires_at")
+    if expires_at and isinstance(expires_at, str):
+        expires_at = datetime.fromisoformat(expires_at)
+    
+    read_by = updated.get("read_by", [])
+    
+    return AnnouncementResponse(
+        id=updated["id"],
+        title=updated["title"],
+        message=updated["message"],
+        priority=updated.get("priority", "NORMAL"),
+        is_pinned=updated.get("is_pinned", False),
+        created_by=updated["created_by"],
+        created_by_name=updated.get("created_by_name"),
+        expires_at=expires_at,
+        is_read=True,
+        read_count=len(read_by),
+        created_at=created_at,
+        updated_at=updated_at
+    )
+
+
+@api_router.delete("/admin/announcements/{announcement_id}")
+async def delete_announcement(
+    announcement_id: str,
+    admin: dict = Depends(require_admin)
+):
+    """Delete an announcement (admin only)"""
+    announcement = await db.announcements.find_one({"id": announcement_id}, {"_id": 0})
+    
+    if not announcement:
+        raise HTTPException(status_code=404, detail="Announcement not found")
+    
+    await db.announcements.delete_one({"id": announcement_id})
+    
+    return {"message": "Announcement deleted successfully"}
+
+
+@api_router.post("/announcements/{announcement_id}/mark-read")
+async def mark_announcement_read(
+    announcement_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Mark an announcement as read by the current user"""
+    announcement = await db.announcements.find_one({"id": announcement_id}, {"_id": 0})
+    
+    if not announcement:
+        raise HTTPException(status_code=404, detail="Announcement not found")
+    
+    # Add user to read_by list if not already there
+    await db.announcements.update_one(
+        {"id": announcement_id},
+        {"$addToSet": {"read_by": current_user["id"]}}
+    )
+    
+    return {"message": "Announcement marked as read"}
+
+
+@api_router.get("/announcements/unread-count")
+async def get_unread_announcements_count(current_user: dict = Depends(get_current_user)):
+    """Get count of unread announcements for the current user"""
+    now = datetime.now(timezone.utc)
+    
+    # Count announcements that are active and not read by this user
+    count = await db.announcements.count_documents({
+        "$or": [
+            {"expires_at": None},
+            {"expires_at": {"$gt": now.isoformat()}}
+        ],
+        "read_by": {"$ne": current_user["id"]}
+    })
+    
+    return {"unread_count": count}
+
+
 # ============== LEGACY ROUTES ==============
 class StatusCheck(BaseModel):
     model_config = ConfigDict(extra="ignore")
