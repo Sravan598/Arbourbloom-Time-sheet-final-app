@@ -582,6 +582,132 @@ class ProjectTimeSummary(BaseModel):
     entry_count: int
 
 
+# ============== CORCHAT MODELS ==============
+class ChannelType(str, Enum):
+    PUBLIC = "PUBLIC"
+    PRIVATE = "PRIVATE"
+
+
+class ChatChannel(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    type: ChannelType = ChannelType.PUBLIC
+    created_by: str
+    created_by_name: Optional[str] = None
+    members: List[str] = []  # User IDs - for private channels
+    is_default: bool = False  # Default channels like #general
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class ChatChannelCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=50)
+    description: Optional[str] = Field(None, max_length=200)
+    type: ChannelType = ChannelType.PUBLIC
+    members: List[str] = []  # For private channels
+
+
+class ChatChannelResponse(BaseModel):
+    id: str
+    name: str
+    description: Optional[str]
+    type: str
+    created_by: str
+    created_by_name: Optional[str]
+    member_count: int
+    is_default: bool
+    last_message: Optional[dict] = None
+    unread_count: int = 0
+    created_at: datetime
+
+
+class ChatMessage(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    channel_id: Optional[str] = None  # For channel messages
+    dm_thread_id: Optional[str] = None  # For direct messages
+    sender_id: str
+    sender_name: str
+    sender_image: Optional[str] = None
+    content: str
+    message_type: str = "text"  # text, file, image
+    file_url: Optional[str] = None
+    file_name: Optional[str] = None
+    is_edited: bool = False
+    is_deleted: bool = False
+    reactions: Dict[str, List[str]] = {}  # emoji: [user_ids]
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class ChatMessageCreate(BaseModel):
+    content: str = Field(..., min_length=1, max_length=4000)
+    message_type: str = "text"
+
+
+class ChatMessageResponse(BaseModel):
+    id: str
+    channel_id: Optional[str]
+    dm_thread_id: Optional[str]
+    sender_id: str
+    sender_name: str
+    sender_image: Optional[str]
+    content: str
+    message_type: str
+    file_url: Optional[str]
+    file_name: Optional[str]
+    is_edited: bool
+    reactions: Dict[str, List[str]]
+    created_at: datetime
+
+
+class DMThread(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    participants: List[str]  # Two user IDs
+    participant_names: Dict[str, str] = {}  # user_id: name
+    participant_images: Dict[str, str] = {}  # user_id: image_url
+    last_message: Optional[dict] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class DMThreadResponse(BaseModel):
+    id: str
+    participants: List[str]
+    participant_names: Dict[str, str]
+    participant_images: Dict[str, str]
+    other_user_id: str
+    other_user_name: str
+    other_user_image: Optional[str]
+    last_message: Optional[dict]
+    unread_count: int = 0
+    created_at: datetime
+
+
+class ChatUnreadCount(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    channel_id: Optional[str] = None
+    dm_thread_id: Optional[str] = None
+    last_read_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class ChatUserStatus(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    user_id: str
+    status: str = "offline"  # online, away, offline
+    last_seen: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 # ============== HELPER FUNCTIONS ==============
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
