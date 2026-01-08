@@ -345,14 +345,41 @@ metadata:
         agent: "testing"
         comment: "VERIFIED: Admin sidebar layout fully functional across all admin pages. ✅ Admin login (admin@company.com/password123) successful ✅ Sidebar width: 256px (correct w-64 Tailwind class) ✅ Navigation items: Dashboard, Performance Insights, All Timesheets, Employee Docs (all present and working) ✅ Active state highlighting: Working with purple background (bg-purple-100 text-purple-700 font-medium) ✅ Navigation flow: Dashboard → Performance Insights → All Timesheets → Dashboard (smooth transitions) ✅ Sidebar consistency: Same 256px fixed layout across all admin pages ✅ Header design: Minimal with profile dropdown in top-right corner only ✅ Profile dropdown: Working correctly with My Profile, Settings, Logout options ✅ Admin badge: Visible at bottom of sidebar with 'Full access to all features' text ✅ Employee Docs functionality: Scrolls to documents section on dashboard page ✅ No page flicker during navigation ✅ All test scenarios from review request completed successfully. Admin sidebar layout is production-ready."
 
+  - task: "CORChat - Phase 1 Backend API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented CORChat backend with: 1) Models for channels, messages, DM threads, user status 2) REST APIs: GET/POST /api/chat/channels, GET/POST /api/chat/channels/{id}/messages, GET/POST /api/chat/dm, GET/POST /api/chat/dm/{id}/messages, GET /api/chat/users, GET /api/chat/unread-counts 3) WebSocket endpoint /api/ws/{token} for real-time messaging 4) ConnectionManager class for WebSocket handling 5) Auto-creation of default #general and #announcements channels on startup. Verified via curl - all endpoints return expected responses."
+
+  - task: "CORChat - Phase 1 Frontend UI"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/chat/"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented CORChat frontend with: 1) CORChat.jsx - Main wrapper with unread count polling 2) ChatButton.jsx - Floating red button with unread badge animation 3) ChatPanel.jsx - Main chat panel with channel/DM list, message view, create channel modal, new DM modal 4) ChannelList.jsx - Collapsible channel list with default/user channels 5) DMList.jsx - Direct messages list 6) MessageView.jsx - Message view with date grouping, message bubbles, typing input 7) chatService.js - API service for all chat endpoints. Added to App.js as global floating widget. Verified via screenshots - all UI working correctly."
+
 test_plan:
   current_focus:
-    - "Admin Sidebar Layout - Dashboard, Performance, Timesheets"
+    - "CORChat - Phase 1 Backend API"
+    - "CORChat - Phase 1 Frontend UI"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
+  - agent: "main"
+    message: "Implemented CORChat Phase 1 - Foundation. Backend: Added complete chat models and API endpoints for channels (CRUD), messages (send/receive), DM threads, user listing, unread counts, and WebSocket support. Default #general and #announcements channels are auto-created on startup. Frontend: Created floating chat widget with ChatButton, ChatPanel, ChannelList, DMList, MessageView components. Chat widget appears on all authenticated pages. Features: 1) View channels list 2) Click channel to view messages 3) Send messages in channels 4) Create new channels 5) View DM threads 6) Start new DM with any user 7) Send/receive DM messages 8) Unread count badge. Test: 1) Login as admin@company.com/password123 2) Click red chat button in bottom-right 3) Verify #general and #announcements channels 4) Click #general to view messages 5) Send a test message 6) Click back, then 'Create Channel' 7) Create a new channel 8) Test 'New Message' to start DM. All features verified via manual screenshots."
   - agent: "main"
     message: "Implemented Document Section feature. Backend: Added document API endpoints for PIN management (setup, verify, change), document operations (upload, list, view, download, delete), storage usage tracking, and admin access to employee documents. Frontend: Created full Documents page for employees with PIN verification flow, left sidebar layout, document management UI, and upload modal. Added AdminEmployeeDocuments component to admin dashboard with expandable employee list and document viewer. Test: 1) Login as employee 2) Click 'Documents' in header 3) Set up 4-digit PIN 4) Verify unlocked state with empty documents 5) Test upload functionality 6) Login as admin 7) Scroll to Employee Documents section 8) Expand an employee to view their documents. Credentials: employee@test.com/password123, admin@company.com/password123"
   - agent: "main"
