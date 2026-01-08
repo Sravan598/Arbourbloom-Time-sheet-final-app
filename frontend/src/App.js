@@ -65,6 +65,14 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/admin/performance" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <PerformanceInsights />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Catch all - redirect to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
