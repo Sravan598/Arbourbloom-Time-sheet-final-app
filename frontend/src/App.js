@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import CursorDot from './components/ui/CursorDot';
 import { CORChat } from './components/chat';
+import { CORBot } from './components/chatbot';
 
 // Pages
 import Home from './pages/Home';
@@ -39,6 +40,9 @@ function App() {
         <CursorDot />
         
         <BrowserRouter>
+          {/* CORBot FAQ chatbot - appears on ALL pages (including public) */}
+          <CORBot />
+          
           {/* CORChat floating widget - appears on all pages when logged in */}
           <ChatWidget />
           
