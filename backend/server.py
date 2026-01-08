@@ -2972,6 +2972,393 @@ async def get_employee_performance(
     }
 
 
+@api_router.get("/admin/performance/export-pdf")
+async def export_performance_pdf(
+    days: int = 30,
+    admin: dict = Depends(require_admin)
+):
+    """Export Performance Insights report as PDF"""
+    now = datetime.now(timezone.utc)
+    start_date = now - timedelta(days=days)
+    
+    # Fetch all performance data
+    # Overview metrics
+    previous_start = start_date - timedelta(days=days)
+    employees = await db.users.find({"role": "EMPLOYEE"}, {"_id": 0}).to_list(1000)
+    total_employees = len(employees)
+    employee_map = {e["id"]: e for e in employees}
+    
+    # Get timesheets
+    current_timesheets = await db.timesheets.find({
+        "clock_in_at": {"$gte": start_date.isoformat()},
+        "clock_out_at": {"$ne": None}
+    }, {"_id": 0}).to_list(10000)
+    
+    previous_timesheets = await db.timesheets.find({
+        "clock_in_at": {"$gte": previous_start.isoformat(), "$lt": start_date.isoformat()},
+        "clock_out_at": {"$ne": None}
+    }, {"_id": 0}).to_list(10000)
+    
+    # Calculate metrics
+    current_total_minutes = sum(ts.get("total_minutes", 0) or 0 for ts in current_timesheets)
+    current_work_days = len(set(ts.get("clock_in_at", "")[:10] for ts in current_timesheets if ts.get("clock_in_at")))
+    
+    previous_total_minutes = sum(ts.get("total_minutes", 0) or 0 for ts in previous_timesheets)
+    previous_work_days = len(set(ts.get("clock_in_at", "")[:10] for ts in previous_timesheets if ts.get("clock_in_at")))
+    
+    avg_hours_current = (current_total_minutes / 60 / max(current_work_days, 1)) if current_work_days > 0 else 0
+    avg_hours_previous = (previous_total_minutes / 60 / max(previous_work_days, 1)) if previous_work_days > 0 else 0
+    avg_hours_change = avg_hours_current - avg_hours_previous
+    
+    # Attendance rate
+    expected_work_days = (days // 7) * 5 + min(days % 7, 5)
+    unique_employee_days = len(set((ts.get("user_id"), ts.get("clock_in_at", "")[:10]) for ts in current_timesheets))
+    expected_total_days = expected_work_days * total_employees
+    attendance_rate = (unique_employee_days / max(expected_total_days, 1)) * 100
+    
+    prev_unique_days = len(set((ts.get("user_id"), ts.get("clock_in_at", "")[:10]) for ts in previous_timesheets))
+    prev_attendance_rate = (prev_unique_days / max(expected_total_days, 1)) * 100
+    attendance_change = attendance_rate - prev_attendance_rate
+    
+    # Breaks
+    current_breaks = await db.breaks.find({
+        "start_time": {"$gte": start_date.isoformat()},
+        "end_time": {"$ne": None}
+    }, {"_id": 0}).to_list(10000)
+    
+    total_break_minutes = 0
+    for b in current_breaks:
+        if b.get("start_time") and b.get("end_time"):
+            try:
+                bstart = datetime.fromisoformat(b["start_time"].replace("Z", "+00:00"))
+                bend = datetime.fromisoformat(b["end_time"].replace("Z", "+00:00"))
+                total_break_minutes += (bend - bstart).total_seconds() / 60
+            except:
+                pass
+    avg_break = total_break_minutes / max(len(current_breaks), 1) if current_breaks else 0
+    
+    # Overtime
+    from collections import defaultdict
+    weekly_hours = defaultdict(lambda: defaultdict(float))
+    for ts in current_timesheets:
+        user_id = ts.get("user_id")
+        if ts.get("clock_in_at"):
+            try:
+                clock_in = datetime.fromisoformat(ts["clock_in_at"].replace("Z", "+00:00"))
+                week_num = clock_in.isocalendar()[1]
+                weekly_hours[user_id][week_num] += (ts.get("total_minutes", 0) or 0) / 60
+            except:
+                pass
+    
+    overtime_employees = set()
+    for user_id, weeks in weekly_hours.items():
+        for week, hours in weeks.items():
+            if hours > 40:
+                overtime_employees.add(user_id)
+    overtime_rate = (len(overtime_employees) / max(total_employees, 1)) * 100
+    
+    # Attendance patterns
+    early_count = 0
+    ontime_count = 0
+    late_count = 0
+    
+    for ts in current_timesheets:
+        if ts.get("clock_in_at"):
+            try:
+                clock_in = datetime.fromisoformat(ts["clock_in_at"].replace("Z", "+00:00"))
+                time_decimal = clock_in.hour + clock_in.minute / 60
+                if time_decimal < 8.5:
+                    early_count += 1
+                elif time_decimal < 9:
+                    ontime_count += 1
+                else:
+                    late_count += 1
+            except:
+                pass
+    
+    total_clockins = early_count + ontime_count + late_count
+    early_pct = round(early_count / max(total_clockins, 1) * 100, 0)
+    ontime_pct = round(ontime_count / max(total_clockins, 1) * 100, 0)
+    late_pct = round(late_count / max(total_clockins, 1) * 100, 0)
+    
+    # Top performers
+    employee_hours = defaultdict(float)
+    for ts in current_timesheets:
+        user_id = ts.get("user_id")
+        if user_id:
+            employee_hours[user_id] += (ts.get("total_minutes", 0) or 0) / 60
+    
+    weeks_in_period = max(days / 7, 1)
+    target_hours = 40 * weeks_in_period
+    
+    performance_list = []
+    for emp_id, hours in employee_hours.items():
+        emp = employee_map.get(emp_id, {})
+        percentage = (hours / target_hours) * 100 if target_hours > 0 else 0
+        performance_list.append({
+            "name": emp.get("name", "Unknown"),
+            "hours": round(hours, 1),
+            "percentage": round(percentage, 0)
+        })
+    
+    sorted_performers = sorted(performance_list, key=lambda x: x["percentage"], reverse=True)
+    top_performers = sorted_performers[:5]
+    needs_attention = [p for p in sorted_performers if p["percentage"] < 90]
+    
+    # Leave analysis
+    leave_requests = await db.leave_requests.find({
+        "status": "APPROVED",
+        "start_date": {"$gte": start_date.strftime("%Y-%m-%d")}
+    }, {"_id": 0}).to_list(1000)
+    
+    leave_by_type = {"VACATION": 0, "SICK": 0, "PERSONAL": 0, "OTHER": 0}
+    for lr in leave_requests:
+        leave_type = lr.get("leave_type", "OTHER")
+        if leave_type in leave_by_type:
+            leave_by_type[leave_type] += 1
+        else:
+            leave_by_type["OTHER"] += 1
+    
+    total_leaves = sum(leave_by_type.values())
+    
+    # Generate PDF
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        alignment=TA_CENTER,
+        spaceAfter=10,
+        textColor=colors.HexColor('#1a1a2e')
+    )
+    
+    subtitle_style = ParagraphStyle(
+        'CustomSubtitle',
+        parent=styles['Normal'],
+        fontSize=12,
+        alignment=TA_CENTER,
+        spaceAfter=20,
+        textColor=colors.HexColor('#666666')
+    )
+    
+    section_style = ParagraphStyle(
+        'SectionHeader',
+        parent=styles['Heading2'],
+        fontSize=14,
+        spaceBefore=20,
+        spaceAfter=10,
+        textColor=colors.HexColor('#C41E3A')
+    )
+    
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontSize=10,
+        spaceAfter=5
+    )
+    
+    elements = []
+    
+    # Header
+    elements.append(Paragraph("CORtracker", title_style))
+    elements.append(Paragraph("PERFORMANCE INSIGHTS REPORT", ParagraphStyle(
+        'ReportTitle',
+        parent=styles['Heading2'],
+        fontSize=16,
+        alignment=TA_CENTER,
+        spaceAfter=15,
+        textColor=colors.HexColor('#333333')
+    )))
+    
+    period_text = f"Period: {start_date.strftime('%b %d, %Y')} - {now.strftime('%b %d, %Y')}"
+    generated_text = f"Generated: {now.strftime('%B %d, %Y at %I:%M %p')}"
+    elements.append(Paragraph(period_text, subtitle_style))
+    elements.append(Paragraph(generated_text, subtitle_style))
+    elements.append(Spacer(1, 20))
+    
+    # Overview Metrics Section
+    elements.append(Paragraph("📊 OVERVIEW METRICS", section_style))
+    
+    overview_data = [
+        ["Metric", "Value", "Change vs Previous Period"],
+        ["Attendance Rate", f"{round(attendance_rate, 1)}%", f"{'↑' if attendance_change >= 0 else '↓'} {abs(round(attendance_change, 1))}%"],
+        ["Avg Hours/Day", f"{round(avg_hours_current, 1)}h", f"{'↑' if avg_hours_change >= 0 else '↓'} {abs(round(avg_hours_change, 1))}h"],
+        ["Avg Break Time", f"{round(avg_break, 0)} min", "-"],
+        ["Overtime Rate", f"{round(overtime_rate, 1)}%", "-"],
+        ["Total Employees", str(total_employees), "-"]
+    ]
+    
+    overview_table = Table(overview_data, colWidths=[2.5*inch, 1.5*inch, 2.5*inch])
+    overview_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#C41E3A')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#dddddd')),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f9f9f9')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f5f5f5')]),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    elements.append(overview_table)
+    elements.append(Spacer(1, 20))
+    
+    # Top Performers Section
+    elements.append(Paragraph("👑 TOP PERFORMERS", section_style))
+    
+    if top_performers:
+        performers_data = [["Rank", "Employee", "Hours Worked", "Target", "Achievement"]]
+        medals = ["🥇", "🥈", "🥉", "4", "5"]
+        for i, p in enumerate(top_performers[:5]):
+            performers_data.append([
+                medals[i] if i < 3 else str(i+1),
+                p["name"],
+                f"{p['hours']}h",
+                f"{round(target_hours, 1)}h",
+                f"{p['percentage']}%"
+            ])
+        
+        performers_table = Table(performers_data, colWidths=[0.7*inch, 2*inch, 1.3*inch, 1.3*inch, 1.2*inch])
+        performers_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#22c55e')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#dddddd')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f0fdf4')]),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ]))
+        elements.append(performers_table)
+    else:
+        elements.append(Paragraph("No performance data available for this period.", normal_style))
+    elements.append(Spacer(1, 20))
+    
+    # Needs Attention Section
+    elements.append(Paragraph("⚠️ NEEDS ATTENTION (Below 90% Target)", section_style))
+    
+    if needs_attention:
+        attention_data = [["Employee", "Hours Worked", "Target", "Achievement", "Status"]]
+        for p in needs_attention[:5]:
+            attention_data.append([
+                p["name"],
+                f"{p['hours']}h",
+                f"{round(target_hours, 1)}h",
+                f"{p['percentage']}%",
+                "Below Target"
+            ])
+        
+        attention_table = Table(attention_data, colWidths=[2*inch, 1.3*inch, 1.3*inch, 1.2*inch, 1.2*inch])
+        attention_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#ef4444')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#dddddd')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#fef2f2')]),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ]))
+        elements.append(attention_table)
+    else:
+        elements.append(Paragraph("✅ All employees are on track! No one needs attention.", normal_style))
+    elements.append(Spacer(1, 20))
+    
+    # Attendance Patterns Section
+    elements.append(Paragraph("📅 ATTENDANCE PATTERNS", section_style))
+    
+    patterns_data = [
+        ["Clock-in Time", "Count", "Percentage"],
+        ["Early (Before 8:30 AM)", str(early_count), f"{early_pct}%"],
+        ["On-time (8:30 - 9:00 AM)", str(ontime_count), f"{ontime_pct}%"],
+        ["Late (After 9:00 AM)", str(late_count), f"{late_pct}%"],
+    ]
+    
+    patterns_table = Table(patterns_data, colWidths=[2.5*inch, 1.5*inch, 1.5*inch])
+    patterns_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#8b5cf6')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#dddddd')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f5f3ff')]),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    elements.append(patterns_table)
+    elements.append(Spacer(1, 20))
+    
+    # Leave Analysis Section
+    elements.append(Paragraph("🏖️ LEAVE ANALYSIS", section_style))
+    
+    leave_data = [
+        ["Leave Type", "Count", "Percentage"],
+        ["Vacation", str(leave_by_type["VACATION"]), f"{round(leave_by_type['VACATION'] / max(total_leaves, 1) * 100, 0)}%"],
+        ["Sick Leave", str(leave_by_type["SICK"]), f"{round(leave_by_type['SICK'] / max(total_leaves, 1) * 100, 0)}%"],
+        ["Personal", str(leave_by_type["PERSONAL"]), f"{round(leave_by_type['PERSONAL'] / max(total_leaves, 1) * 100, 0)}%"],
+        ["Other", str(leave_by_type["OTHER"]), f"{round(leave_by_type['OTHER'] / max(total_leaves, 1) * 100, 0)}%"],
+    ]
+    
+    leave_table = Table(leave_data, colWidths=[2.5*inch, 1.5*inch, 1.5*inch])
+    leave_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f97316')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#dddddd')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#fff7ed')]),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    elements.append(leave_table)
+    elements.append(Spacer(1, 10))
+    elements.append(Paragraph(f"Total Leave Requests: {total_leaves}", normal_style))
+    elements.append(Spacer(1, 30))
+    
+    # Footer
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=9,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor('#999999')
+    )
+    elements.append(Paragraph("─" * 60, footer_style))
+    elements.append(Paragraph("Generated by CORtracker - A 360° ERP Solution", footer_style))
+    elements.append(Paragraph(f"Report Period: {days} days | Total Employees: {total_employees}", footer_style))
+    
+    # Build PDF
+    doc.build(elements)
+    buffer.seek(0)
+    
+    filename = f"CORtracker_Performance_Report_{now.strftime('%Y-%m-%d')}.pdf"
+    
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
 # ============== ANNOUNCEMENT ROUTES ==============
 
 @api_router.post("/admin/announcements", response_model=AnnouncementResponse)
