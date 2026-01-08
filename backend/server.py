@@ -280,6 +280,103 @@ class DailyBreakSummary(BaseModel):
     current_break_start: Optional[datetime] = None
 
 
+# ============== PROJECT/TASK MODELS ==============
+class ProjectStatus(str, Enum):
+    ACTIVE = "ACTIVE"
+    COMPLETED = "COMPLETED"
+    ON_HOLD = "ON_HOLD"
+    ARCHIVED = "ARCHIVED"
+
+
+class Project(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    color: str = "#EF4444"  # Default red color
+    status: ProjectStatus = ProjectStatus.ACTIVE
+    assigned_users: List[str] = []  # List of user IDs
+    estimated_hours: Optional[float] = None
+    total_logged_minutes: int = 0
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class ProjectCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    description: Optional[str] = None
+    color: str = "#EF4444"
+    estimated_hours: Optional[float] = None
+    assigned_users: List[str] = []
+
+
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    color: Optional[str] = None
+    status: Optional[ProjectStatus] = None
+    estimated_hours: Optional[float] = None
+    assigned_users: Optional[List[str]] = None
+
+
+class ProjectResponse(BaseModel):
+    id: str
+    name: str
+    description: Optional[str]
+    color: str
+    status: str
+    assigned_users: List[str]
+    estimated_hours: Optional[float]
+    total_logged_minutes: int
+    created_at: datetime
+
+
+class TimeEntry(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    user_name: Optional[str] = None
+    project_id: str
+    project_name: Optional[str] = None
+    description: Optional[str] = None
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+    is_manual: bool = False  # True if manually entered, False if from timer
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class TimeEntryCreate(BaseModel):
+    project_id: str
+    description: Optional[str] = None
+    # For manual entries:
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+
+
+class TimeEntryResponse(BaseModel):
+    id: str
+    project_id: str
+    project_name: Optional[str]
+    project_color: Optional[str] = None
+    description: Optional[str]
+    start_time: datetime
+    end_time: Optional[datetime]
+    duration_minutes: Optional[int]
+    created_at: datetime
+
+
+class ProjectTimeSummary(BaseModel):
+    project_id: str
+    project_name: str
+    project_color: str
+    total_minutes: int
+    entry_count: int
+
+
 # ============== HELPER FUNCTIONS ==============
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
