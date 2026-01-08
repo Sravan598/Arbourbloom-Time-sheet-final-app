@@ -663,6 +663,8 @@ const AdminTimesheets = () => {
           </motion.div>
         )}
       </AnimatePresence>
+        </main>
+      </div>
     </div>
   );
 };
