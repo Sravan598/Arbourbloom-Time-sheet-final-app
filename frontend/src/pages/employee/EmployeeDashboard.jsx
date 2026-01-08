@@ -400,6 +400,11 @@ const EmployeeDashboard = () => {
           <WeeklyProgressSection />
         </div>
 
+        {/* Announcements Section */}
+        <div className="mt-8">
+          <AnnouncementsSection />
+        </div>
+
         {/* Break Timer & Leave/PTO Sections */}
         <div className="mt-8 grid lg:grid-cols-2 gap-8">
           <BreakTimerSection isClockedIn={isClockedIn} />
