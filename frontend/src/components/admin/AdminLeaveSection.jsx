@@ -8,7 +8,7 @@ import {
   Palmtree,
   Thermometer,
   User,
-  DollarOff,
+  Ban,
   MessageSquare
 } from 'lucide-react';
 import axios from 'axios';
@@ -21,7 +21,7 @@ const leaveTypeIcons = {
   VACATION: Palmtree,
   SICK: Thermometer,
   PERSONAL: User,
-  UNPAID: DollarOff
+  UNPAID: Ban
 };
 
 const leaveTypeColors = {
