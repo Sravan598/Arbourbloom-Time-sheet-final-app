@@ -11,6 +11,7 @@ import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import EmployeeDashboard from './pages/employee/EmployeeDashboard';
 import EmployeeTimesheet from './pages/employee/EmployeeTimesheet';
+import Documents from './pages/employee/Documents';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminTimesheets from './pages/admin/AdminTimesheets';
 import PerformanceInsights from './pages/admin/PerformanceInsights';
@@ -55,6 +56,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="EMPLOYEE">
                   <EmployeeTimesheet />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/employee/documents" 
+              element={
+                <ProtectedRoute requiredRole="EMPLOYEE">
+                  <Documents />
                 </ProtectedRoute>
               } 
             />
