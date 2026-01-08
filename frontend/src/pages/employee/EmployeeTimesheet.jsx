@@ -27,6 +27,7 @@ const API = `${BACKEND_URL}/api`;
 const EmployeeTimesheet = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const profileDropdownRef = useRef(null);
   
   const [timesheets, setTimesheets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +35,8 @@ const EmployeeTimesheet = () => {
   const [endDate, setEndDate] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [profileData, setProfileData] = useState(null);
   
   // Correction request modal
   const [showCorrectionModal, setShowCorrectionModal] = useState(false);
@@ -44,6 +47,30 @@ const EmployeeTimesheet = () => {
     reason: ''
   });
   const [submittingCorrection, setSubmittingCorrection] = useState(false);
+
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get(`${API}/profile`);
+        setProfileData(response.data);
+      } catch (err) {
+        console.error('Failed to fetch profile:', err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const fetchTimesheets = useCallback(async () => {
     setIsLoading(true);
