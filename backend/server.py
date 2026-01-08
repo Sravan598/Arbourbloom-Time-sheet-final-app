@@ -4054,7 +4054,7 @@ async def upload_document(
     try:
         file_bytes = base64.b64decode(document_data.file_data.split(',')[-1] if ',' in document_data.file_data else document_data.file_data)
         file_size = len(file_bytes)
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid file data format")
     
     # Check file size limit
