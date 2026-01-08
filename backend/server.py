@@ -175,6 +175,69 @@ class CorrectionRequestUpdate(BaseModel):
     admin_notes: Optional[str] = None
 
 
+# ============== LEAVE/PTO MODELS ==============
+class LeaveBalance(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    year: int = Field(default_factory=lambda: datetime.now().year)
+    vacation_days: int = 15  # Default annual vacation days
+    sick_days: int = 10  # Default annual sick days
+    personal_days: int = 5  # Default personal days
+    vacation_used: int = 0
+    sick_used: int = 0
+    personal_used: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class LeaveBalanceResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    vacation_total: int
+    vacation_used: int
+    vacation_remaining: int
+    sick_total: int
+    sick_used: int
+    sick_remaining: int
+    personal_total: int
+    personal_used: int
+    personal_remaining: int
+    year: int
+
+
+class LeaveRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    user_name: Optional[str] = None
+    user_email: Optional[str] = None
+    leave_type: LeaveType
+    start_date: datetime
+    end_date: datetime
+    total_days: int
+    reason: str
+    status: LeaveStatus = LeaveStatus.PENDING
+    admin_notes: Optional[str] = None
+    reviewed_by: Optional[str] = None
+    reviewed_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class LeaveRequestCreate(BaseModel):
+    leave_type: LeaveType
+    start_date: datetime
+    end_date: datetime
+    reason: str = Field(..., min_length=5, max_length=500)
+
+
+class LeaveRequestUpdate(BaseModel):
+    status: LeaveStatus
+    admin_notes: Optional[str] = None
+
+
 # ============== HELPER FUNCTIONS ==============
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
