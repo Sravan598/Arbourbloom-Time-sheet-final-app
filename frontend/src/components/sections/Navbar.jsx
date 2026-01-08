@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, LogIn } from 'lucide-react';
 import { Button } from '../ui/Button';
 
@@ -11,12 +12,12 @@ const navLinks = [
 ];
 
 const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -31,7 +32,10 @@ const Navbar = () => {
   };
 
   return (
-    <nav
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled 
           ? 'bg-white/95 backdrop-blur-md shadow-lg' 
@@ -41,48 +45,42 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <a 
+          <motion.a 
             href="/"
             className="flex items-center space-x-2"
+            whileHover={{ scale: 1.02 }}
           >
             <img 
               src="https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png" 
               alt="CORtracker" 
               className="h-10 w-auto"
             />
-          </a>
+          </motion.a>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
-              <button
+              <motion.button
                 key={link.name}
                 onClick={() => scrollToSection(link.href)}
                 className="text-brand-dark hover:text-brand-red font-medium transition-colors"
+                whileHover={{ y: -2 }}
               >
                 {link.name}
-              </button>
+              </motion.button>
             ))}
           </div>
 
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center gap-3">
+          {/* Desktop CTA */}
+          <div className="hidden md:flex items-center space-x-4">
             <Link to="/login">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                data-testid="nav-login-btn"
-              >
+              <Button variant="ghost" size="sm">
                 <LogIn className="w-4 h-4 mr-2" />
                 Login
               </Button>
             </Link>
             <Link to="/signup">
-              <Button 
-                variant="primary" 
-                size="sm"
-                data-testid="nav-signup-btn"
-              >
+              <Button variant="primary" size="sm">
                 Sign Up Free
               </Button>
             </Link>
@@ -90,50 +88,55 @@ const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-brand-dark"
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            data-testid="mobile-menu-btn"
           >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6 text-brand-dark" />
+            ) : (
+              <Menu className="w-6 h-6 text-brand-dark" />
+            )}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100">
-          <div className="px-4 py-4 space-y-2">
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden bg-white border-t border-gray-100"
+          >
+            <div className="px-4 py-4 space-y-2">
               {navLinks.map((link) => (
                 <button
                   key={link.name}
                   onClick={() => scrollToSection(link.href)}
-                  className="block w-full text-left px-4 py-3 text-brand-dark hover:bg-gray-50 rounded-xl font-medium transition-colors"
+                  className="block w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 text-brand-dark font-medium transition-colors"
                 >
                   {link.name}
                 </button>
               ))}
-              <div className="pt-4 space-y-2">
+              <div className="pt-4 border-t border-gray-100 space-y-2">
                 <Link to="/login" className="block">
-                  <Button 
-                    variant="secondary" 
-                    className="w-full"
-                  >
+                  <Button variant="ghost" className="w-full justify-center">
+                    <LogIn className="w-4 h-4 mr-2" />
                     Login
                   </Button>
                 </Link>
                 <Link to="/signup" className="block">
-                  <Button 
-                    variant="primary" 
-                    className="w-full"
-                  >
+                  <Button variant="primary" className="w-full justify-center">
                     Sign Up Free
                   </Button>
                 </Link>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
-    </nav>
+      </AnimatePresence>
+    </motion.nav>
   );
 };
 

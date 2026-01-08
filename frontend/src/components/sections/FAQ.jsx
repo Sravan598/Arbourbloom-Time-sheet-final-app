@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../ui/Accordion';
 
 const faqs = [
@@ -33,7 +34,13 @@ const FAQ = () => {
     <section id="faq" className="py-24 bg-gradient-to-br from-gray-50 to-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
           <span className="text-brand-red font-semibold text-sm uppercase tracking-wider">
             FAQ
           </span>
@@ -43,10 +50,15 @@ const FAQ = () => {
           <p className="mt-4 text-lg text-gray-600">
             Have questions? We have answers.
           </p>
-        </div>
+        </motion.div>
 
         {/* Accordion */}
-        <div>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
           <Accordion>
             {faqs.map((faq, index) => (
               <AccordionItem key={index} value={`faq-${index}`}>
@@ -59,7 +71,7 @@ const FAQ = () => {
               </AccordionItem>
             ))}
           </Accordion>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
