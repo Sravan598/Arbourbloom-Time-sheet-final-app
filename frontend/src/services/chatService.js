@@ -4,7 +4,7 @@ const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 // Create axios instance with auth header
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('cortracker_token');
   return {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json'
