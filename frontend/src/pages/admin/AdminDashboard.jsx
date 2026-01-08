@@ -477,10 +477,11 @@ const AdminDashboard = () => {
         </div>
 
         {/* Employee Documents Section */}
-        <div className="mt-8">
+        <div className="mt-8" ref={documentsRef} id="documents">
           <AdminEmployeeDocuments />
         </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };
