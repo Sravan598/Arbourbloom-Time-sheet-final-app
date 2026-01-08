@@ -342,6 +342,11 @@ const EmployeeDashboard = () => {
           <BreakTimerSection isClockedIn={isClockedIn} />
           <LeavePTOSection />
         </div>
+
+        {/* Project Time Tracking Section */}
+        <div className="mt-8">
+          <ProjectTrackingSection />
+        </div>
       </main>
     </div>
   );
