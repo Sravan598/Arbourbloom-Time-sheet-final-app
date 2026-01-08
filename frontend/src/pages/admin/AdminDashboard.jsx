@@ -20,6 +20,7 @@ import { Button } from '../../components/ui/Button';
 import AdminLeaveSection from '../../components/admin/AdminLeaveSection';
 import AdminProjectsSection from '../../components/admin/AdminProjectsSection';
 import AdminTeamProgressSection from '../../components/admin/AdminTeamProgressSection';
+import AdminAnnouncementsSection from '../../components/admin/AdminAnnouncementsSection';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
