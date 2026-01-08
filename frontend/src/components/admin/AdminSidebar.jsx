@@ -4,10 +4,11 @@ import {
   Home, 
   BarChart3, 
   FileText, 
-  Folder
+  Folder,
+  FolderKanban
 } from 'lucide-react';
 
-const AdminSidebar = ({ onScrollToDocuments }) => {
+const AdminSidebar = ({ onScrollToDocuments, onScrollToProjects }) => {
   const location = useLocation();
   
   const navItems = [
@@ -68,8 +69,27 @@ const AdminSidebar = ({ onScrollToDocuments }) => {
             );
           })}
           
+          {/* Projects - scroll action on dashboard */}
+          {location.pathname === '/admin/dashboard' && onScrollToProjects ? (
+            <button
+              onClick={onScrollToProjects}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-gray-600 hover:bg-gray-50"
+            >
+              <FolderKanban className="w-5 h-5" />
+              <span>Projects</span>
+            </button>
+          ) : (
+            <Link
+              to="/admin/dashboard#projects"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-gray-600 hover:bg-gray-50"
+            >
+              <FolderKanban className="w-5 h-5" />
+              <span>Projects</span>
+            </Link>
+          )}
+          
           {/* Employee Documents - scroll action on dashboard */}
-          {location.pathname === '/admin/dashboard' && onScrollToDocuments && (
+          {location.pathname === '/admin/dashboard' && onScrollToDocuments ? (
             <button
               onClick={onScrollToDocuments}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-gray-600 hover:bg-gray-50"
@@ -77,8 +97,7 @@ const AdminSidebar = ({ onScrollToDocuments }) => {
               <Folder className="w-5 h-5" />
               <span>Employee Docs</span>
             </button>
-          )}
-          {location.pathname !== '/admin/dashboard' && (
+          ) : (
             <Link
               to="/admin/dashboard#documents"
               className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-gray-600 hover:bg-gray-50"
