@@ -853,6 +853,271 @@ async def toggle_user_active(
     return {"id": user_id, "is_active": new_status}
 
 
+# ============== LEAVE/PTO ROUTES ==============
+
+async def get_or_create_leave_balance(user_id: str, year: int = None) -> dict:
+    """Get or create leave balance for a user for a specific year"""
+    if year is None:
+        year = datetime.now().year
+    
+    balance = await db.leave_balances.find_one(
+        {"user_id": user_id, "year": year}, 
+        {"_id": 0}
+    )
+    
+    if not balance:
+        # Create default balance for new year
+        new_balance = LeaveBalance(user_id=user_id, year=year)
+        balance_doc = new_balance.model_dump()
+        balance_doc["created_at"] = balance_doc["created_at"].isoformat()
+        balance_doc["updated_at"] = balance_doc["updated_at"].isoformat()
+        await db.leave_balances.insert_one(balance_doc)
+        balance = balance_doc
+    
+    return balance
+
+
+def calculate_business_days(start_date: datetime, end_date: datetime) -> int:
+    """Calculate number of business days between two dates (excluding weekends)"""
+    days = 0
+    current = start_date
+    while current <= end_date:
+        if current.weekday() < 5:  # Monday = 0, Friday = 4
+            days += 1
+        current += timedelta(days=1)
+    return days
+
+
+@api_router.get("/leave/balance", response_model=LeaveBalanceResponse)
+async def get_my_leave_balance(current_user: dict = Depends(get_current_user)):
+    """Get current user's leave balance for the current year"""
+    year = datetime.now().year
+    balance = await get_or_create_leave_balance(current_user["id"], year)
+    
+    return LeaveBalanceResponse(
+        vacation_total=balance.get("vacation_days", 15),
+        vacation_used=balance.get("vacation_used", 0),
+        vacation_remaining=balance.get("vacation_days", 15) - balance.get("vacation_used", 0),
+        sick_total=balance.get("sick_days", 10),
+        sick_used=balance.get("sick_used", 0),
+        sick_remaining=balance.get("sick_days", 10) - balance.get("sick_used", 0),
+        personal_total=balance.get("personal_days", 5),
+        personal_used=balance.get("personal_used", 0),
+        personal_remaining=balance.get("personal_days", 5) - balance.get("personal_used", 0),
+        year=year
+    )
+
+
+@api_router.post("/leave/request", response_model=LeaveRequest)
+async def create_leave_request(
+    request_data: LeaveRequestCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Submit a new leave request"""
+    # Calculate business days
+    total_days = calculate_business_days(request_data.start_date, request_data.end_date)
+    
+    if total_days <= 0:
+        raise HTTPException(status_code=400, detail="Invalid date range")
+    
+    # Check if user has enough balance
+    year = request_data.start_date.year
+    balance = await get_or_create_leave_balance(current_user["id"], year)
+    
+    leave_type = request_data.leave_type
+    if leave_type == LeaveType.VACATION:
+        remaining = balance.get("vacation_days", 15) - balance.get("vacation_used", 0)
+    elif leave_type == LeaveType.SICK:
+        remaining = balance.get("sick_days", 10) - balance.get("sick_used", 0)
+    elif leave_type == LeaveType.PERSONAL:
+        remaining = balance.get("personal_days", 5) - balance.get("personal_used", 0)
+    else:  # UNPAID
+        remaining = 999  # No limit for unpaid leave
+    
+    if total_days > remaining and leave_type != LeaveType.UNPAID:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Insufficient {leave_type.value.lower()} days. You have {remaining} days remaining."
+        )
+    
+    # Check for overlapping requests
+    existing = await db.leave_requests.find_one({
+        "user_id": current_user["id"],
+        "status": {"$in": ["PENDING", "APPROVED"]},
+        "$or": [
+            {"start_date": {"$lte": request_data.end_date.isoformat()}, "end_date": {"$gte": request_data.start_date.isoformat()}}
+        ]
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="You already have a leave request for overlapping dates")
+    
+    # Create leave request
+    leave_request = LeaveRequest(
+        user_id=current_user["id"],
+        user_name=current_user.get("name"),
+        user_email=current_user.get("email"),
+        leave_type=leave_type,
+        start_date=request_data.start_date,
+        end_date=request_data.end_date,
+        total_days=total_days,
+        reason=request_data.reason
+    )
+    
+    request_doc = leave_request.model_dump()
+    request_doc["start_date"] = request_doc["start_date"].isoformat()
+    request_doc["end_date"] = request_doc["end_date"].isoformat()
+    request_doc["created_at"] = request_doc["created_at"].isoformat()
+    
+    await db.leave_requests.insert_one(request_doc)
+    
+    return leave_request
+
+
+@api_router.get("/leave/requests", response_model=List[LeaveRequest])
+async def get_my_leave_requests(current_user: dict = Depends(get_current_user)):
+    """Get current user's leave requests"""
+    requests = await db.leave_requests.find(
+        {"user_id": current_user["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    # Convert date strings back to datetime
+    for req in requests:
+        for field in ["start_date", "end_date", "created_at", "reviewed_at"]:
+            if field in req and isinstance(req[field], str):
+                try:
+                    req[field] = datetime.fromisoformat(req[field])
+                except (ValueError, TypeError):
+                    pass
+    
+    return requests
+
+
+@api_router.delete("/leave/request/{request_id}")
+async def cancel_leave_request(
+    request_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Cancel a pending leave request"""
+    leave_request = await db.leave_requests.find_one(
+        {"id": request_id, "user_id": current_user["id"]},
+        {"_id": 0}
+    )
+    
+    if not leave_request:
+        raise HTTPException(status_code=404, detail="Leave request not found")
+    
+    if leave_request.get("status") != "PENDING":
+        raise HTTPException(status_code=400, detail="Can only cancel pending requests")
+    
+    await db.leave_requests.update_one(
+        {"id": request_id},
+        {"$set": {"status": "CANCELLED"}}
+    )
+    
+    return {"message": "Leave request cancelled successfully"}
+
+
+# Admin Leave Management
+@api_router.get("/admin/leave/requests", response_model=List[LeaveRequest])
+async def get_all_leave_requests(
+    status: Optional[str] = None,
+    admin: dict = Depends(require_admin)
+):
+    """Get all leave requests (admin only)"""
+    query = {}
+    if status:
+        query["status"] = status.upper()
+    
+    requests = await db.leave_requests.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    
+    # Convert date strings back to datetime
+    for req in requests:
+        for field in ["start_date", "end_date", "created_at", "reviewed_at"]:
+            if field in req and isinstance(req[field], str):
+                try:
+                    req[field] = datetime.fromisoformat(req[field])
+                except (ValueError, TypeError):
+                    pass
+    
+    return requests
+
+
+@api_router.put("/admin/leave/request/{request_id}")
+async def review_leave_request(
+    request_id: str,
+    update_data: LeaveRequestUpdate,
+    admin: dict = Depends(require_admin)
+):
+    """Approve or reject a leave request (admin only)"""
+    leave_request = await db.leave_requests.find_one({"id": request_id}, {"_id": 0})
+    
+    if not leave_request:
+        raise HTTPException(status_code=404, detail="Leave request not found")
+    
+    if leave_request.get("status") != "PENDING":
+        raise HTTPException(status_code=400, detail="Can only review pending requests")
+    
+    # Update the request
+    update_fields = {
+        "status": update_data.status.value,
+        "reviewed_by": admin["id"],
+        "reviewed_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    if update_data.admin_notes:
+        update_fields["admin_notes"] = update_data.admin_notes
+    
+    await db.leave_requests.update_one(
+        {"id": request_id},
+        {"$set": update_fields}
+    )
+    
+    # If approved, update the user's leave balance
+    if update_data.status == LeaveStatus.APPROVED:
+        user_id = leave_request["user_id"]
+        leave_type = leave_request["leave_type"]
+        total_days = leave_request["total_days"]
+        
+        # Parse start_date to get the year
+        start_date = leave_request["start_date"]
+        if isinstance(start_date, str):
+            start_date = datetime.fromisoformat(start_date)
+        year = start_date.year
+        
+        # Get or create balance
+        balance = await get_or_create_leave_balance(user_id, year)
+        
+        # Update the used days based on leave type
+        if leave_type == "VACATION":
+            field = "vacation_used"
+        elif leave_type == "SICK":
+            field = "sick_used"
+        elif leave_type == "PERSONAL":
+            field = "personal_used"
+        else:
+            field = None
+        
+        if field:
+            await db.leave_balances.update_one(
+                {"user_id": user_id, "year": year},
+                {
+                    "$inc": {field: total_days},
+                    "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
+                }
+            )
+    
+    return {"message": f"Leave request {update_data.status.value.lower()}"}
+
+
+@api_router.get("/admin/leave/pending-count")
+async def get_pending_leave_count(admin: dict = Depends(require_admin)):
+    """Get count of pending leave requests"""
+    count = await db.leave_requests.count_documents({"status": "PENDING"})
+    return {"pending_count": count}
+
+
 # ============== LEGACY ROUTES ==============
 class StatusCheck(BaseModel):
     model_config = ConfigDict(extra="ignore")
