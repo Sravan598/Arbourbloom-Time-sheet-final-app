@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://cortime-tracker.preview.emergentagent.com/api"
+BASE_URL = "https://realtime-corchat.preview.emergentagent.com/api"
 
 # Test credentials
 EMPLOYEE_CREDENTIALS = {
