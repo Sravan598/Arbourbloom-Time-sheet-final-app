@@ -977,6 +977,29 @@ async def admin_create_employee(
     )
 
 
+@api_router.get("/admin/users", response_model=List[UserResponse])
+async def get_all_users(admin: dict = Depends(require_admin)):
+    """Get all users (admin only)"""
+    users = await db.users.find({}, {"_id": 0, "password_hash": 0}).sort("created_at", -1).to_list(500)
+    
+    result = []
+    for u in users:
+        created_at = u.get("created_at")
+        if isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at)
+        
+        result.append(UserResponse(
+            id=u["id"],
+            name=u["name"],
+            email=u["email"],
+            role=u.get("role", "EMPLOYEE"),
+            is_active=u.get("is_active", True),
+            created_at=created_at
+        ))
+    
+    return result
+
+
 @api_router.put("/admin/users/{user_id}/toggle-active")
 async def toggle_user_active(
     user_id: str,
