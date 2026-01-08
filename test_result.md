@@ -174,11 +174,14 @@ frontend:
     file: "/app/frontend/src/components/employee/AnnouncementsSection.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Employee can view announcements, expand to read full content, auto marks as read when expanded. Shows unread count badge, priority badges (color-coded), pinned indicator, relative timestamps."
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: Employee announcements functionality working. ✅ Announcements section visible with megaphone icon ✅ Unread count badge (red circle with number) displays correctly ✅ Section is collapsible/expandable ✅ Announcements display with proper formatting ✅ Click functionality works for expanding announcements ✅ Priority badges, pin icons, and timestamps are implemented"
 
   - task: "Home Page - Hero Section"
     implemented: true
