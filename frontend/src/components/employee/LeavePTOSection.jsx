@@ -11,7 +11,7 @@ import {
   Palmtree,
   Thermometer,
   User,
-  DollarOff
+  Ban
 } from 'lucide-react';
 import axios from 'axios';
 import { Button } from '../../components/ui/Button';
@@ -23,7 +23,7 @@ const leaveTypeIcons = {
   VACATION: Palmtree,
   SICK: Thermometer,
   PERSONAL: User,
-  UNPAID: DollarOff
+  UNPAID: Ban
 };
 
 const leaveTypeColors = {
