@@ -143,9 +143,27 @@ const WeeklyProgressSection = () => {
           <TrendingUp className="w-6 h-6 text-brand-red" />
           <h2 className="text-xl font-bold text-brand-dark">Weekly Progress</h2>
         </div>
-        <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${config.bgColor}`}>
-          <StatusIcon className={`w-4 h-4 ${config.color}`} />
-          <span className={`text-sm font-medium ${config.color}`}>{config.label}</span>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => handleExportPDF(0)}
+            variant="secondary"
+            size="sm"
+            disabled={exporting}
+            data-testid="export-pdf-btn"
+          >
+            {exporting ? (
+              <div className="w-4 h-4 border-2 border-brand-red border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>
+                <Download className="w-4 h-4 mr-1" />
+                Export PDF
+              </>
+            )}
+          </Button>
+          <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${config.bgColor}`}>
+            <StatusIcon className={`w-4 h-4 ${config.color}`} />
+            <span className={`text-sm font-medium ${config.color}`}>{config.label}</span>
+          </div>
         </div>
       </div>
 
