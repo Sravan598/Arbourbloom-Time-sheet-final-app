@@ -504,7 +504,8 @@ const EmployeeDashboard = () => {
           <BreakTimerSection isClockedIn={isClockedIn} />
           <LeavePTOSection />
         </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };
