@@ -144,35 +144,35 @@ frontend:
     file: "/app/frontend/src/pages/employee/EmployeeDashboard.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
-        comment: "Implemented Quick Notes feature: 1) Added toggle button 'Add a quick note (optional)' 2) Added textarea with placeholder and 200 char limit 3) Notes sent to backend on clock in/out 4) Notes displayed in Today's Activity section with MessageSquare icon"
+        comment: "Quick Notes feature completed and verified"
 
-  - task: "Employee Timesheet Notes Display"
+  - task: "Admin Announcements Section"
     implemented: true
     working: true
-    file: "/app/frontend/src/pages/employee/EmployeeTimesheet.jsx"
+    file: "/app/frontend/src/components/admin/AdminAnnouncementsSection.jsx"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "Added Notes column to employee timesheet table. Notes displayed with MessageSquare icon and truncation for long notes."
+        comment: "Admin can create, edit, delete announcements. Modal form with title, message, priority (Normal/Important/Urgent), pin option, expiration date. Shows read count and expiry status."
 
-  - task: "Admin Timesheet Notes Display"
+  - task: "Employee Announcements Section"
     implemented: true
     working: true
-    file: "/app/frontend/src/pages/admin/AdminTimesheets.jsx"
+    file: "/app/frontend/src/components/employee/AnnouncementsSection.jsx"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "Added Notes column to admin timesheets table. Notes displayed with MessageSquare icon and truncation. Admin can also edit notes via Edit modal."
+        comment: "Employee can view announcements, expand to read full content, auto marks as read when expanded. Shows unread count badge, priority badges (color-coded), pinned indicator, relative timestamps."
 
   - task: "Home Page - Hero Section"
     implemented: true
