@@ -6,7 +6,6 @@ import {
   LogOut, 
   Play, 
   Square, 
-  FileText, 
   Timer,
   CheckCircle,
   AlertCircle,
@@ -14,8 +13,7 @@ import {
   MessageSquare,
   User,
   ChevronDown,
-  Settings,
-  Folder
+  Settings
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -24,6 +22,7 @@ import LeavePTOSection from '../../components/employee/LeavePTOSection';
 import BreakTimerSection from '../../components/employee/BreakTimerSection';
 import WeeklyProgressSection from '../../components/employee/WeeklyProgressSection';
 import AnnouncementsSection from '../../components/employee/AnnouncementsSection';
+import EmployeeSidebar from '../../components/employee/EmployeeSidebar';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
