@@ -331,11 +331,19 @@ const EmployeeDocs = () => {
                     className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-brand-red to-brand-red-dark rounded-xl flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">
-                          {emp.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
+                      {emp.profile_image ? (
+                        <img 
+                          src={emp.profile_image} 
+                          alt={emp.name}
+                          className="w-12 h-12 rounded-xl object-cover border-2 border-gray-200"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gradient-to-br from-brand-red to-brand-red-dark rounded-xl flex items-center justify-center">
+                          <span className="text-white font-bold text-lg">
+                            {emp.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
                       <div className="text-left">
                         <p className="font-semibold text-brand-dark text-lg">{emp.name}</p>
                         <p className="text-gray-500">{emp.email}</p>
