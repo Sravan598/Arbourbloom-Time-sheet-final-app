@@ -98,9 +98,45 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "CORtracker time-tracking application - Performance Insights feature"
+user_problem_statement: "CORtracker time-tracking application - Document Section feature"
 
 backend:
+  - task: "Document Section - PIN Setup/Verify API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented: POST /api/documents/setup-pin, POST /api/documents/verify-pin, PUT /api/documents/change-pin, GET /api/documents/pin-status. Verified via curl - all endpoints return expected responses."
+
+  - task: "Document Section - Upload/Download/Delete API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented: POST /api/documents/upload, GET /api/documents, GET /api/documents/{id}, DELETE /api/documents/{id}, GET /api/documents/storage-usage. Includes 10MB file limit and 500MB user storage limit validation."
+
+  - task: "Document Section - Admin Access API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented: GET /api/admin/employees/{id}/documents, GET /api/admin/employees/{id}/documents/{doc_id}, GET /api/admin/employees/{id}/storage-usage. Admin can view and download employee documents."
+
   - task: "User Authentication (Login/Signup)"
     implemented: true
     working: true
@@ -153,6 +189,30 @@ backend:
         comment: "VERIFIED: All Performance Insights API endpoints working correctly. ✅ GET /api/admin/performance/overview?days=30 - 200 OK ✅ GET /api/admin/performance/weekly-trends?weeks=8 - 200 OK ✅ GET /api/admin/performance/attendance-patterns?days=30 - 200 OK ✅ GET /api/admin/performance/top-performers?days=30 - 200 OK ✅ GET /api/admin/performance/leave-analysis?days=30 - 200 OK ✅ Period selector changes (7/30/90 days) trigger correct API calls with updated parameters ✅ All endpoints return proper data structure and status codes"
 
 frontend:
+  - task: "Document Section - Employee UI"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/employee/Documents.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Created full Documents page with: 1) PIN setup screen for first-time users 2) PIN verification screen for returning users 3) Left sidebar layout with Dashboard, My Documents, Security Settings 4) Storage usage indicator 5) Document upload modal with category and description 6) Document grid with view/download/delete actions 7) Document viewer modal for images and PDFs."
+
+  - task: "Document Section - Admin UI"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/admin/AdminEmployeeDocuments.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Created AdminEmployeeDocuments component with: 1) Expandable employee list 2) Storage usage per employee 3) Document list with view/download actions 4) Document viewer modal. Added to AdminDashboard.jsx."
+
   - task: "Quick Notes for Clock In/Out"
     implemented: true
     working: true
@@ -241,12 +301,19 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Document Section - PIN Setup/Verify API"
+    - "Document Section - Upload/Download/Delete API"
+    - "Document Section - Admin Access API"
+    - "Document Section - Employee UI"
+    - "Document Section - Admin UI"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
+  - agent: "main"
+    message: "Implemented Document Section feature. Backend: Added document API endpoints for PIN management (setup, verify, change), document operations (upload, list, view, download, delete), storage usage tracking, and admin access to employee documents. Frontend: Created full Documents page for employees with PIN verification flow, left sidebar layout, document management UI, and upload modal. Added AdminEmployeeDocuments component to admin dashboard with expandable employee list and document viewer. Test: 1) Login as employee 2) Click 'Documents' in header 3) Set up 4-digit PIN 4) Verify unlocked state with empty documents 5) Test upload functionality 6) Login as admin 7) Scroll to Employee Documents section 8) Expand an employee to view their documents. Credentials: employee@test.com/password123, admin@company.com/password123"
   - agent: "main"
     message: "Implemented Performance Insights feature. Backend: Added 6 new API endpoints under /api/admin/performance/ for overview metrics, weekly trends, attendance patterns, top performers, leave analysis, and individual employee performance. Frontend: Created PerformanceInsights.jsx page with full analytics dashboard including: 4 metric cards with trend indicators, weekly hours bar chart, clock-in distribution bars, top performers with medals, needs attention alerts, leave analysis with utilization progress. Added route /admin/performance and Insights navigation link. Test: 1) Login as admin 2) Click 'Insights' in header 3) Verify all sections load with data 4) Try changing period (7/30/90 days). Credentials: admin@company.com/password123"
   - agent: "testing"
