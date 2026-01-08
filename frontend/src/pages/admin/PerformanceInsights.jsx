@@ -190,18 +190,16 @@ const PerformanceInsights = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Link 
-                to="/admin/dashboard"
-                className="p-2 text-gray-500 hover:text-brand-dark hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Link>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Left Sidebar */}
+      <AdminSidebar />
+
+      {/* Main Content Area */}
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <header className="bg-white shadow-sm sticky top-0 z-30">
+          <div className="px-8 py-4">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-brand-red to-brand-red-dark rounded-xl flex items-center justify-center">
                   <BarChart3 className="w-5 h-5 text-white" />
@@ -211,53 +209,125 @@ const PerformanceInsights = () => {
                   <p className="text-sm text-gray-500">Analytics & Trends</p>
                 </div>
               </div>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              {/* Period Selector */}
-              <div className="relative">
-                <select
-                  value={period}
-                  onChange={(e) => setPeriod(Number(e.target.value))}
-                  className="appearance-none bg-gray-100 border-0 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-brand-dark focus:ring-2 focus:ring-brand-red"
+              
+              <div className="flex items-center gap-4">
+                {/* Period Selector */}
+                <div className="relative">
+                  <select
+                    value={period}
+                    onChange={(e) => setPeriod(Number(e.target.value))}
+                    className="appearance-none bg-gray-100 border-0 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-brand-dark focus:ring-2 focus:ring-brand-red"
+                  >
+                    <option value={7}>Last 7 days</option>
+                    <option value={30}>Last 30 days</option>
+                    <option value={90}>Last 90 days</option>
+                  </select>
+                  <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                </div>
+                
+                {/* Export PDF Button */}
+                <Button 
+                  variant="primary" 
+                  size="sm" 
+                  onClick={handleExportPDF}
+                  disabled={isExporting}
                 >
-                  <option value={7}>Last 7 days</option>
-                  <option value={30}>Last 30 days</option>
-                  <option value={90}>Last 90 days</option>
-                </select>
-                <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                  {isExporting ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  ) : (
+                    <Download className="w-4 h-4 mr-2" />
+                  )}
+                  {isExporting ? 'Exporting...' : 'Export PDF'}
+                </Button>
+                
+                {/* Profile Dropdown */}
+                <div className="relative" ref={profileDropdownRef}>
+                  <button
+                    onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                    className="flex items-center gap-2 hover:bg-gray-100 rounded-full py-1 pl-1 pr-3 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 border-2 border-purple-200">
+                      {profileData?.profile_image ? (
+                        <img 
+                          src={profileData.profile_image} 
+                          alt={profileData?.name || user?.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-700">
+                          <span className="text-sm font-bold text-white">
+                            {(profileData?.name || user?.name)?.charAt(0)?.toUpperCase() || 'A'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="hidden sm:inline font-medium text-brand-dark text-sm">
+                      {profileData?.name || user?.name}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showProfileDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  <AnimatePresence>
+                    {showProfileDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50"
+                      >
+                        <div className="px-4 py-3 border-b border-gray-100">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">Admin</span>
+                          </div>
+                          <p className="font-semibold text-brand-dark mt-1">{profileData?.name || user?.name}</p>
+                          <p className="text-sm text-gray-500 truncate">{profileData?.email || user?.email}</p>
+                        </div>
+                        <div className="py-1">
+                          <Link
+                            to="/profile"
+                            onClick={() => setShowProfileDropdown(false)}
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <User className="w-4 h-4" />
+                            <span>My Profile</span>
+                          </Link>
+                          <Link
+                            to="/profile"
+                            onClick={() => setShowProfileDropdown(false)}
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <Settings className="w-4 h-4" />
+                            <span>Settings</span>
+                          </Link>
+                        </div>
+                        <div className="border-t border-gray-100 pt-1">
+                          <button
+                            onClick={() => {
+                              setShowProfileDropdown(false);
+                              handleLogout();
+                            }}
+                            className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            <span>Logout</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
-              
-              {/* Export PDF Button */}
-              <Button 
-                variant="primary" 
-                size="sm" 
-                onClick={handleExportPDF}
-                disabled={isExporting}
-              >
-                {isExporting ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                ) : (
-                  <Download className="w-4 h-4 mr-2" />
-                )}
-                {isExporting ? 'Exporting...' : 'Export PDF'}
-              </Button>
-              
-              <Button variant="secondary" size="sm" onClick={handleLogout}>
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Overview Metrics */}
-        {overview && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <MetricCard
-              title="Attendance Rate"
+        <main className="p-8">
+          {/* Overview Metrics */}
+          {overview && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <MetricCard
+                title="Attendance Rate"
               value={overview.attendance_rate}
               unit="%"
               change={overview.attendance_change}
