@@ -311,9 +311,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Document Section - PIN Setup/Verify API"
-    - "Document Section - Upload/Download/Delete API"
-    - "Document Section - Admin Access API"
     - "Document Section - Employee UI"
     - "Document Section - Admin UI"
   stuck_tasks: []
