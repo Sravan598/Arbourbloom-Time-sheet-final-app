@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ArrowLeft, 
   LogOut, 
   Calendar,
   Clock,
@@ -12,11 +11,15 @@ import {
   CheckCircle,
   Send,
   X,
-  MessageSquare
+  MessageSquare,
+  User,
+  ChevronDown,
+  Settings
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
+import EmployeeSidebar from '../../components/employee/EmployeeSidebar';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
