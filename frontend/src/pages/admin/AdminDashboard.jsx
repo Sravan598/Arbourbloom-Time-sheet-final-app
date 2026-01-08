@@ -13,7 +13,8 @@ import {
   CheckCircle,
   XCircle,
   MoreVertical,
-  BarChart3
+  BarChart3,
+  User
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
