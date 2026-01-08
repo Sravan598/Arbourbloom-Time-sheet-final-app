@@ -17,7 +17,6 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import LeavePTOSection from '../../components/employee/LeavePTOSection';
 import BreakTimerSection from '../../components/employee/BreakTimerSection';
-import ProjectTrackingSection from '../../components/employee/ProjectTrackingSection';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -341,11 +340,6 @@ const EmployeeDashboard = () => {
         <div className="mt-8 grid lg:grid-cols-2 gap-8">
           <BreakTimerSection isClockedIn={isClockedIn} />
           <LeavePTOSection />
-        </div>
-
-        {/* Project Time Tracking Section */}
-        <div className="mt-8">
-          <ProjectTrackingSection />
         </div>
       </main>
     </div>
