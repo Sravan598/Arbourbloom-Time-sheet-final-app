@@ -8,7 +8,7 @@ import {
   FolderKanban
 } from 'lucide-react';
 
-const AdminSidebar = ({ onScrollToDocuments }) => {
+const AdminSidebar = () => {
   const location = useLocation();
   
   const navItems = [
@@ -31,6 +31,11 @@ const AdminSidebar = ({ onScrollToDocuments }) => {
       path: '/admin/projects', 
       label: 'Projects', 
       icon: FolderKanban 
+    },
+    { 
+      path: '/admin/employee-docs', 
+      label: 'Employee Docs', 
+      icon: Folder 
     }
   ];
 
@@ -73,25 +78,6 @@ const AdminSidebar = ({ onScrollToDocuments }) => {
               </Link>
             );
           })}
-          
-          {/* Employee Documents - scroll action on dashboard */}
-          {location.pathname === '/admin/dashboard' && onScrollToDocuments ? (
-            <button
-              onClick={onScrollToDocuments}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-gray-600 hover:bg-gray-50"
-            >
-              <Folder className="w-5 h-5" />
-              <span>Employee Docs</span>
-            </button>
-          ) : (
-            <Link
-              to="/admin/dashboard#documents"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-gray-600 hover:bg-gray-50"
-            >
-              <Folder className="w-5 h-5" />
-              <span>Employee Docs</span>
-            </Link>
-          )}
         </div>
         
         {/* Admin Badge */}
