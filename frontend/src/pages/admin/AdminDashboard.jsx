@@ -22,7 +22,6 @@ import { Button } from '../../components/ui/Button';
 import AdminLeaveSection from '../../components/admin/AdminLeaveSection';
 import AdminTeamProgressSection from '../../components/admin/AdminTeamProgressSection';
 import AdminAnnouncementsSection from '../../components/admin/AdminAnnouncementsSection';
-import AdminEmployeeDocuments from '../../components/admin/AdminEmployeeDocuments';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
