@@ -56,6 +56,20 @@ class CorrectionStatus(str, Enum):
     REJECTED = "REJECTED"
 
 
+class LeaveType(str, Enum):
+    VACATION = "VACATION"
+    SICK = "SICK"
+    PERSONAL = "PERSONAL"
+    UNPAID = "UNPAID"
+
+
+class LeaveStatus(str, Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+    CANCELLED = "CANCELLED"
+
+
 # ============== MODELS ==============
 class UserBase(BaseModel):
     model_config = ConfigDict(extra="ignore")
