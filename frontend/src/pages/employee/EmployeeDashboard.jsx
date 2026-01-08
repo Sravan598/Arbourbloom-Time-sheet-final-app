@@ -193,36 +193,20 @@ const EmployeeDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <img 
-                src="https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png" 
-                alt="CORtracker" 
-                className="h-8"
-              />
-              <div className="hidden sm:block border-l border-gray-200 pl-4">
-                <p className="text-sm text-gray-500">Employee Dashboard</p>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Left Sidebar */}
+      <EmployeeSidebar />
+
+      {/* Main Content Area */}
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <header className="bg-white shadow-sm sticky top-0 z-30">
+          <div className="px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-bold text-brand-dark">Dashboard</h1>
+                <p className="text-sm text-gray-500">Welcome back, {profileData?.name || user?.name}</p>
               </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link 
-                to="/employee/documents" 
-                className="flex items-center gap-2 text-gray-600 hover:text-brand-red transition-colors"
-              >
-                <Folder className="w-5 h-5" />
-                <span className="hidden sm:inline">Documents</span>
-              </Link>
-              <Link 
-                to="/employee/timesheet" 
-                className="flex items-center gap-2 text-gray-600 hover:text-brand-red transition-colors"
-              >
-                <FileText className="w-5 h-5" />
-                <span className="hidden sm:inline">My Timesheet</span>
-              </Link>
               
               {/* Profile Dropdown */}
               <div className="relative" ref={profileDropdownRef}>
@@ -308,11 +292,10 @@ const EmployeeDashboard = () => {
               </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Main Content */}
+        <main className="p-8">
         {/* Status Messages */}
         {error && (
           <motion.div
