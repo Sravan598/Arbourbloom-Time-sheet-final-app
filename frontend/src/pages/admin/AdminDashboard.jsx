@@ -30,9 +30,7 @@ const AdminDashboard = () => {
   const profileDropdownRef = useRef(null);
   
   const [stats, setStats] = useState(null);
-  const [employees, setEmployees] = useState([]);
   const [pendingCorrections, setPendingCorrections] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
