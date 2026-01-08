@@ -17,6 +17,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import LeavePTOSection from '../../components/employee/LeavePTOSection';
 import BreakTimerSection from '../../components/employee/BreakTimerSection';
+import ProjectTrackingSection from '../../components/employee/ProjectTrackingSection';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
