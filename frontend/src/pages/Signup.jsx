@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, User, KeyRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
@@ -96,7 +97,12 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/">
@@ -114,12 +120,15 @@ const Signup = () => {
         <div className="bg-white rounded-3xl shadow-xl p-8">
           {/* Error Message */}
           {(error || localError) && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start gap-3"
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start gap-3"
               data-testid="signup-error"
             >
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
               <p className="text-red-700 text-sm">{localError || error}</p>
-            </div>
+            </motion.div>
           )}
 
           {/* Form */}
@@ -239,7 +248,11 @@ const Signup = () => {
               </button>
               
               {showAdminCode && (
-                <div className="mt-3">
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="mt-3"
+                >
                   <div className="relative">
                     <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
@@ -255,7 +268,7 @@ const Signup = () => {
                   <p className="mt-1 text-xs text-gray-500">
                     Leave empty to sign up as an Employee
                   </p>
-                </div>
+                </motion.div>
               )}
             </div>
 
@@ -294,7 +307,7 @@ const Signup = () => {
             ← Back to Home
           </Link>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
