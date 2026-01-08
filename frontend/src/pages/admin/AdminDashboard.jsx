@@ -18,6 +18,7 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import AdminLeaveSection from '../../components/admin/AdminLeaveSection';
+import AdminProjectsSection from '../../components/admin/AdminProjectsSection';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
