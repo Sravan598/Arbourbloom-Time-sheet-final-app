@@ -255,6 +255,40 @@ const EmployeeDashboard = () => {
                 <p className="text-gray-500 mb-6">Click the button below to start your shift</p>
               )}
               
+              {/* Quick Notes Toggle */}
+              <div className="mb-4">
+                <button
+                  onClick={() => setShowNoteInput(!showNoteInput)}
+                  className="flex items-center gap-2 text-sm text-gray-500 hover:text-brand-red transition-colors mx-auto"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  {showNoteInput ? 'Hide note' : 'Add a quick note (optional)'}
+                </button>
+              </div>
+
+              {/* Note Input */}
+              {showNoteInput && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mb-4 w-full max-w-xs mx-auto"
+                >
+                  <textarea
+                    value={isClockedIn ? clockOutNote : clockInNote}
+                    onChange={(e) => isClockedIn ? setClockOutNote(e.target.value) : setClockInNote(e.target.value)}
+                    placeholder={isClockedIn ? "Note for clocking out (e.g., 'Finished quarterly report')" : "Note for clocking in (e.g., 'Starting on project X')"}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent resize-none text-sm"
+                    rows={2}
+                    maxLength={200}
+                    data-testid="clock-note-input"
+                  />
+                  <p className="text-xs text-gray-400 mt-1 text-right">
+                    {(isClockedIn ? clockOutNote : clockInNote).length}/200
+                  </p>
+                </motion.div>
+              )}
+
               {isClockedIn ? (
                 <Button
                   onClick={handleClockOut}
@@ -317,24 +351,35 @@ const EmployeeDashboard = () => {
                 {todayPunches.map((punch, index) => (
                   <div 
                     key={punch.id || index}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
+                    className="p-4 bg-gray-50 rounded-xl"
                   >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${punch.clock_out_at ? 'bg-gray-400' : 'bg-green-500'}`} />
-                        <span className="font-medium text-brand-dark">
-                          {punch.clock_out_at ? 'Completed Shift' : 'Active Shift'}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${punch.clock_out_at ? 'bg-gray-400' : 'bg-green-500'}`} />
+                          <span className="font-medium text-brand-dark">
+                            {punch.clock_out_at ? 'Completed Shift' : 'Active Shift'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {new Date(punch.clock_in_at).toLocaleTimeString()} - {punch.clock_out_at ? new Date(punch.clock_out_at).toLocaleTimeString() : 'In Progress'}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-semibold text-brand-dark">
+                          {punch.total_minutes ? formatDuration(punch.total_minutes) : '-'}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {new Date(punch.clock_in_at).toLocaleTimeString()} - {punch.clock_out_at ? new Date(punch.clock_out_at).toLocaleTimeString() : 'In Progress'}
-                      </p>
                     </div>
-                    <div className="text-right">
-                      <span className="font-semibold text-brand-dark">
-                        {punch.total_minutes ? formatDuration(punch.total_minutes) : '-'}
-                      </span>
-                    </div>
+                    {/* Display Notes */}
+                    {punch.notes && (
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <div className="flex items-start gap-2">
+                          <MessageSquare className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                          <p className="text-sm text-gray-600 italic">{punch.notes}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
