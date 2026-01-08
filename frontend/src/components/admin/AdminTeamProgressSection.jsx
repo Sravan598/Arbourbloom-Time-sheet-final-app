@@ -98,6 +98,45 @@ const AdminTeamProgressSection = () => {
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      {/* Overtime Alert for Admin */}
+      {data.summary.overtime > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3"
+        >
+          <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+          </div>
+          <div>
+            <p className="font-semibold text-red-700">Overtime Alert!</p>
+            <p className="text-sm text-red-600">
+              {data.summary.overtime} employee{data.summary.overtime > 1 ? 's have' : ' has'} exceeded the weekly hour limit.
+              Review and take action.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Behind Schedule Warning for Admin */}
+      {data.summary.behind > 0 && data.summary.overtime === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-center gap-3"
+        >
+          <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <AlertCircle className="w-5 h-5 text-yellow-600" />
+          </div>
+          <div>
+            <p className="font-semibold text-yellow-700">Attention Required</p>
+            <p className="text-sm text-yellow-600">
+              {data.summary.behind} employee{data.summary.behind > 1 ? 's are' : ' is'} behind schedule this week.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
