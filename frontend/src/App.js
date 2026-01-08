@@ -12,6 +12,7 @@ import EmployeeDashboard from './pages/employee/EmployeeDashboard';
 import EmployeeTimesheet from './pages/employee/EmployeeTimesheet';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminTimesheets from './pages/admin/AdminTimesheets';
+import PerformanceInsights from './pages/admin/PerformanceInsights';
 
 import './App.css';
 
