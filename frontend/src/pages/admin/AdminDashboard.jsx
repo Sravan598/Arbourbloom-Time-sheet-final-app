@@ -145,7 +145,7 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Left Sidebar */}
-      <AdminSidebar onScrollToDocuments={scrollToDocuments} onScrollToProjects={scrollToProjects} />
+      <AdminSidebar onScrollToDocuments={scrollToDocuments} />
 
       {/* Main Content Area */}
       <div className="flex-1 ml-64">
