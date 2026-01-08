@@ -992,6 +992,394 @@ async def toggle_user_active(
     return {"id": user_id, "is_active": new_status}
 
 
+# ============== PROJECT/TASK ROUTES ==============
+
+@api_router.post("/projects", response_model=ProjectResponse)
+async def create_project(
+    project_data: ProjectCreate,
+    admin: dict = Depends(require_admin)
+):
+    """Create a new project (admin only)"""
+    project = Project(
+        name=project_data.name,
+        description=project_data.description,
+        color=project_data.color,
+        estimated_hours=project_data.estimated_hours,
+        assigned_users=project_data.assigned_users,
+        created_by=admin["id"]
+    )
+    
+    project_doc = project.model_dump()
+    project_doc["created_at"] = project_doc["created_at"].isoformat()
+    project_doc["updated_at"] = project_doc["updated_at"].isoformat()
+    
+    await db.projects.insert_one(project_doc)
+    
+    return ProjectResponse(
+        id=project.id,
+        name=project.name,
+        description=project.description,
+        color=project.color,
+        status=project.status.value,
+        assigned_users=project.assigned_users,
+        estimated_hours=project.estimated_hours,
+        total_logged_minutes=0,
+        created_at=project.created_at
+    )
+
+
+@api_router.get("/projects", response_model=List[ProjectResponse])
+async def get_projects(current_user: dict = Depends(get_current_user)):
+    """Get projects - employees see only assigned, admins see all"""
+    if current_user.get("role") == "ADMIN":
+        query = {}
+    else:
+        # Employees see projects they're assigned to
+        query = {
+            "$or": [
+                {"assigned_users": current_user["id"]},
+                {"assigned_users": {"$size": 0}}  # Or projects with no specific assignment (everyone)
+            ]
+        }
+    
+    projects = await db.projects.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    result = []
+    for p in projects:
+        created_at = p.get("created_at")
+        if isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at)
+        
+        result.append(ProjectResponse(
+            id=p["id"],
+            name=p["name"],
+            description=p.get("description"),
+            color=p.get("color", "#EF4444"),
+            status=p.get("status", "ACTIVE"),
+            assigned_users=p.get("assigned_users", []),
+            estimated_hours=p.get("estimated_hours"),
+            total_logged_minutes=p.get("total_logged_minutes", 0),
+            created_at=created_at
+        ))
+    
+    return result
+
+
+@api_router.get("/projects/{project_id}", response_model=ProjectResponse)
+async def get_project(project_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a specific project"""
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    created_at = project.get("created_at")
+    if isinstance(created_at, str):
+        created_at = datetime.fromisoformat(created_at)
+    
+    return ProjectResponse(
+        id=project["id"],
+        name=project["name"],
+        description=project.get("description"),
+        color=project.get("color", "#EF4444"),
+        status=project.get("status", "ACTIVE"),
+        assigned_users=project.get("assigned_users", []),
+        estimated_hours=project.get("estimated_hours"),
+        total_logged_minutes=project.get("total_logged_minutes", 0),
+        created_at=created_at
+    )
+
+
+@api_router.put("/projects/{project_id}", response_model=ProjectResponse)
+async def update_project(
+    project_id: str,
+    update_data: ProjectUpdate,
+    admin: dict = Depends(require_admin)
+):
+    """Update a project (admin only)"""
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    update_fields = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    
+    if update_data.name is not None:
+        update_fields["name"] = update_data.name
+    if update_data.description is not None:
+        update_fields["description"] = update_data.description
+    if update_data.color is not None:
+        update_fields["color"] = update_data.color
+    if update_data.status is not None:
+        update_fields["status"] = update_data.status.value
+    if update_data.estimated_hours is not None:
+        update_fields["estimated_hours"] = update_data.estimated_hours
+    if update_data.assigned_users is not None:
+        update_fields["assigned_users"] = update_data.assigned_users
+    
+    await db.projects.update_one({"id": project_id}, {"$set": update_fields})
+    
+    updated_project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    
+    created_at = updated_project.get("created_at")
+    if isinstance(created_at, str):
+        created_at = datetime.fromisoformat(created_at)
+    
+    return ProjectResponse(
+        id=updated_project["id"],
+        name=updated_project["name"],
+        description=updated_project.get("description"),
+        color=updated_project.get("color", "#EF4444"),
+        status=updated_project.get("status", "ACTIVE"),
+        assigned_users=updated_project.get("assigned_users", []),
+        estimated_hours=updated_project.get("estimated_hours"),
+        total_logged_minutes=updated_project.get("total_logged_minutes", 0),
+        created_at=created_at
+    )
+
+
+@api_router.delete("/projects/{project_id}")
+async def delete_project(project_id: str, admin: dict = Depends(require_admin)):
+    """Delete/archive a project (admin only)"""
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Archive instead of delete to preserve time entries
+    await db.projects.update_one(
+        {"id": project_id},
+        {"$set": {"status": "ARCHIVED", "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Project archived successfully"}
+
+
+# Time Entry Routes
+@api_router.post("/time-entries/start", response_model=TimeEntryResponse)
+async def start_time_entry(
+    entry_data: TimeEntryCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Start tracking time on a project"""
+    # Check if project exists
+    project = await db.projects.find_one({"id": entry_data.project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Check if user already has an active time entry
+    active_entry = await db.time_entries.find_one({
+        "user_id": current_user["id"],
+        "end_time": None
+    }, {"_id": 0})
+    
+    if active_entry:
+        raise HTTPException(status_code=400, detail="You already have an active time entry. Please stop it first.")
+    
+    # Create new time entry
+    entry = TimeEntry(
+        user_id=current_user["id"],
+        user_name=current_user.get("name"),
+        project_id=entry_data.project_id,
+        project_name=project["name"],
+        description=entry_data.description,
+        start_time=datetime.now(timezone.utc)
+    )
+    
+    entry_doc = entry.model_dump()
+    entry_doc["start_time"] = entry_doc["start_time"].isoformat()
+    entry_doc["created_at"] = entry_doc["created_at"].isoformat()
+    
+    await db.time_entries.insert_one(entry_doc)
+    
+    return TimeEntryResponse(
+        id=entry.id,
+        project_id=entry.project_id,
+        project_name=entry.project_name,
+        project_color=project.get("color", "#EF4444"),
+        description=entry.description,
+        start_time=entry.start_time,
+        end_time=None,
+        duration_minutes=None,
+        created_at=entry.created_at
+    )
+
+
+@api_router.post("/time-entries/stop", response_model=TimeEntryResponse)
+async def stop_time_entry(current_user: dict = Depends(get_current_user)):
+    """Stop the active time entry"""
+    active_entry = await db.time_entries.find_one({
+        "user_id": current_user["id"],
+        "end_time": None
+    }, {"_id": 0})
+    
+    if not active_entry:
+        raise HTTPException(status_code=400, detail="No active time entry found")
+    
+    # Calculate duration
+    end_time = datetime.now(timezone.utc)
+    start_time = active_entry["start_time"]
+    if isinstance(start_time, str):
+        start_time = datetime.fromisoformat(start_time)
+    
+    duration_minutes = int((end_time - start_time).total_seconds() / 60)
+    
+    # Update time entry
+    await db.time_entries.update_one(
+        {"id": active_entry["id"]},
+        {
+            "$set": {
+                "end_time": end_time.isoformat(),
+                "duration_minutes": duration_minutes
+            }
+        }
+    )
+    
+    # Update project total time
+    await db.projects.update_one(
+        {"id": active_entry["project_id"]},
+        {"$inc": {"total_logged_minutes": duration_minutes}}
+    )
+    
+    # Get project for color
+    project = await db.projects.find_one({"id": active_entry["project_id"]}, {"_id": 0})
+    
+    return TimeEntryResponse(
+        id=active_entry["id"],
+        project_id=active_entry["project_id"],
+        project_name=active_entry.get("project_name"),
+        project_color=project.get("color", "#EF4444") if project else "#EF4444",
+        description=active_entry.get("description"),
+        start_time=start_time,
+        end_time=end_time,
+        duration_minutes=duration_minutes,
+        created_at=datetime.fromisoformat(active_entry["created_at"]) if isinstance(active_entry["created_at"], str) else active_entry["created_at"]
+    )
+
+
+@api_router.get("/time-entries/active")
+async def get_active_time_entry(current_user: dict = Depends(get_current_user)):
+    """Get current active time entry if any"""
+    active_entry = await db.time_entries.find_one({
+        "user_id": current_user["id"],
+        "end_time": None
+    }, {"_id": 0})
+    
+    if not active_entry:
+        return {"is_tracking": False, "entry": None}
+    
+    # Get project for color
+    project = await db.projects.find_one({"id": active_entry["project_id"]}, {"_id": 0})
+    
+    start_time = active_entry["start_time"]
+    if isinstance(start_time, str):
+        start_time = datetime.fromisoformat(start_time)
+    
+    return {
+        "is_tracking": True,
+        "entry": {
+            "id": active_entry["id"],
+            "project_id": active_entry["project_id"],
+            "project_name": active_entry.get("project_name"),
+            "project_color": project.get("color", "#EF4444") if project else "#EF4444",
+            "description": active_entry.get("description"),
+            "start_time": start_time
+        }
+    }
+
+
+@api_router.get("/time-entries/today", response_model=List[TimeEntryResponse])
+async def get_today_time_entries(current_user: dict = Depends(get_current_user)):
+    """Get all time entries for today"""
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+    
+    entries = await db.time_entries.find({
+        "user_id": current_user["id"],
+        "created_at": {
+            "$gte": today_start.isoformat(),
+            "$lt": today_end.isoformat()
+        }
+    }, {"_id": 0}).sort("created_at", -1).to_list(50)
+    
+    result = []
+    for entry in entries:
+        start_time = entry["start_time"]
+        if isinstance(start_time, str):
+            start_time = datetime.fromisoformat(start_time)
+        
+        end_time = entry.get("end_time")
+        if end_time and isinstance(end_time, str):
+            end_time = datetime.fromisoformat(end_time)
+        
+        created_at = entry["created_at"]
+        if isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at)
+        
+        # Get project color
+        project = await db.projects.find_one({"id": entry["project_id"]}, {"_id": 0})
+        
+        result.append(TimeEntryResponse(
+            id=entry["id"],
+            project_id=entry["project_id"],
+            project_name=entry.get("project_name"),
+            project_color=project.get("color", "#EF4444") if project else "#EF4444",
+            description=entry.get("description"),
+            start_time=start_time,
+            end_time=end_time,
+            duration_minutes=entry.get("duration_minutes"),
+            created_at=created_at
+        ))
+    
+    return result
+
+
+@api_router.get("/time-entries/summary", response_model=List[ProjectTimeSummary])
+async def get_time_summary(
+    days: int = 7,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get time summary by project for the last N days"""
+    start_date = datetime.now(timezone.utc) - timedelta(days=days)
+    
+    entries = await db.time_entries.find({
+        "user_id": current_user["id"],
+        "created_at": {"$gte": start_date.isoformat()},
+        "duration_minutes": {"$ne": None}
+    }, {"_id": 0}).to_list(500)
+    
+    # Aggregate by project
+    project_summary = {}
+    for entry in entries:
+        pid = entry["project_id"]
+        if pid not in project_summary:
+            project_summary[pid] = {
+                "project_id": pid,
+                "project_name": entry.get("project_name", "Unknown"),
+                "total_minutes": 0,
+                "entry_count": 0
+            }
+        project_summary[pid]["total_minutes"] += entry.get("duration_minutes", 0)
+        project_summary[pid]["entry_count"] += 1
+    
+    # Get project colors
+    result = []
+    for pid, data in project_summary.items():
+        project = await db.projects.find_one({"id": pid}, {"_id": 0})
+        result.append(ProjectTimeSummary(
+            project_id=data["project_id"],
+            project_name=data["project_name"],
+            project_color=project.get("color", "#EF4444") if project else "#EF4444",
+            total_minutes=data["total_minutes"],
+            entry_count=data["entry_count"]
+        ))
+    
+    # Sort by total time descending
+    result.sort(key=lambda x: x.total_minutes, reverse=True)
+    
+    return result
+
+
 # ============== BREAK ROUTES ==============
 
 @api_router.post("/breaks/start", response_model=BreakResponse)
