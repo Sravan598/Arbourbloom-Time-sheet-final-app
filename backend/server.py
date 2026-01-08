@@ -1151,6 +1151,10 @@ async def get_all_employees(admin: dict = Depends(require_admin)):
     for user in users:
         if isinstance(user.get("created_at"), str):
             user["created_at"] = datetime.fromisoformat(user["created_at"])
+        
+        # Include profile_image from profile subdocument if exists
+        if user.get("profile") and user["profile"].get("photo_url"):
+            user["profile_image"] = user["profile"]["photo_url"]
     
     return users
 
