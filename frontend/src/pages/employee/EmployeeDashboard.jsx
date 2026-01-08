@@ -334,6 +334,11 @@ const EmployeeDashboard = () => {
             </Link>
           </motion.div>
         </div>
+
+        {/* Leave/PTO Section */}
+        <div className="mt-8">
+          <LeavePTOSection />
+        </div>
       </main>
     </div>
   );
