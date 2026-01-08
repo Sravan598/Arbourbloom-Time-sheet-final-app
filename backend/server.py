@@ -4862,8 +4862,8 @@ async def start_dm_thread(
             user_id: target_user.get("name", "Unknown")
         },
         participant_images={
-            current_user["id"]: current_user.get("profile_image"),
-            user_id: target_user.get("profile_image")
+            current_user["id"]: current_user.get("profile_image") or "",
+            user_id: target_user.get("profile_image") or ""
         }
     )
     
