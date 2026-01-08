@@ -103,6 +103,14 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/admin/employee-docs" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <EmployeeDocs />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Catch all - redirect to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
