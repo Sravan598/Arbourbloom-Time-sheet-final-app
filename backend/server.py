@@ -85,6 +85,24 @@ class AnnouncementPriority(str, Enum):
 
 
 # ============== MODELS ==============
+
+# Notification preferences model
+class NotificationPreferences(BaseModel):
+    clock_in_out_email: bool = False
+    daily_summary: bool = False
+    weekly_reminder: bool = True
+    leave_updates: bool = True
+    overtime_warnings: bool = True
+    announcements: bool = True
+
+
+# Emergency contact model
+class EmergencyContact(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    relation: Optional[str] = None
+
+
 class UserBase(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
@@ -94,6 +112,31 @@ class UserBase(BaseModel):
     role: UserRole = UserRole.EMPLOYEE
     is_active: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    
+    # Extended profile fields
+    phone: Optional[str] = None
+    profile_image: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    
+    # Work information (set by admin)
+    employee_id: Optional[str] = None
+    department: Optional[str] = None
+    job_title: Optional[str] = None
+    employment_type: Optional[str] = None  # Full-time, Part-time, Contract
+    join_date: Optional[str] = None
+    work_location: Optional[str] = None  # Office, Remote, Hybrid
+    
+    # Emergency contact
+    emergency_contact: Optional[EmergencyContact] = None
+    
+    # Preferences
+    time_zone: str = "UTC"
+    theme_preference: str = "light"  # light, dark
+    notification_preferences: Optional[NotificationPreferences] = None
 
 
 class UserCreate(BaseModel):
@@ -118,6 +161,61 @@ class UserResponse(BaseModel):
     role: UserRole
     is_active: bool
     created_at: datetime
+    
+    # Extended profile fields
+    phone: Optional[str] = None
+    profile_image: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    
+    # Work information
+    employee_id: Optional[str] = None
+    department: Optional[str] = None
+    job_title: Optional[str] = None
+    employment_type: Optional[str] = None
+    join_date: Optional[str] = None
+    work_location: Optional[str] = None
+    
+    # Emergency contact
+    emergency_contact: Optional[EmergencyContact] = None
+    
+    # Preferences
+    time_zone: Optional[str] = "UTC"
+    theme_preference: Optional[str] = "light"
+    notification_preferences: Optional[NotificationPreferences] = None
+
+
+# Profile update models
+class ProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    emergency_contact: Optional[EmergencyContact] = None
+    time_zone: Optional[str] = None
+    theme_preference: Optional[str] = None
+    notification_preferences: Optional[NotificationPreferences] = None
+
+
+class AdminProfileUpdate(BaseModel):
+    """Admin can update additional work-related fields"""
+    employee_id: Optional[str] = None
+    department: Optional[str] = None
+    job_title: Optional[str] = None
+    employment_type: Optional[str] = None
+    join_date: Optional[str] = None
+    work_location: Optional[str] = None
+
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str = Field(..., min_length=6)
 
 
 class TokenResponse(BaseModel):
