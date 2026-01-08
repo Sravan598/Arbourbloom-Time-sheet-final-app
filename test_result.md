@@ -241,9 +241,7 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus:
-    - "Performance Insights Dashboard"
-    - "Performance Insights API"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
