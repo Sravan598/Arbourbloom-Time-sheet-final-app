@@ -3903,6 +3903,364 @@ async def get_unread_announcements_count(current_user: dict = Depends(get_curren
     return {"unread_count": count}
 
 
+# ============== DOCUMENT SECTION ROUTES ==============
+
+# Constants for document storage limits
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB per file
+MAX_USER_STORAGE = 500 * 1024 * 1024  # 500 MB per user
+
+
+@api_router.get("/documents/pin-status")
+async def get_pin_status(current_user: dict = Depends(get_current_user)):
+    """Check if user has set up their document PIN"""
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "documents_pin_hash": 1})
+    has_pin = bool(user and user.get("documents_pin_hash"))
+    return {"has_pin": has_pin}
+
+
+@api_router.post("/documents/setup-pin")
+async def setup_document_pin(
+    pin_data: SetPinRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Set up the document section PIN (4-6 digits)"""
+    # Check if PIN already exists
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "documents_pin_hash": 1})
+    if user and user.get("documents_pin_hash"):
+        raise HTTPException(status_code=400, detail="PIN already set. Use change-pin endpoint to update.")
+    
+    # Validate PIN is numeric
+    if not pin_data.pin.isdigit():
+        raise HTTPException(status_code=400, detail="PIN must contain only digits")
+    
+    # Hash the PIN
+    pin_hash = bcrypt.hashpw(pin_data.pin.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    # Store in user document
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"documents_pin_hash": pin_hash}}
+    )
+    
+    return {"message": "Document PIN set successfully"}
+
+
+@api_router.post("/documents/verify-pin")
+async def verify_document_pin(
+    pin_data: VerifyPinRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Verify the document section PIN"""
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "documents_pin_hash": 1})
+    
+    if not user or not user.get("documents_pin_hash"):
+        raise HTTPException(status_code=400, detail="No PIN set. Please set up your PIN first.")
+    
+    # Verify PIN
+    if not bcrypt.checkpw(pin_data.pin.encode('utf-8'), user["documents_pin_hash"].encode('utf-8')):
+        raise HTTPException(status_code=401, detail="Invalid PIN")
+    
+    return {"message": "PIN verified successfully", "verified": True}
+
+
+@api_router.post("/documents/change-pin")
+async def change_document_pin(
+    current_pin: str,
+    new_pin: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Change the document section PIN"""
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "documents_pin_hash": 1})
+    
+    if not user or not user.get("documents_pin_hash"):
+        raise HTTPException(status_code=400, detail="No PIN set. Please set up your PIN first.")
+    
+    # Verify current PIN
+    if not bcrypt.checkpw(current_pin.encode('utf-8'), user["documents_pin_hash"].encode('utf-8')):
+        raise HTTPException(status_code=401, detail="Current PIN is incorrect")
+    
+    # Validate new PIN
+    if not new_pin.isdigit() or len(new_pin) < 4 or len(new_pin) > 6:
+        raise HTTPException(status_code=400, detail="New PIN must be 4-6 digits")
+    
+    # Hash and save new PIN
+    new_pin_hash = bcrypt.hashpw(new_pin.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"documents_pin_hash": new_pin_hash}}
+    )
+    
+    return {"message": "PIN changed successfully"}
+
+
+class ChangePinRequest(BaseModel):
+    current_pin: str
+    new_pin: str = Field(..., min_length=4, max_length=6)
+
+
+@api_router.put("/documents/change-pin")
+async def change_document_pin_v2(
+    pin_data: ChangePinRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Change the document section PIN (v2 with request body)"""
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0, "documents_pin_hash": 1})
+    
+    if not user or not user.get("documents_pin_hash"):
+        raise HTTPException(status_code=400, detail="No PIN set. Please set up your PIN first.")
+    
+    # Verify current PIN
+    if not bcrypt.checkpw(pin_data.current_pin.encode('utf-8'), user["documents_pin_hash"].encode('utf-8')):
+        raise HTTPException(status_code=401, detail="Current PIN is incorrect")
+    
+    # Validate new PIN
+    if not pin_data.new_pin.isdigit():
+        raise HTTPException(status_code=400, detail="New PIN must contain only digits")
+    
+    # Hash and save new PIN
+    new_pin_hash = bcrypt.hashpw(pin_data.new_pin.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"documents_pin_hash": new_pin_hash}}
+    )
+    
+    return {"message": "PIN changed successfully"}
+
+
+@api_router.get("/documents/storage-usage")
+async def get_storage_usage(current_user: dict = Depends(get_current_user)):
+    """Get current storage usage for the user"""
+    documents = await db.documents.find({"user_id": current_user["id"]}, {"_id": 0, "file_size": 1}).to_list(1000)
+    total_used = sum(doc.get("file_size", 0) for doc in documents)
+    
+    return {
+        "used_bytes": total_used,
+        "max_bytes": MAX_USER_STORAGE,
+        "used_mb": round(total_used / (1024 * 1024), 2),
+        "max_mb": MAX_USER_STORAGE / (1024 * 1024),
+        "percentage_used": round((total_used / MAX_USER_STORAGE) * 100, 1) if MAX_USER_STORAGE > 0 else 0
+    }
+
+
+@api_router.post("/documents/upload", response_model=DocumentResponse)
+async def upload_document(
+    document_data: DocumentUpload,
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload a document (max 10MB per file, 500MB total per user)"""
+    import base64
+    
+    # Decode base64 to get actual file size
+    try:
+        file_bytes = base64.b64decode(document_data.file_data.split(',')[-1] if ',' in document_data.file_data else document_data.file_data)
+        file_size = len(file_bytes)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid file data format")
+    
+    # Check file size limit
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"File size exceeds maximum limit of {MAX_FILE_SIZE / (1024*1024)}MB"
+        )
+    
+    # Check total storage usage
+    existing_docs = await db.documents.find({"user_id": current_user["id"]}, {"_id": 0, "file_size": 1}).to_list(1000)
+    total_used = sum(doc.get("file_size", 0) for doc in existing_docs)
+    
+    if total_used + file_size > MAX_USER_STORAGE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Storage limit exceeded. You have {round((MAX_USER_STORAGE - total_used) / (1024*1024), 2)}MB remaining."
+        )
+    
+    # Create document
+    doc_id = str(uuid.uuid4())
+    document = Document(
+        id=doc_id,
+        user_id=current_user["id"],
+        filename=f"{doc_id}_{document_data.filename}",
+        original_filename=document_data.filename,
+        file_data=document_data.file_data,
+        file_size=file_size,
+        file_type=document_data.file_type,
+        category=document_data.category,
+        description=document_data.description
+    )
+    
+    doc_dict = document.model_dump()
+    doc_dict["uploaded_at"] = doc_dict["uploaded_at"].isoformat()
+    
+    await db.documents.insert_one(doc_dict)
+    
+    return DocumentResponse(
+        id=document.id,
+        filename=document.filename,
+        original_filename=document.original_filename,
+        file_size=document.file_size,
+        file_type=document.file_type,
+        category=document.category,
+        description=document.description,
+        uploaded_at=document.uploaded_at
+    )
+
+
+@api_router.get("/documents", response_model=List[DocumentResponse])
+async def get_my_documents(
+    category: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all documents for the current user"""
+    query = {"user_id": current_user["id"]}
+    if category and category != "All":
+        query["category"] = category
+    
+    documents = await db.documents.find(query, {"_id": 0, "file_data": 0}).sort("uploaded_at", -1).to_list(1000)
+    
+    result = []
+    for doc in documents:
+        uploaded_at = doc.get("uploaded_at")
+        if isinstance(uploaded_at, str):
+            uploaded_at = datetime.fromisoformat(uploaded_at)
+        
+        result.append(DocumentResponse(
+            id=doc["id"],
+            filename=doc["filename"],
+            original_filename=doc["original_filename"],
+            file_size=doc["file_size"],
+            file_type=doc["file_type"],
+            category=doc.get("category", "Other"),
+            description=doc.get("description"),
+            uploaded_at=uploaded_at
+        ))
+    
+    return result
+
+
+@api_router.get("/documents/{document_id}")
+async def get_document(
+    document_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get a specific document with its data (for download)"""
+    document = await db.documents.find_one(
+        {"id": document_id, "user_id": current_user["id"]},
+        {"_id": 0}
+    )
+    
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    return document
+
+
+@api_router.delete("/documents/{document_id}")
+async def delete_document(
+    document_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete a document"""
+    document = await db.documents.find_one(
+        {"id": document_id, "user_id": current_user["id"]},
+        {"_id": 0}
+    )
+    
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    await db.documents.delete_one({"id": document_id})
+    
+    return {"message": "Document deleted successfully"}
+
+
+# ============== ADMIN DOCUMENT ACCESS ==============
+
+@api_router.get("/admin/employees/{employee_id}/documents", response_model=List[DocumentResponse])
+async def admin_get_employee_documents(
+    employee_id: str,
+    category: Optional[str] = None,
+    admin: dict = Depends(require_admin)
+):
+    """Admin: Get all documents for a specific employee"""
+    # Verify employee exists
+    employee = await db.users.find_one({"id": employee_id, "role": "EMPLOYEE"}, {"_id": 0})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    query = {"user_id": employee_id}
+    if category and category != "All":
+        query["category"] = category
+    
+    documents = await db.documents.find(query, {"_id": 0, "file_data": 0}).sort("uploaded_at", -1).to_list(1000)
+    
+    result = []
+    for doc in documents:
+        uploaded_at = doc.get("uploaded_at")
+        if isinstance(uploaded_at, str):
+            uploaded_at = datetime.fromisoformat(uploaded_at)
+        
+        result.append(DocumentResponse(
+            id=doc["id"],
+            filename=doc["filename"],
+            original_filename=doc["original_filename"],
+            file_size=doc["file_size"],
+            file_type=doc["file_type"],
+            category=doc.get("category", "Other"),
+            description=doc.get("description"),
+            uploaded_at=uploaded_at
+        ))
+    
+    return result
+
+
+@api_router.get("/admin/employees/{employee_id}/documents/{document_id}")
+async def admin_get_employee_document(
+    employee_id: str,
+    document_id: str,
+    admin: dict = Depends(require_admin)
+):
+    """Admin: Get a specific document from an employee (for download)"""
+    # Verify employee exists
+    employee = await db.users.find_one({"id": employee_id, "role": "EMPLOYEE"}, {"_id": 0})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    document = await db.documents.find_one(
+        {"id": document_id, "user_id": employee_id},
+        {"_id": 0}
+    )
+    
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    return document
+
+
+@api_router.get("/admin/employees/{employee_id}/storage-usage")
+async def admin_get_employee_storage(
+    employee_id: str,
+    admin: dict = Depends(require_admin)
+):
+    """Admin: Get storage usage for a specific employee"""
+    # Verify employee exists
+    employee = await db.users.find_one({"id": employee_id, "role": "EMPLOYEE"}, {"_id": 0})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    documents = await db.documents.find({"user_id": employee_id}, {"_id": 0, "file_size": 1}).to_list(1000)
+    total_used = sum(doc.get("file_size", 0) for doc in documents)
+    
+    return {
+        "employee_id": employee_id,
+        "employee_name": employee.get("name"),
+        "used_bytes": total_used,
+        "max_bytes": MAX_USER_STORAGE,
+        "used_mb": round(total_used / (1024 * 1024), 2),
+        "max_mb": MAX_USER_STORAGE / (1024 * 1024),
+        "percentage_used": round((total_used / MAX_USER_STORAGE) * 100, 1) if MAX_USER_STORAGE > 0 else 0
+    }
+
+
 # ============== LEGACY ROUTES ==============
 class StatusCheck(BaseModel):
     model_config = ConfigDict(extra="ignore")
