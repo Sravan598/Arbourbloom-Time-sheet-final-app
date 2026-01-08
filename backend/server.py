@@ -1155,6 +1155,29 @@ async def get_all_employees(admin: dict = Depends(require_admin)):
     return users
 
 
+@api_router.delete("/admin/employees/{employee_id}")
+async def delete_employee(
+    employee_id: str,
+    admin: dict = Depends(require_admin)
+):
+    """Delete an employee and all associated data (admin only)"""
+    # Check employee exists
+    employee = await db.users.find_one({"id": employee_id, "role": "EMPLOYEE"}, {"_id": 0})
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Delete all associated data
+    await db.timesheets.delete_many({"user_id": employee_id})
+    await db.documents.delete_many({"user_id": employee_id})
+    await db.leave_requests.delete_many({"user_id": employee_id})
+    await db.breaks.delete_many({"user_id": employee_id})
+    
+    # Delete the employee
+    await db.users.delete_one({"id": employee_id})
+    
+    return {"message": f"Employee '{employee.get('name')}' and all associated data deleted successfully"}
+
+
 @api_router.get("/admin/timesheets", response_model=List[Timesheet])
 async def get_all_timesheets(
     user_id: Optional[str] = None,
