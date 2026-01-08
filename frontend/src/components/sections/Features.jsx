@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { 
   Clock, 
   Users, 
@@ -7,6 +8,7 @@ import {
   Smartphone, 
   Zap 
 } from 'lucide-react';
+import TiltCard from '../ui/TiltCard';
 
 const features = [
   {
@@ -53,12 +55,36 @@ const features = [
   }
 ];
 
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.6, ease: 'easeOut' }
+  }
+};
+
 const Features = () => {
   return (
     <section id="features" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center max-w-3xl mx-auto mb-16"
+        >
           <span className="text-brand-red font-semibold text-sm uppercase tracking-wider">
             Features
           </span>
@@ -69,28 +95,42 @@ const Features = () => {
             CORtracker provides a comprehensive suite of tools designed to streamline 
             your workforce management and boost operational efficiency.
           </p>
-        </div>
+        </motion.div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
           {features.map((feature, index) => (
-            <div 
-              key={index}
-              className="bg-white rounded-3xl p-6 h-full border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300"
-              data-testid={`feature-card-${index}`}
-            >
-              <div className={`w-14 h-14 ${feature.bgColor} rounded-2xl flex items-center justify-center mb-6`}>
-                <feature.icon className={`w-7 h-7 ${feature.color}`} />
-              </div>
-              <h3 className="text-xl font-bold text-brand-dark mb-3">
-                {feature.title}
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                {feature.description}
-              </p>
-            </div>
+            <motion.div key={index} variants={itemVariants}>
+              <TiltCard 
+                className="h-full"
+                tiltAmount={8}
+                glareOpacity={0.1}
+                scale={1.03}
+              >
+                <div 
+                  className="bg-white rounded-3xl p-6 h-full border border-gray-100"
+                  data-testid={`feature-card-${index}`}
+                >
+                  <div className={`w-14 h-14 ${feature.bgColor} rounded-2xl flex items-center justify-center mb-6`}>
+                    <feature.icon className={`w-7 h-7 ${feature.color}`} />
+                  </div>
+                  <h3 className="text-xl font-bold text-brand-dark mb-3">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              </TiltCard>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
