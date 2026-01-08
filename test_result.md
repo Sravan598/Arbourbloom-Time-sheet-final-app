@@ -192,6 +192,18 @@ frontend:
         agent: "testing"
         comment: "VERIFIED: Employee announcements functionality working. ✅ Announcements section visible with megaphone icon ✅ Unread count badge (red circle with number) displays correctly ✅ Section is collapsible/expandable ✅ Announcements display with proper formatting ✅ Click functionality works for expanding announcements ✅ Priority badges, pin icons, and timestamps are implemented"
 
+  - task: "Performance Insights Dashboard"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/admin/PerformanceInsights.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Created full Performance Insights page with: 1) Overview metrics cards (Attendance Rate, Avg Hours/Day, Avg Break Time, Overtime Rate) with change indicators 2) Weekly Hours Trend bar chart 3) Attendance Patterns (clock-in distribution, busiest/quietest days) 4) Top Performers rankings with medals 5) Needs Attention section (employees below 90% target) 6) Leave Analysis with usage breakdown and PTO utilization. Added route /admin/performance and Insights link in Admin Dashboard header."
+
   - task: "Home Page - Hero Section"
     implemented: true
     working: true
