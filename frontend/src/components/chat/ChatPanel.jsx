@@ -181,10 +181,10 @@ const ChatPanel = ({ isOpen, onClose, currentUser }) => {
           <img 
             src={CORTRACKER_LOGO} 
             alt="CORtracker" 
-            className="h-6 w-auto"
-            style={{ filter: 'brightness(0) invert(1)' }}
+            className="h-7 w-auto drop-shadow-md"
+            style={{ filter: 'brightness(0) invert(1) drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}
           />
-          <h2 className="font-semibold text-white">CORChat</h2>
+          <h2 className="font-semibold text-white text-lg">CORChat</h2>
         </div>
         <button
           onClick={onClose}
