@@ -98,7 +98,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "CORtracker time-tracking application - Announcements Board feature"
+user_problem_statement: "CORtracker time-tracking application - Performance Insights feature"
 
 backend:
   - task: "User Authentication (Login/Signup)"
@@ -135,10 +135,19 @@ backend:
     status_history:
       - working: true
         agent: "main"
-        comment: "Implemented: POST /api/admin/announcements (create), GET /api/announcements (list active), GET /api/admin/announcements (list all), PUT /api/admin/announcements/{id} (update), DELETE /api/admin/announcements/{id} (delete), POST /api/announcements/{id}/mark-read, GET /api/announcements/unread-count"
+        comment: "Announcements feature completed and verified"
+
+  - task: "Performance Insights API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
       - working: true
-        agent: "testing"
-        comment: "VERIFIED: Backend API working correctly. Admin can create and delete announcements successfully. Employee can view announcements. API endpoints responding properly."
+        agent: "main"
+        comment: "Implemented: GET /api/admin/performance/overview (metrics), GET /api/admin/performance/weekly-trends (trends chart), GET /api/admin/performance/attendance-patterns (clock-in distribution), GET /api/admin/performance/top-performers (rankings), GET /api/admin/performance/leave-analysis (leave stats), GET /api/admin/performance/employee/{id} (individual)"
 
 frontend:
   - task: "Quick Notes for Clock In/Out"
