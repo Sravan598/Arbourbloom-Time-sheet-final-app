@@ -17,6 +17,7 @@ import AdminTimesheets from './pages/admin/AdminTimesheets';
 import PerformanceInsights from './pages/admin/PerformanceInsights';
 import Projects from './pages/admin/Projects';
 import EmployeeDocs from './pages/admin/EmployeeDocs';
+import Employees from './pages/admin/Employees';
 
 import './App.css';
 
