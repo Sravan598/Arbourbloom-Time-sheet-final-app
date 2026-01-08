@@ -14,7 +14,8 @@ import {
   MessageSquare,
   User,
   ChevronDown,
-  Settings
+  Settings,
+  Folder
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -209,6 +210,13 @@ const EmployeeDashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-4">
+              <Link 
+                to="/employee/documents" 
+                className="flex items-center gap-2 text-gray-600 hover:text-brand-red transition-colors"
+              >
+                <Folder className="w-5 h-5" />
+                <span className="hidden sm:inline">Documents</span>
+              </Link>
               <Link 
                 to="/employee/timesheet" 
                 className="flex items-center gap-2 text-gray-600 hover:text-brand-red transition-colors"
