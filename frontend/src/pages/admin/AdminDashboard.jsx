@@ -479,7 +479,9 @@ const AdminDashboard = () => {
         {/* Team Progress & Projects Sections */}
         <div className="mt-8 grid lg:grid-cols-2 gap-8">
           <AdminTeamProgressSection />
-          <AdminProjectsSection />
+          <div ref={projectsRef} id="projects">
+            <AdminProjectsSection />
+          </div>
         </div>
 
         {/* Employee Documents Section */}
