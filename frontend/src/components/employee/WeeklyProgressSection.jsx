@@ -130,6 +130,8 @@ const WeeklyProgressSection = () => {
   const config = statusConfig[progress.status] || statusConfig.ON_TRACK;
   const StatusIcon = config.icon;
   const remainingHours = Math.max(0, progress.goal_hours - progress.total_hours);
+  const isApproachingOvertime = progress.progress_percent >= 90 && progress.progress_percent < 100;
+  const isOvertime = progress.progress_percent >= 100;
 
   return (
     <motion.div
@@ -137,6 +139,46 @@ const WeeklyProgressSection = () => {
       animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-3xl shadow-lg p-8"
     >
+      {/* Overtime Alert Banner */}
+      {isOvertime && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3"
+        >
+          <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+          </div>
+          <div>
+            <p className="font-semibold text-red-700">Overtime Alert!</p>
+            <p className="text-sm text-red-600">
+              You've exceeded your weekly goal by {formatHours(progress.total_hours - progress.goal_hours)}. 
+              Please check with your supervisor.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Approaching Overtime Warning */}
+      {isApproachingOvertime && !isOvertime && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-center gap-3"
+        >
+          <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <AlertCircle className="w-5 h-5 text-yellow-600" />
+          </div>
+          <div>
+            <p className="font-semibold text-yellow-700">Approaching Overtime</p>
+            <p className="text-sm text-yellow-600">
+              You're at {Math.round(progress.progress_percent)}% of your weekly goal. 
+              Only {formatHours(remainingHours)} remaining before overtime.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
