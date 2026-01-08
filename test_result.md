@@ -98,7 +98,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "CORtracker time-tracking application - Quick Notes feature for Clock In/Out"
+user_problem_statement: "CORtracker time-tracking application - Announcements Board feature"
 
 backend:
   - task: "User Authentication (Login/Signup)"
@@ -119,23 +119,23 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
-        comment: "Clock in/out endpoints already updated to accept optional notes parameter. ClockInRequest and ClockOutRequest models accept notes field. Notes are combined when clocking out."
+        comment: "Quick Notes feature completed and verified"
 
-  - task: "Admin Timesheet Management"
+  - task: "Announcements CRUD API"
     implemented: true
     working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "Admin endpoints working - can view and edit notes in timesheets"
+        comment: "Implemented: POST /api/admin/announcements (create), GET /api/announcements (list active), GET /api/admin/announcements (list all), PUT /api/admin/announcements/{id} (update), DELETE /api/admin/announcements/{id} (delete), POST /api/announcements/{id}/mark-read, GET /api/announcements/unread-count"
 
 frontend:
   - task: "Quick Notes for Clock In/Out"
