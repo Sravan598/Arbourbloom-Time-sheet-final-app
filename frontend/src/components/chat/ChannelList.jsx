@@ -1,6 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Hash, Lock, Plus, Users, ChevronDown, ChevronRight } from 'lucide-react';
+import { Hash, Lock, Plus, ChevronDown, ChevronRight } from 'lucide-react';
+
+// Extracted ChannelItem component to avoid nested component definition
+const ChannelItem = ({ channel, isSelected, onSelectChannel }) => {
+  return (
+    <motion.button
+      onClick={() => onSelectChannel(channel)}
+      className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-left text-sm
+                  transition-colors group ${
+                    isSelected 
+                      ? 'bg-brand-red/10 text-brand-red font-medium' 
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+      whileHover={{ x: 2 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      {channel.type === 'PRIVATE' ? (
+        <Lock className="w-4 h-4 opacity-60" />
+      ) : (
+        <Hash className="w-4 h-4 opacity-60" />
+      )}
+      <span className="truncate flex-1">{channel.name}</span>
+      {channel.unread_count > 0 && (
+        <span className="bg-brand-red text-white text-xs px-1.5 py-0.5 rounded-full font-medium min-w-[20px] text-center">
+          {channel.unread_count > 99 ? '99+' : channel.unread_count}
+        </span>
+      )}
+    </motion.button>
+  );
+};
 
 const ChannelList = ({ 
   channels, 
@@ -13,36 +42,6 @@ const ChannelList = ({
   
   const defaultChannels = channels.filter(c => c.is_default);
   const userChannels = channels.filter(c => !c.is_default);
-
-  const ChannelItem = ({ channel }) => {
-    const isSelected = selectedChannel?.id === channel.id;
-    
-    return (
-      <motion.button
-        onClick={() => onSelectChannel(channel)}
-        className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-left text-sm
-                    transition-colors group ${
-                      isSelected 
-                        ? 'bg-brand-red/10 text-brand-red font-medium' 
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
-        whileHover={{ x: 2 }}
-        whileTap={{ scale: 0.98 }}
-      >
-        {channel.type === 'PRIVATE' ? (
-          <Lock className="w-4 h-4 opacity-60" />
-        ) : (
-          <Hash className="w-4 h-4 opacity-60" />
-        )}
-        <span className="truncate flex-1">{channel.name}</span>
-        {channel.unread_count > 0 && (
-          <span className="bg-brand-red text-white text-xs px-1.5 py-0.5 rounded-full font-medium min-w-[20px] text-center">
-            {channel.unread_count > 99 ? '99+' : channel.unread_count}
-          </span>
-        )}
-      </motion.button>
-    );
-  };
 
   return (
     <div className="py-2">
@@ -74,7 +73,12 @@ const ChannelList = ({
             {/* Default channels */}
             <div className="px-2 space-y-0.5">
               {defaultChannels.map(channel => (
-                <ChannelItem key={channel.id} channel={channel} />
+                <ChannelItem 
+                  key={channel.id} 
+                  channel={channel} 
+                  isSelected={selectedChannel?.id === channel.id}
+                  onSelectChannel={onSelectChannel}
+                />
               ))}
             </div>
 
@@ -82,7 +86,12 @@ const ChannelList = ({
             {userChannels.length > 0 && (
               <div className="px-2 mt-2 pt-2 border-t border-gray-100 space-y-0.5">
                 {userChannels.map(channel => (
-                  <ChannelItem key={channel.id} channel={channel} />
+                  <ChannelItem 
+                    key={channel.id} 
+                    channel={channel}
+                    isSelected={selectedChannel?.id === channel.id}
+                    onSelectChannel={onSelectChannel}
+                  />
                 ))}
               </div>
             )}

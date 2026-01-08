@@ -1,6 +1,63 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Plus, ChevronDown, ChevronRight, Circle } from 'lucide-react';
+import { Plus, ChevronDown, ChevronRight, Circle } from 'lucide-react';
+
+// Extracted ThreadItem component to avoid nested component definition
+const ThreadItem = ({ thread, isSelected, onSelectThread }) => {
+  return (
+    <motion.button
+      onClick={() => onSelectThread(thread)}
+      className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-left
+                  transition-colors group ${
+                    isSelected 
+                      ? 'bg-brand-red/10' 
+                      : 'hover:bg-gray-100'
+                  }`}
+      whileHover={{ x: 2 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      {/* Avatar */}
+      <div className="relative">
+        {thread.other_user_image ? (
+          <img 
+            src={thread.other_user_image} 
+            alt={thread.other_user_name}
+            className="w-8 h-8 rounded-full object-cover"
+          />
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-red to-red-600 flex items-center justify-center">
+            <span className="text-white text-xs font-medium">
+              {thread.other_user_name?.charAt(0)?.toUpperCase() || '?'}
+            </span>
+          </div>
+        )}
+        {/* Online indicator (placeholder - would need real-time status) */}
+        <Circle className="w-2.5 h-2.5 absolute bottom-0 right-0 text-gray-400 fill-gray-400" />
+      </div>
+
+      {/* Name and preview */}
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm truncate ${
+          isSelected ? 'text-brand-red font-medium' : 'text-gray-900'
+        }`}>
+          {thread.other_user_name}
+        </p>
+        {thread.last_message && (
+          <p className="text-xs text-gray-500 truncate">
+            {thread.last_message.content}
+          </p>
+        )}
+      </div>
+
+      {/* Unread badge */}
+      {thread.unread_count > 0 && (
+        <span className="bg-brand-red text-white text-xs px-1.5 py-0.5 rounded-full font-medium min-w-[20px] text-center">
+          {thread.unread_count > 99 ? '99+' : thread.unread_count}
+        </span>
+      )}
+    </motion.button>
+  );
+};
 
 const DMList = ({ 
   threads, 
@@ -10,64 +67,6 @@ const DMList = ({
   loading 
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-
-  const ThreadItem = ({ thread }) => {
-    const isSelected = selectedThread?.id === thread.id;
-    
-    return (
-      <motion.button
-        onClick={() => onSelectThread(thread)}
-        className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-left
-                    transition-colors group ${
-                      isSelected 
-                        ? 'bg-brand-red/10' 
-                        : 'hover:bg-gray-100'
-                    }`}
-        whileHover={{ x: 2 }}
-        whileTap={{ scale: 0.98 }}
-      >
-        {/* Avatar */}
-        <div className="relative">
-          {thread.other_user_image ? (
-            <img 
-              src={thread.other_user_image} 
-              alt={thread.other_user_name}
-              className="w-8 h-8 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-red to-red-600 flex items-center justify-center">
-              <span className="text-white text-xs font-medium">
-                {thread.other_user_name?.charAt(0)?.toUpperCase() || '?'}
-              </span>
-            </div>
-          )}
-          {/* Online indicator (placeholder - would need real-time status) */}
-          <Circle className="w-2.5 h-2.5 absolute bottom-0 right-0 text-gray-400 fill-gray-400" />
-        </div>
-
-        {/* Name and preview */}
-        <div className="flex-1 min-w-0">
-          <p className={`text-sm truncate ${
-            isSelected ? 'text-brand-red font-medium' : 'text-gray-900'
-          }`}>
-            {thread.other_user_name}
-          </p>
-          {thread.last_message && (
-            <p className="text-xs text-gray-500 truncate">
-              {thread.last_message.content}
-            </p>
-          )}
-        </div>
-
-        {/* Unread badge */}
-        {thread.unread_count > 0 && (
-          <span className="bg-brand-red text-white text-xs px-1.5 py-0.5 rounded-full font-medium min-w-[20px] text-center">
-            {thread.unread_count > 99 ? '99+' : thread.unread_count}
-          </span>
-        )}
-      </motion.button>
-    );
-  };
 
   return (
     <div className="py-2 border-t border-gray-100">
@@ -99,7 +98,12 @@ const DMList = ({
             {/* Thread list */}
             <div className="px-2 space-y-0.5">
               {threads.map(thread => (
-                <ThreadItem key={thread.id} thread={thread} />
+                <ThreadItem 
+                  key={thread.id} 
+                  thread={thread}
+                  isSelected={selectedThread?.id === thread.id}
+                  onSelectThread={onSelectThread}
+                />
               ))}
               
               {threads.length === 0 && !loading && (

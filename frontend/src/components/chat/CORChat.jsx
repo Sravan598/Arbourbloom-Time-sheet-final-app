@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import ChatButton from './ChatButton';
 import ChatPanel from './ChatPanel';
@@ -7,8 +7,9 @@ import chatService from '../../services/chatService';
 const CORChat = ({ currentUser }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const intervalRef = useRef(null);
 
-  // Fetch unread counts periodically
+  // Fetch unread counts 
   const fetchUnreadCounts = useCallback(async () => {
     if (!currentUser) return;
     
@@ -20,24 +21,34 @@ const CORChat = ({ currentUser }) => {
     }
   }, [currentUser]);
 
+  // Initial fetch and polling setup
   useEffect(() => {
-    // Initial fetch
-    fetchUnreadCounts();
+    if (!currentUser) return;
+
+    // Initial fetch with a small delay to avoid immediate state update
+    const initialTimeout = setTimeout(() => {
+      fetchUnreadCounts();
+    }, 100);
 
     // Poll for updates every 30 seconds
-    const interval = setInterval(fetchUnreadCounts, 30000);
+    intervalRef.current = setInterval(fetchUnreadCounts, 30000);
 
-    return () => clearInterval(interval);
-  }, [fetchUnreadCounts]);
+    return () => {
+      clearTimeout(initialTimeout);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [currentUser, fetchUnreadCounts]);
 
-  // Reset unread count when opening chat
+  // Refresh counts when closing chat
   useEffect(() => {
-    if (isOpen) {
-      // Refresh counts after a short delay to account for mark-as-read
-      const timeout = setTimeout(fetchUnreadCounts, 2000);
+    if (!isOpen && currentUser) {
+      // Refresh counts after closing to get updated unread counts
+      const timeout = setTimeout(fetchUnreadCounts, 1000);
       return () => clearTimeout(timeout);
     }
-  }, [isOpen, fetchUnreadCounts]);
+  }, [isOpen, currentUser, fetchUnreadCounts]);
 
   // Don't render if not logged in
   if (!currentUser) return null;
