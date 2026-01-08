@@ -1,8 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import CursorDot from './components/ui/CursorDot';
+import { CORChat } from './components/chat';
 
 // Pages
 import Home from './pages/Home';
@@ -21,6 +22,15 @@ import Employees from './pages/admin/Employees';
 
 import './App.css';
 
+// Chat widget wrapper that uses auth context
+const ChatWidget = () => {
+  const { user, isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) return null;
+  
+  return <CORChat currentUser={user} />;
+};
+
 function App() {
   return (
     <AuthProvider>
@@ -29,6 +39,9 @@ function App() {
         <CursorDot />
         
         <BrowserRouter>
+          {/* CORChat floating widget - appears on all pages when logged in */}
+          <ChatWidget />
+          
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
