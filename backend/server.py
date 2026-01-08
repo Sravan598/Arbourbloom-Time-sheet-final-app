@@ -238,6 +238,48 @@ class LeaveRequestUpdate(BaseModel):
     admin_notes: Optional[str] = None
 
 
+# ============== BREAK MODELS ==============
+class BreakStatus(str, Enum):
+    ACTIVE = "ACTIVE"
+    COMPLETED = "COMPLETED"
+
+
+class Break(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    timesheet_id: Optional[str] = None  # Link to active timesheet
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+    break_type: str = "GENERAL"  # GENERAL, LUNCH, COFFEE, etc.
+    status: BreakStatus = BreakStatus.ACTIVE
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class BreakCreate(BaseModel):
+    break_type: str = "GENERAL"
+
+
+class BreakResponse(BaseModel):
+    id: str
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+    break_type: str
+    status: str
+
+
+class DailyBreakSummary(BaseModel):
+    total_breaks: int
+    total_break_minutes: int
+    breaks: List[BreakResponse]
+    is_on_break: bool
+    current_break_id: Optional[str] = None
+    current_break_start: Optional[datetime] = None
+
+
 # ============== HELPER FUNCTIONS ==============
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
