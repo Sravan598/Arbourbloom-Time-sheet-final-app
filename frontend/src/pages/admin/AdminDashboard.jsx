@@ -34,6 +34,7 @@ const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const profileDropdownRef = useRef(null);
   const documentsRef = useRef(null);
+  const projectsRef = useRef(null);
   
   const [stats, setStats] = useState(null);
   const [employees, setEmployees] = useState([]);
@@ -48,6 +49,11 @@ const AdminDashboard = () => {
   // Scroll to documents section
   const scrollToDocuments = () => {
     documentsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Scroll to projects section
+  const scrollToProjects = () => {
+    projectsRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   // Fetch profile data
