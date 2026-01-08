@@ -361,6 +361,11 @@ const AdminDashboard = () => {
         <div className="mt-8">
           <AdminLeaveSection />
         </div>
+
+        {/* Projects Section */}
+        <div className="mt-8">
+          <AdminProjectsSection />
+        </div>
       </main>
     </div>
   );
