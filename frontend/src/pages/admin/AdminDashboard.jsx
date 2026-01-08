@@ -20,7 +20,6 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import AdminLeaveSection from '../../components/admin/AdminLeaveSection';
-import AdminProjectsSection from '../../components/admin/AdminProjectsSection';
 import AdminTeamProgressSection from '../../components/admin/AdminTeamProgressSection';
 import AdminAnnouncementsSection from '../../components/admin/AdminAnnouncementsSection';
 import AdminEmployeeDocuments from '../../components/admin/AdminEmployeeDocuments';
