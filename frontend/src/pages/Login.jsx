@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, User, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
@@ -68,7 +69,12 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/">
@@ -114,12 +120,15 @@ const Login = () => {
 
           {/* Error Message */}
           {(error || localError) && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start gap-3"
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start gap-3"
               data-testid="login-error"
             >
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
               <p className="text-red-700 text-sm">{localError || error}</p>
-            </div>
+            </motion.div>
           )}
 
           {/* Form */}
@@ -214,7 +223,7 @@ const Login = () => {
             ← Back to Home
           </Link>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
