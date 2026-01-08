@@ -895,6 +895,187 @@ async def toggle_user_active(
     return {"id": user_id, "is_active": new_status}
 
 
+# ============== BREAK ROUTES ==============
+
+@api_router.post("/breaks/start", response_model=BreakResponse)
+async def start_break(
+    break_data: BreakCreate = BreakCreate(),
+    current_user: dict = Depends(get_current_user)
+):
+    """Start a break - employee must be clocked in"""
+    # Check if user is clocked in
+    active_timesheet = await db.timesheets.find_one({
+        "user_id": current_user["id"],
+        "clock_out_at": None
+    }, {"_id": 0})
+    
+    if not active_timesheet:
+        raise HTTPException(status_code=400, detail="You must be clocked in to start a break")
+    
+    # Check if user is already on a break
+    active_break = await db.breaks.find_one({
+        "user_id": current_user["id"],
+        "status": "ACTIVE"
+    }, {"_id": 0})
+    
+    if active_break:
+        raise HTTPException(status_code=400, detail="You are already on a break")
+    
+    # Create new break
+    new_break = Break(
+        user_id=current_user["id"],
+        timesheet_id=active_timesheet.get("id"),
+        start_time=datetime.now(timezone.utc),
+        break_type=break_data.break_type
+    )
+    
+    break_doc = new_break.model_dump()
+    break_doc["start_time"] = break_doc["start_time"].isoformat()
+    break_doc["created_at"] = break_doc["created_at"].isoformat()
+    
+    await db.breaks.insert_one(break_doc)
+    
+    return BreakResponse(
+        id=new_break.id,
+        start_time=new_break.start_time,
+        end_time=None,
+        duration_minutes=None,
+        break_type=new_break.break_type,
+        status=new_break.status.value
+    )
+
+
+@api_router.post("/breaks/end", response_model=BreakResponse)
+async def end_break(current_user: dict = Depends(get_current_user)):
+    """End the current break"""
+    # Find active break
+    active_break = await db.breaks.find_one({
+        "user_id": current_user["id"],
+        "status": "ACTIVE"
+    }, {"_id": 0})
+    
+    if not active_break:
+        raise HTTPException(status_code=400, detail="You are not on a break")
+    
+    # Calculate duration
+    end_time = datetime.now(timezone.utc)
+    start_time = active_break["start_time"]
+    if isinstance(start_time, str):
+        start_time = datetime.fromisoformat(start_time)
+    
+    duration_minutes = int((end_time - start_time).total_seconds() / 60)
+    
+    # Update break
+    await db.breaks.update_one(
+        {"id": active_break["id"]},
+        {
+            "$set": {
+                "end_time": end_time.isoformat(),
+                "duration_minutes": duration_minutes,
+                "status": "COMPLETED"
+            }
+        }
+    )
+    
+    return BreakResponse(
+        id=active_break["id"],
+        start_time=start_time,
+        end_time=end_time,
+        duration_minutes=duration_minutes,
+        break_type=active_break.get("break_type", "GENERAL"),
+        status="COMPLETED"
+    )
+
+
+@api_router.get("/breaks/status")
+async def get_break_status(current_user: dict = Depends(get_current_user)):
+    """Get current break status and check if user is on break"""
+    active_break = await db.breaks.find_one({
+        "user_id": current_user["id"],
+        "status": "ACTIVE"
+    }, {"_id": 0})
+    
+    if active_break:
+        start_time = active_break["start_time"]
+        if isinstance(start_time, str):
+            start_time = datetime.fromisoformat(start_time)
+        
+        return {
+            "is_on_break": True,
+            "break_id": active_break["id"],
+            "start_time": start_time,
+            "break_type": active_break.get("break_type", "GENERAL")
+        }
+    
+    return {
+        "is_on_break": False,
+        "break_id": None,
+        "start_time": None,
+        "break_type": None
+    }
+
+
+@api_router.get("/breaks/today", response_model=DailyBreakSummary)
+async def get_today_breaks(current_user: dict = Depends(get_current_user)):
+    """Get all breaks for today with summary"""
+    # Get today's date range
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+    
+    # Find all breaks for today
+    breaks_cursor = db.breaks.find({
+        "user_id": current_user["id"],
+        "created_at": {
+            "$gte": today_start.isoformat(),
+            "$lt": today_end.isoformat()
+        }
+    }, {"_id": 0}).sort("created_at", -1)
+    
+    breaks = await breaks_cursor.to_list(50)
+    
+    # Calculate totals
+    total_minutes = 0
+    is_on_break = False
+    current_break_id = None
+    current_break_start = None
+    
+    break_responses = []
+    for b in breaks:
+        start_time = b["start_time"]
+        if isinstance(start_time, str):
+            start_time = datetime.fromisoformat(start_time)
+        
+        end_time = b.get("end_time")
+        if end_time and isinstance(end_time, str):
+            end_time = datetime.fromisoformat(end_time)
+        
+        if b.get("status") == "ACTIVE":
+            is_on_break = True
+            current_break_id = b["id"]
+            current_break_start = start_time
+        
+        if b.get("duration_minutes"):
+            total_minutes += b["duration_minutes"]
+        
+        break_responses.append(BreakResponse(
+            id=b["id"],
+            start_time=start_time,
+            end_time=end_time,
+            duration_minutes=b.get("duration_minutes"),
+            break_type=b.get("break_type", "GENERAL"),
+            status=b.get("status", "COMPLETED")
+        ))
+    
+    return DailyBreakSummary(
+        total_breaks=len(breaks),
+        total_break_minutes=total_minutes,
+        breaks=break_responses,
+        is_on_break=is_on_break,
+        current_break_id=current_break_id,
+        current_break_start=current_break_start
+    )
+
+
 # ============== LEAVE/PTO ROUTES ==============
 
 async def get_or_create_leave_balance(user_id: str, year: int = None) -> dict:
