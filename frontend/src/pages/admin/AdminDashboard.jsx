@@ -7,11 +7,8 @@ import {
   Clock, 
   AlertCircle,
   TrendingUp,
-  UserPlus,
-  Search,
   CheckCircle,
   XCircle,
-  MoreVertical,
   User,
   ChevronDown,
   Settings
