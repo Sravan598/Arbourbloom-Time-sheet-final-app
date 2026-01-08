@@ -647,7 +647,8 @@ const PerformanceInsights = () => {
             </div>
           </motion.div>
         )}
-      </main>
+        </main>
+      </div>
     </div>
   );
 };
