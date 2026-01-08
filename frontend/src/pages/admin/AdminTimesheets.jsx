@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ArrowLeft, 
   LogOut, 
   Calendar,
   Clock,
@@ -15,11 +14,14 @@ import {
   Save,
   History,
   User,
-  MessageSquare
+  MessageSquare,
+  ChevronDown,
+  Settings
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
+import AdminSidebar from '../../components/admin/AdminSidebar';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -27,6 +29,7 @@ const API = `${BACKEND_URL}/api`;
 const AdminTimesheets = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const profileDropdownRef = useRef(null);
   
   const [timesheets, setTimesheets] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -37,6 +40,8 @@ const AdminTimesheets = () => {
   const [endDate, setEndDate] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [profileData, setProfileData] = useState(null);
   
   // Edit modal
   const [showEditModal, setShowEditModal] = useState(false);
@@ -51,6 +56,30 @@ const AdminTimesheets = () => {
   
   // Audit log modal
   const [showAuditModal, setShowAuditModal] = useState(false);
+
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get(`${API}/profile`);
+        setProfileData(response.data);
+      } catch (err) {
+        console.error('Failed to fetch profile:', err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const fetchTimesheets = useCallback(async () => {
     try {
