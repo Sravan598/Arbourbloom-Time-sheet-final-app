@@ -470,7 +470,8 @@ const EmployeeTimesheet = () => {
             </div>
           )}
         </div>
-      </main>
+        </main>
+      </div>
 
       {/* Correction Request Modal */}
       <AnimatePresence>
