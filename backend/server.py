@@ -562,8 +562,19 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 
 
 # ============== EMPLOYEE ROUTES ==============
+class ClockInRequest(BaseModel):
+    notes: Optional[str] = None
+
+
+class ClockOutRequest(BaseModel):
+    notes: Optional[str] = None
+
+
 @api_router.post("/employee/clock-in", response_model=Timesheet)
-async def clock_in(current_user: dict = Depends(get_current_user)):
+async def clock_in(
+    request: ClockInRequest = ClockInRequest(),
+    current_user: dict = Depends(get_current_user)
+):
     if current_user["role"] != UserRole.EMPLOYEE:
         raise HTTPException(status_code=403, detail="Only employees can clock in")
     
@@ -581,7 +592,8 @@ async def clock_in(current_user: dict = Depends(get_current_user)):
         user_id=current_user["id"],
         user_name=current_user["name"],
         user_email=current_user["email"],
-        clock_in_at=datetime.now(timezone.utc)
+        clock_in_at=datetime.now(timezone.utc),
+        notes=request.notes
     )
     
     doc = serialize_datetime(timesheet.model_dump())
@@ -591,7 +603,10 @@ async def clock_in(current_user: dict = Depends(get_current_user)):
 
 
 @api_router.post("/employee/clock-out", response_model=Timesheet)
-async def clock_out(current_user: dict = Depends(get_current_user)):
+async def clock_out(
+    request: ClockOutRequest = ClockOutRequest(),
+    current_user: dict = Depends(get_current_user)
+):
     if current_user["role"] != UserRole.EMPLOYEE:
         raise HTTPException(status_code=403, detail="Only employees can clock out")
     
@@ -612,12 +627,23 @@ async def clock_out(current_user: dict = Depends(get_current_user)):
     clock_out_at = datetime.now(timezone.utc)
     total_minutes = int((clock_out_at - clock_in_at).total_seconds() / 60)
     
+    # Combine notes (clock-in notes + clock-out notes)
+    existing_notes = open_shift.get("notes", "")
+    if request.notes:
+        if existing_notes:
+            combined_notes = f"{existing_notes} | Out: {request.notes}"
+        else:
+            combined_notes = f"Out: {request.notes}"
+    else:
+        combined_notes = existing_notes
+    
     # Update timesheet
     await db.timesheets.update_one(
         {"id": open_shift["id"]},
         {"$set": {
             "clock_out_at": clock_out_at.isoformat(),
-            "total_minutes": total_minutes
+            "total_minutes": total_minutes,
+            "notes": combined_notes if combined_notes else None
         }}
     )
     
