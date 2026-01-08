@@ -10,7 +10,8 @@ import {
   Timer,
   CheckCircle,
   AlertCircle,
-  Calendar
+  Calendar,
+  MessageSquare
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
