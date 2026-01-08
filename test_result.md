@@ -98,7 +98,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Remove all animations from the CORtracker marketing website - including custom cursor, 3D card tilts, Framer Motion animations, and animated logo"
+user_problem_statement: "CORtracker time-tracking application - Quick Notes feature for Clock In/Out"
 
 backend:
   - task: "User Authentication (Login/Signup)"
@@ -111,19 +111,19 @@ backend:
     status_history:
       - working: true
         agent: "main"
-        comment: "Auth system working - not affected by animation removal"
+        comment: "Auth system working"
 
-  - task: "Employee Clock In/Out"
+  - task: "Employee Clock In/Out with Notes"
     implemented: true
     working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "Clock in/out endpoints working - not affected by animation removal"
+        comment: "Clock in/out endpoints already updated to accept optional notes parameter. ClockInRequest and ClockOutRequest models accept notes field. Notes are combined when clocking out."
 
   - task: "Admin Timesheet Management"
     implemented: true
@@ -135,7 +135,7 @@ backend:
     status_history:
       - working: true
         agent: "main"
-        comment: "Admin endpoints working - not affected by animation removal"
+        comment: "Admin endpoints working - can view and edit notes in timesheets"
 
 frontend:
   - task: "Remove All Animations"
