@@ -186,38 +186,101 @@ const EmployeeTimesheet = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/employee/dashboard" className="text-gray-500 hover:text-brand-red">
-                <ArrowLeft className="w-5 h-5" />
-              </Link>
-              <img 
-                src="https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png" 
-                alt="CORtracker" 
-                className="h-8"
-              />
-              <div className="hidden sm:block border-l border-gray-200 pl-4">
-                <p className="text-sm text-gray-500">My Timesheet</p>
-                <p className="font-semibold text-brand-dark">{user?.name}</p>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Left Sidebar */}
+      <EmployeeSidebar />
+
+      {/* Main Content Area */}
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <header className="bg-white shadow-sm sticky top-0 z-30">
+          <div className="px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-bold text-brand-dark">My Timesheet</h1>
+                <p className="text-sm text-gray-500">{user?.name}</p>
+              </div>
+              
+              {/* Profile Dropdown */}
+              <div className="relative" ref={profileDropdownRef}>
+                <button
+                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                  className="flex items-center gap-2 hover:bg-gray-100 rounded-full py-1 pl-1 pr-3 transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
+                    {profileData?.profile_image ? (
+                      <img 
+                        src={profileData.profile_image} 
+                        alt={profileData?.name || user?.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-red to-brand-red-dark">
+                        <span className="text-sm font-bold text-white">
+                          {(profileData?.name || user?.name)?.charAt(0)?.toUpperCase() || 'U'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <span className="hidden sm:inline font-medium text-brand-dark text-sm">
+                    {profileData?.name || user?.name}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showProfileDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                
+                <AnimatePresence>
+                  {showProfileDropdown && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50"
+                    >
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="font-semibold text-brand-dark">{profileData?.name || user?.name}</p>
+                        <p className="text-sm text-gray-500 truncate">{profileData?.email || user?.email}</p>
+                      </div>
+                      <div className="py-1">
+                        <Link
+                          to="/profile"
+                          onClick={() => setShowProfileDropdown(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <User className="w-4 h-4" />
+                          <span>My Profile</span>
+                        </Link>
+                        <Link
+                          to="/profile"
+                          onClick={() => setShowProfileDropdown(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <Settings className="w-4 h-4" />
+                          <span>Settings</span>
+                        </Link>
+                      </div>
+                      <div className="border-t border-gray-100 pt-1">
+                        <button
+                          onClick={() => {
+                            setShowProfileDropdown(false);
+                            handleLogout();
+                          }}
+                          className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Logout</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-gray-600 hover:text-red-600 transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Main Content */}
+        <main className="p-8">
         {/* Status Messages */}
         {error && (
           <motion.div
