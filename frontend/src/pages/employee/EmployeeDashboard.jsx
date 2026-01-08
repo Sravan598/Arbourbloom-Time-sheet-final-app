@@ -11,7 +11,8 @@ import {
   CheckCircle,
   AlertCircle,
   Calendar,
-  MessageSquare
+  MessageSquare,
+  User
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
