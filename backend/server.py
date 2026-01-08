@@ -1411,6 +1411,284 @@ async def get_time_summary(
     return result
 
 
+# ============== PDF EXPORT ROUTES ==============
+
+def generate_timesheet_pdf(user_data: dict, timesheets: list, breaks: list, week_start: datetime, week_end: datetime) -> bytes:
+    """Generate a professional timesheet PDF"""
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#1F2937'),
+        spaceAfter=20,
+        alignment=TA_CENTER
+    )
+    
+    subtitle_style = ParagraphStyle(
+        'CustomSubtitle',
+        parent=styles['Normal'],
+        fontSize=12,
+        textColor=colors.HexColor('#6B7280'),
+        alignment=TA_CENTER,
+        spaceAfter=30
+    )
+    
+    section_style = ParagraphStyle(
+        'SectionHeader',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor('#EF4444'),
+        spaceBefore=20,
+        spaceAfter=10
+    )
+    
+    # Title
+    elements.append(Paragraph("CORtracker", title_style))
+    elements.append(Paragraph("Employee Timesheet Report", subtitle_style))
+    
+    # Employee Info
+    elements.append(Paragraph("Employee Information", section_style))
+    
+    info_data = [
+        ["Name:", user_data.get("name", "N/A")],
+        ["Email:", user_data.get("email", "N/A")],
+        ["Report Period:", f"{week_start.strftime('%B %d, %Y')} - {week_end.strftime('%B %d, %Y')}"],
+        ["Generated:", datetime.now().strftime("%B %d, %Y at %I:%M %p")]
+    ]
+    
+    info_table = Table(info_data, colWidths=[1.5*inch, 4*inch])
+    info_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#374151')),
+        ('TEXTCOLOR', (1, 0), (1, -1), colors.HexColor('#1F2937')),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    elements.append(info_table)
+    elements.append(Spacer(1, 20))
+    
+    # Daily Summary
+    elements.append(Paragraph("Daily Time Summary", section_style))
+    
+    # Calculate daily totals
+    day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    daily_data = {}
+    
+    for i in range(7):
+        day_date = week_start + timedelta(days=i)
+        date_str = day_date.strftime("%Y-%m-%d")
+        daily_data[date_str] = {
+            "day": day_names[i],
+            "date": day_date.strftime("%m/%d/%Y"),
+            "minutes": 0,
+            "clock_in": None,
+            "clock_out": None
+        }
+    
+    for ts in timesheets:
+        clock_in = ts.get("clock_in_at")
+        if isinstance(clock_in, str):
+            clock_in = datetime.fromisoformat(clock_in)
+        
+        date_str = clock_in.strftime("%Y-%m-%d")
+        
+        if date_str in daily_data:
+            if ts.get("total_minutes"):
+                daily_data[date_str]["minutes"] += ts["total_minutes"]
+            
+            if not daily_data[date_str]["clock_in"]:
+                daily_data[date_str]["clock_in"] = clock_in.strftime("%I:%M %p")
+            
+            clock_out = ts.get("clock_out_at")
+            if clock_out:
+                if isinstance(clock_out, str):
+                    clock_out = datetime.fromisoformat(clock_out)
+                daily_data[date_str]["clock_out"] = clock_out.strftime("%I:%M %p")
+    
+    # Create daily table
+    table_data = [["Day", "Date", "Clock In", "Clock Out", "Hours Worked"]]
+    total_minutes = 0
+    
+    for date_str in sorted(daily_data.keys()):
+        data = daily_data[date_str]
+        hours = data["minutes"] / 60
+        total_minutes += data["minutes"]
+        
+        table_data.append([
+            data["day"],
+            data["date"],
+            data["clock_in"] or "-",
+            data["clock_out"] or "-",
+            f"{hours:.1f}h" if data["minutes"] > 0 else "-"
+        ])
+    
+    # Add total row
+    total_hours = total_minutes / 60
+    table_data.append(["", "", "", "Total:", f"{total_hours:.1f}h"])
+    
+    daily_table = Table(table_data, colWidths=[1.2*inch, 1*inch, 1.2*inch, 1.2*inch, 1.2*inch])
+    daily_table.setStyle(TableStyle([
+        # Header
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#EF4444')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        
+        # Body
+        ('FONTNAME', (0, 1), (-1, -2), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('ALIGN', (2, 1), (-1, -1), 'CENTER'),
+        
+        # Total row
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#F3F4F6')),
+        
+        # Grid
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E5E7EB')),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        
+        # Alternating rows
+        ('ROWBACKGROUNDS', (0, 1), (-1, -2), [colors.white, colors.HexColor('#F9FAFB')]),
+    ]))
+    elements.append(daily_table)
+    elements.append(Spacer(1, 20))
+    
+    # Break Summary
+    total_break_minutes = sum(b.get("duration_minutes", 0) for b in breaks)
+    if total_break_minutes > 0:
+        elements.append(Paragraph("Break Summary", section_style))
+        
+        break_data = [["Total Break Time:", f"{total_break_minutes} minutes ({total_break_minutes/60:.1f} hours)"]]
+        break_table = Table(break_data, colWidths=[1.5*inch, 4*inch])
+        break_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ]))
+        elements.append(break_table)
+        elements.append(Spacer(1, 20))
+    
+    # Summary Statistics
+    elements.append(Paragraph("Summary", section_style))
+    
+    net_minutes = max(0, total_minutes - total_break_minutes)
+    net_hours = net_minutes / 60
+    goal_hours = 40.0
+    
+    summary_data = [
+        ["Gross Hours Worked:", f"{total_hours:.1f} hours"],
+        ["Break Time:", f"{total_break_minutes/60:.1f} hours"],
+        ["Net Hours Worked:", f"{net_hours:.1f} hours"],
+        ["Weekly Goal:", f"{goal_hours:.0f} hours"],
+        ["Progress:", f"{(net_hours/goal_hours)*100:.1f}%"],
+    ]
+    
+    summary_table = Table(summary_data, colWidths=[2*inch, 2*inch])
+    summary_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#FEF2F2') if net_hours < goal_hours else colors.HexColor('#F0FDF4')),
+    ]))
+    elements.append(summary_table)
+    elements.append(Spacer(1, 40))
+    
+    # Signature Section
+    elements.append(Paragraph("Verification", section_style))
+    
+    sig_data = [
+        ["Employee Signature:", "_" * 40, "Date:", "_" * 20],
+        ["", "", "", ""],
+        ["Supervisor Signature:", "_" * 40, "Date:", "_" * 20],
+    ]
+    
+    sig_table = Table(sig_data, colWidths=[1.5*inch, 2.5*inch, 0.5*inch, 1.5*inch])
+    sig_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 15),
+    ]))
+    elements.append(sig_table)
+    
+    # Footer
+    elements.append(Spacer(1, 30))
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=8,
+        textColor=colors.HexColor('#9CA3AF'),
+        alignment=TA_CENTER
+    )
+    elements.append(Paragraph("Generated by CORtracker - A 360° ERP Solution", footer_style))
+    
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer.getvalue()
+
+
+@api_router.get("/export/timesheet/pdf")
+async def export_timesheet_pdf(
+    week_offset: int = 0,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export timesheet as PDF for current or previous weeks"""
+    # Calculate week range
+    today = datetime.now(timezone.utc)
+    week_start = today - timedelta(days=today.weekday()) - timedelta(weeks=week_offset)
+    week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_end = week_start + timedelta(days=6, hours=23, minutes=59, seconds=59)
+    
+    # Get timesheets for the week
+    timesheets = await db.timesheets.find({
+        "user_id": current_user["id"],
+        "clock_in_at": {
+            "$gte": week_start.isoformat(),
+            "$lte": week_end.isoformat()
+        }
+    }, {"_id": 0}).to_list(100)
+    
+    # Get breaks for the week
+    breaks = await db.breaks.find({
+        "user_id": current_user["id"],
+        "status": "COMPLETED",
+        "created_at": {
+            "$gte": week_start.isoformat(),
+            "$lte": week_end.isoformat()
+        }
+    }, {"_id": 0}).to_list(200)
+    
+    # Generate PDF
+    pdf_bytes = generate_timesheet_pdf(
+        user_data=current_user,
+        timesheets=timesheets,
+        breaks=breaks,
+        week_start=week_start,
+        week_end=week_end
+    )
+    
+    # Create filename
+    filename = f"timesheet_{current_user.get('name', 'employee').replace(' ', '_')}_{week_start.strftime('%Y%m%d')}.pdf"
+    
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
+
+
 # ============== WEEKLY PROGRESS ROUTES ==============
 
 class DailyHours(BaseModel):
