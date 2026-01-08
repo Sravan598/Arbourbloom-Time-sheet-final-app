@@ -309,6 +309,18 @@ frontend:
         agent: "testing"
         comment: "VERIFIED: Login page fully functional - Employee/Admin tabs work."
 
+  - task: "Employee Sidebar Layout - Dashboard and Timesheet"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/employee/EmployeeSidebar.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented EmployeeSidebar component with Dashboard, My Timesheet, Documents navigation. Added to both EmployeeDashboard and EmployeeTimesheet pages. Sidebar is 256px wide, fixed position, with active state highlighting using red background."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
