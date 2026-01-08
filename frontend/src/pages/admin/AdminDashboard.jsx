@@ -32,7 +32,6 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const profileDropdownRef = useRef(null);
-  const documentsRef = useRef(null);
   
   const [stats, setStats] = useState(null);
   const [employees, setEmployees] = useState([]);
@@ -43,11 +42,6 @@ const AdminDashboard = () => {
   const [success, setSuccess] = useState('');
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [profileData, setProfileData] = useState(null);
-
-  // Scroll to documents section
-  const scrollToDocuments = () => {
-    documentsRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   // Fetch profile data
   useEffect(() => {
