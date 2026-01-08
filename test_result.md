@@ -138,95 +138,53 @@ backend:
         comment: "Admin endpoints working - can view and edit notes in timesheets"
 
 frontend:
-  - task: "Remove All Animations"
+  - task: "Quick Notes for Clock In/Out"
     implemented: true
     working: true
-    file: "Multiple files"
+    file: "/app/frontend/src/pages/employee/EmployeeDashboard.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "Removed all animations: CursorDot from App.js, replaced AnimatedLogo with static logo in Hero.jsx, removed TiltCard and Framer Motion from Features.jsx, Contact.jsx, HowItWorks.jsx, FAQ.jsx. Deleted CursorDot.jsx, TiltCard.jsx, ParallaxEffects.jsx, AnimatedLogo.jsx, Logo3D.jsx files"
+        comment: "Implemented Quick Notes feature: 1) Added toggle button 'Add a quick note (optional)' 2) Added textarea with placeholder and 200 char limit 3) Notes sent to backend on clock in/out 4) Notes displayed in Today's Activity section with MessageSquare icon"
+
+  - task: "Employee Timesheet Notes Display"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/employee/EmployeeTimesheet.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
       - working: true
-        agent: "testing"
-        comment: "COMPLETED: Animation removal task is now fully complete. Fixed remaining Framer Motion imports in Navbar.jsx, Login.jsx, and Signup.jsx. All motion components replaced with standard HTML elements. Website loads without animation-related console errors. All sections display correctly with static elements."
+        agent: "main"
+        comment: "Added Notes column to employee timesheet table. Notes displayed with MessageSquare icon and truncation for long notes."
+
+  - task: "Admin Timesheet Notes Display"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/admin/AdminTimesheets.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added Notes column to admin timesheets table. Notes displayed with MessageSquare icon and truncation. Admin can also edit notes via Edit modal."
 
   - task: "Home Page - Hero Section"
     implemented: true
     working: true
     file: "/app/frontend/src/components/sections/Hero.jsx"
     stuck_count: 0
-    priority: "high"
+    priority: "medium"
     needs_retesting: false
     status_history:
       - working: true
-        agent: "main"
-        comment: "Hero section now has static logo, removed Framer Motion animations"
-      - working: true
         agent: "testing"
-        comment: "VERIFIED: Hero section displays perfectly with static CORtracker logo, Get Started button functional, no animation-related errors."
-
-  - task: "Home Page - Features Section"
-    implemented: true
-    working: true
-    file: "/app/frontend/src/components/sections/Features.jsx"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "Features section clean with simple hover effects, no TiltCard or Framer Motion"
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Features section displays all 6 feature cards correctly with hover effects working. No animation-related issues."
-
-  - task: "Home Page - How It Works Section"
-    implemented: true
-    working: true
-    file: "/app/frontend/src/components/sections/HowItWorks.jsx"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "How It Works section clean, no TiltCard or Framer Motion"
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: How It Works section displays all 3 steps correctly with proper styling and layout."
-
-  - task: "Home Page - FAQ Section"
-    implemented: true
-    working: true
-    file: "/app/frontend/src/components/sections/FAQ.jsx"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "FAQ section clean, accordion working without Framer Motion"
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: FAQ accordion functionality works correctly - expands and collapses properly without animations."
-
-  - task: "Home Page - Contact Section"
-    implemented: true
-    working: true
-    file: "/app/frontend/src/components/sections/Contact.jsx"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "Contact section clean, no TiltCard or Framer Motion"
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Contact section displays all 3 contact cards (email, phone, address) correctly with proper styling."
+        comment: "VERIFIED: Hero section displays perfectly with static CORtracker logo."
 
   - task: "Login Page"
     implemented: true
@@ -237,53 +195,24 @@ frontend:
     needs_retesting: false
     status_history:
       - working: true
-        agent: "main"
-        comment: "Login page displays correctly, not affected by animation removal"
-      - working: true
         agent: "testing"
-        comment: "VERIFIED: Login page fully functional - Employee/Admin tabs work, form fields visible, navigation works correctly. Removed all Framer Motion components."
-
-  - task: "Navigation/Navbar"
-    implemented: true
-    working: true
-    file: "/app/frontend/src/components/sections/Navbar.jsx"
-    stuck_count: 0
-    priority: "medium"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "Navbar working, links functional"
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Navbar fully functional - all navigation links work, Login/Signup buttons navigate correctly, mobile menu functionality intact. Removed all Framer Motion animations."
-
-  - task: "Signup Page"
-    implemented: true
-    working: true
-    file: "/app/frontend/src/pages/Signup.jsx"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "VERIFIED: Signup page fully functional - all form fields visible and working, admin invite code toggle works, navigation works correctly. Removed all Framer Motion components."
+        comment: "VERIFIED: Login page fully functional - Employee/Admin tabs work."
 
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 2
+  test_sequence: 3
   run_ui: true
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Quick Notes for Clock In/Out"
+    - "Employee Timesheet Notes Display"
+    - "Admin Timesheet Notes Display"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "Removed ALL animations from the application as requested by user. Changes made: 1) Removed CursorDot import and component from App.js 2) Replaced AnimatedLogo component with static logo in Hero.jsx 3) Removed TiltCard and Framer Motion from Features.jsx, Contact.jsx, HowItWorks.jsx, FAQ.jsx 4) Deleted animation files: CursorDot.jsx, TiltCard.jsx, ParallaxEffects.jsx, AnimatedLogo.jsx, Logo3D.jsx 5) Removed the entire /components/three/ directory. Please test that all sections render correctly without errors and that the site is clean and functional."
-  - agent: "testing"
-    message: "TESTING COMPLETED SUCCESSFULLY: Animation removal task is now 100% complete. I found and fixed remaining Framer Motion imports in Navbar.jsx, Login.jsx, and Signup.jsx that the main agent missed. All sections tested and working: Hero (static logo), Features (6 cards), How It Works (3 steps), FAQ (accordion functional), Contact (3 cards), Navigation (all links work), Login page (tabs and forms work), Signup page (all fields work). No animation-related console errors. Website is fully functional without any animations. All tasks marked as complete and no retesting needed."
+    message: "Implemented Quick Notes feature for Clock In/Out. Changes: 1) Added toggle button and textarea to EmployeeDashboard.jsx for adding notes when clocking in/out 2) Added Notes column to EmployeeTimesheet.jsx table 3) Added Notes column to AdminTimesheets.jsx table 4) Notes display with MessageSquare icon in Today's Activity section. Backend was already prepared with ClockInRequest/ClockOutRequest models accepting notes. Please test: a) Employee can add note when clocking in b) Employee can add note when clocking out c) Notes appear in Today's Activity d) Notes appear in Employee Timesheet table e) Notes appear in Admin Timesheets table. Test credentials: Employee: employee@test.com/password123, Admin: admin@company.com/password123"
