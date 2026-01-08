@@ -177,14 +177,9 @@ const ChatPanel = ({ isOpen, onClose, currentUser }) => {
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-brand-red to-red-600">
-        <div className="flex items-center gap-2">
-          <img 
-            src={CORTRACKER_LOGO} 
-            alt="CORtracker" 
-            className="h-7 w-auto drop-shadow-md"
-            style={{ filter: 'brightness(0) invert(1) drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}
-          />
-          <h2 className="font-semibold text-white text-lg">CORChat</h2>
+        <div className="flex items-center gap-1.5">
+          <span className="font-bold text-white/90 text-lg tracking-tight">COR</span>
+          <span className="font-semibold text-white text-lg">Chat</span>
         </div>
         <button
           onClick={onClose}
