@@ -505,10 +505,10 @@ const AdminTimesheets = () => {
             </div>
           )}
         </div>
-      </main>
+        </main>
 
-      {/* Edit Modal */}
-      <AnimatePresence>
+        {/* Edit Modal */}
+        <AnimatePresence>
         {showEditModal && (
           <motion.div
             initial={{ opacity: 0 }}
