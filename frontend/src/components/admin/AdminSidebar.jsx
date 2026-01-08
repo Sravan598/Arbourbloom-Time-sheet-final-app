@@ -5,7 +5,8 @@ import {
   BarChart3, 
   FileText, 
   Folder,
-  FolderKanban
+  FolderKanban,
+  Users
 } from 'lucide-react';
 
 const AdminSidebar = () => {
@@ -16,6 +17,11 @@ const AdminSidebar = () => {
       path: '/admin/dashboard', 
       label: 'Dashboard', 
       icon: Home 
+    },
+    { 
+      path: '/admin/employees', 
+      label: 'Employees', 
+      icon: Users 
     },
     { 
       path: '/admin/performance', 
