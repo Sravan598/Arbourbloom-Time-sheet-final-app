@@ -78,6 +78,12 @@ class LeaveStatus(str, Enum):
     CANCELLED = "CANCELLED"
 
 
+class AnnouncementPriority(str, Enum):
+    NORMAL = "NORMAL"
+    IMPORTANT = "IMPORTANT"
+    URGENT = "URGENT"
+
+
 # ============== MODELS ==============
 class UserBase(BaseModel):
     model_config = ConfigDict(extra="ignore")
