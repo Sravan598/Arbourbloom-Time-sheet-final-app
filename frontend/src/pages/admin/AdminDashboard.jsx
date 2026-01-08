@@ -355,6 +355,11 @@ const AdminDashboard = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Leave Requests Section */}
+        <div className="mt-8">
+          <AdminLeaveSection />
+        </div>
       </main>
     </div>
   );
