@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LogOut, 
   Users, 
@@ -14,7 +14,9 @@ import {
   XCircle,
   MoreVertical,
   BarChart3,
-  User
+  User,
+  ChevronDown,
+  Settings
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -30,6 +32,7 @@ const API = `${BACKEND_URL}/api`;
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const profileDropdownRef = useRef(null);
   
   const [stats, setStats] = useState(null);
   const [employees, setEmployees] = useState([]);
@@ -38,6 +41,32 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [profileData, setProfileData] = useState(null);
+
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get(`${API}/profile`);
+        setProfileData(response.data);
+      } catch (err) {
+        console.error('Failed to fetch profile:', err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
