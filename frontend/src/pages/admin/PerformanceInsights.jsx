@@ -15,7 +15,8 @@ import {
   AlertCircle,
   ChevronDown,
   BarChart3,
-  PieChart
+  PieChart,
+  Download
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -30,6 +31,7 @@ const PerformanceInsights = () => {
   
   const [period, setPeriod] = useState(30);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [overview, setOverview] = useState(null);
   const [trends, setTrends] = useState(null);
   const [patterns, setPatterns] = useState(null);
