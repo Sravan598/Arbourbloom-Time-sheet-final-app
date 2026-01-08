@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { X, Search, Hash, Users, Settings } from 'lucide-react';
+import { X, Search } from 'lucide-react';
 import ChannelList from './ChannelList';
 import DMList from './DMList';
 import MessageView from './MessageView';
 import chatService from '../../services/chatService';
+
+// CORtracker logo URL
+const CORTRACKER_LOGO = "https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png";
 
 const ChatPanel = ({ isOpen, onClose, currentUser }) => {
   const [view, setView] = useState('list'); // 'list' | 'channel' | 'dm'
