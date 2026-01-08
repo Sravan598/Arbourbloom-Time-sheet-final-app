@@ -433,7 +433,7 @@ const EmployeeDashboard = () => {
           >
             <div className="flex items-center gap-3 mb-6">
               <Calendar className="w-6 h-6 text-brand-red" />
-              <h2 className="text-xl font-bold text-brand-dark">Today's Activity</h2>
+              <h2 className="text-xl font-bold text-brand-dark">Today&apos;s Activity</h2>
             </div>
             
             {todayPunches.length === 0 ? (
