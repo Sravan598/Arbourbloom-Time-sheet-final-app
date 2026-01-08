@@ -64,14 +64,12 @@ const AdminDashboard = () => {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [statsRes, employeesRes, correctionsRes] = await Promise.all([
+      const [statsRes, correctionsRes] = await Promise.all([
         axios.get(`${API}/admin/dashboard-stats`),
-        axios.get(`${API}/admin/employees`),
         axios.get(`${API}/admin/correction-requests?status=PENDING`)
       ]);
       
       setStats(statsRes.data);
-      setEmployees(employeesRes.data);
       setPendingCorrections(correctionsRes.data);
     } catch (err) {
       setError('Failed to load dashboard data');
@@ -85,16 +83,6 @@ const AdminDashboard = () => {
     fetchData();
   }, [fetchData]);
 
-  const handleToggleUserActive = async (userId, currentStatus) => {
-    try {
-      await axios.put(`${API}/admin/users/${userId}/toggle-active`);
-      setSuccess(`User ${currentStatus ? 'deactivated' : 'activated'} successfully`);
-      fetchData();
-    } catch (err) {
-      setError('Failed to update user status');
-    }
-  };
-
   const handleCorrectionAction = async (requestId, status, adminNotes = '') => {
     try {
       await axios.put(`${API}/admin/correction-requests/${requestId}`, {
@@ -107,11 +95,6 @@ const AdminDashboard = () => {
       setError('Failed to process correction request');
     }
   };
-
-  const filteredEmployees = employees.filter(emp => 
-    emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    emp.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   const handleLogout = () => {
     logout();
