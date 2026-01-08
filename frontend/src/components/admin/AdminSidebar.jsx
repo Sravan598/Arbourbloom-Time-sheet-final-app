@@ -8,7 +8,7 @@ import {
   FolderKanban
 } from 'lucide-react';
 
-const AdminSidebar = ({ onScrollToDocuments, onScrollToProjects }) => {
+const AdminSidebar = ({ onScrollToDocuments }) => {
   const location = useLocation();
   
   const navItems = [
@@ -26,6 +26,11 @@ const AdminSidebar = ({ onScrollToDocuments, onScrollToProjects }) => {
       path: '/admin/timesheets', 
       label: 'All Timesheets', 
       icon: FileText 
+    },
+    { 
+      path: '/admin/projects', 
+      label: 'Projects', 
+      icon: FolderKanban 
     }
   ];
 
@@ -68,25 +73,6 @@ const AdminSidebar = ({ onScrollToDocuments, onScrollToProjects }) => {
               </Link>
             );
           })}
-          
-          {/* Projects - scroll action on dashboard */}
-          {location.pathname === '/admin/dashboard' && onScrollToProjects ? (
-            <button
-              onClick={onScrollToProjects}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-gray-600 hover:bg-gray-50"
-            >
-              <FolderKanban className="w-5 h-5" />
-              <span>Projects</span>
-            </button>
-          ) : (
-            <Link
-              to="/admin/dashboard#projects"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-gray-600 hover:bg-gray-50"
-            >
-              <FolderKanban className="w-5 h-5" />
-              <span>Projects</span>
-            </Link>
-          )}
           
           {/* Employee Documents - scroll action on dashboard */}
           {location.pathname === '/admin/dashboard' && onScrollToDocuments ? (
