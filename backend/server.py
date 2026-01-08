@@ -294,6 +294,54 @@ class DailyBreakSummary(BaseModel):
     current_break_start: Optional[datetime] = None
 
 
+# ============== ANNOUNCEMENT MODELS ==============
+class Announcement(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    message: str
+    priority: AnnouncementPriority = AnnouncementPriority.NORMAL
+    is_pinned: bool = False
+    created_by: str
+    created_by_name: Optional[str] = None
+    expires_at: Optional[datetime] = None
+    read_by: List[str] = []  # List of user IDs who have read this
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class AnnouncementCreate(BaseModel):
+    title: str = Field(..., min_length=2, max_length=200)
+    message: str = Field(..., min_length=5, max_length=2000)
+    priority: AnnouncementPriority = AnnouncementPriority.NORMAL
+    is_pinned: bool = False
+    expires_at: Optional[datetime] = None
+
+
+class AnnouncementUpdate(BaseModel):
+    title: Optional[str] = None
+    message: Optional[str] = None
+    priority: Optional[AnnouncementPriority] = None
+    is_pinned: Optional[bool] = None
+    expires_at: Optional[datetime] = None
+
+
+class AnnouncementResponse(BaseModel):
+    id: str
+    title: str
+    message: str
+    priority: str
+    is_pinned: bool
+    created_by: str
+    created_by_name: Optional[str]
+    expires_at: Optional[datetime]
+    is_read: bool = False
+    read_count: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+
 # ============== PROJECT/TASK MODELS ==============
 class ProjectStatus(str, Enum):
     ACTIVE = "ACTIVE"
