@@ -189,9 +189,10 @@ const CORBot = () => {
   return (
     <>
       {/* Floating Button */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {!isOpen && (
           <motion.button
+            key={`corbot-btn-${dragKey}`}
             ref={buttonRef}
             data-testid="corbot-trigger-button"
             drag
@@ -221,9 +222,10 @@ const CORBot = () => {
       </AnimatePresence>
 
       {/* Chat Panel */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isOpen && (
           <motion.div
+            key={`corbot-panel-${dragKey}`}
             ref={panelRef}
             data-testid="corbot-chat-panel"
             drag
