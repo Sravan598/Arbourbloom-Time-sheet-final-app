@@ -5523,6 +5523,18 @@ async def get_all_leave_requests(
         query["status"] = status.upper()
     
     requests = await db.leave_requests.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    
+    # Ensure dates are strings (MongoDB may auto-parse dates)
+    for req in requests:
+        if isinstance(req.get('start_date'), datetime):
+            req['start_date'] = req['start_date'].strftime('%Y-%m-%d')
+        if isinstance(req.get('end_date'), datetime):
+            req['end_date'] = req['end_date'].strftime('%Y-%m-%d')
+        if isinstance(req.get('created_at'), datetime):
+            req['created_at'] = req['created_at'].isoformat()
+        if isinstance(req.get('reviewed_at'), datetime):
+            req['reviewed_at'] = req['reviewed_at'].isoformat()
+    
     return requests
 
 
