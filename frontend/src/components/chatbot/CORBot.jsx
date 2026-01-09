@@ -201,6 +201,7 @@ const CORBot = () => {
       <AnimatePresence>
         {!isOpen && (
           <motion.button
+            ref={buttonRef}
             data-testid="corbot-trigger-button"
             drag
             dragConstraints={constraintsRef}
@@ -233,6 +234,7 @@ const CORBot = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            ref={panelRef}
             data-testid="corbot-chat-panel"
             drag
             dragControls={dragControls}
