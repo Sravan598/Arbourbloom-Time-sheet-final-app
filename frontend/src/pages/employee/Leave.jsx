@@ -136,7 +136,7 @@ const Leave = () => {
             </div>
             <motion.button
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-brand-red text-white rounded-lg
+              className="flex items-center gap-2 px-5 py-2 bg-brand-red text-white rounded-full
                          hover:bg-red-600 transition-colors font-medium"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
