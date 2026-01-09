@@ -4955,6 +4955,202 @@ async def get_unread_counts(current_user: dict = Depends(get_current_user)):
     }
 
 
+@api_router.get("/chat/search")
+async def search_messages(
+    q: str,
+    channel_id: Optional[str] = None,
+    dm_thread_id: Optional[str] = None,
+    limit: int = 20,
+    current_user: dict = Depends(get_current_user)
+):
+    """Search messages in channels and DMs"""
+    user_id = current_user["id"]
+    
+    if not q or len(q) < 2:
+        raise HTTPException(status_code=400, detail="Search query must be at least 2 characters")
+    
+    query = {
+        "content": {"$regex": q, "$options": "i"},
+        "is_deleted": False
+    }
+    
+    if channel_id:
+        # Verify user has access to channel
+        channel = await db.chat_channels.find_one({"id": channel_id}, {"_id": 0})
+        if not channel:
+            raise HTTPException(status_code=404, detail="Channel not found")
+        if channel.get("type") == "PRIVATE" and user_id not in channel.get("members", []):
+            raise HTTPException(status_code=403, detail="Access denied")
+        query["channel_id"] = channel_id
+    elif dm_thread_id:
+        # Verify user is participant in DM thread
+        thread = await db.chat_dm_threads.find_one({"id": dm_thread_id}, {"_id": 0})
+        if not thread or user_id not in thread.get("participants", []):
+            raise HTTPException(status_code=404, detail="Thread not found")
+        query["dm_thread_id"] = dm_thread_id
+    else:
+        # Search all accessible messages
+        accessible_channels = await db.chat_channels.find({
+            "$or": [{"type": "PUBLIC"}, {"members": user_id}]
+        }, {"id": 1}).to_list(100)
+        channel_ids = [c["id"] for c in accessible_channels]
+        
+        dm_threads = await db.chat_dm_threads.find(
+            {"participants": user_id}, {"id": 1}
+        ).to_list(100)
+        thread_ids = [t["id"] for t in dm_threads]
+        
+        query["$or"] = [
+            {"channel_id": {"$in": channel_ids}},
+            {"dm_thread_id": {"$in": thread_ids}}
+        ]
+    
+    messages = await db.chat_messages.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    # Format results
+    results = []
+    for msg in messages:
+        result = {
+            "id": msg["id"],
+            "content": msg["content"],
+            "sender_id": msg["sender_id"],
+            "sender_name": msg.get("sender_name"),
+            "created_at": msg["created_at"],
+            "channel_id": msg.get("channel_id"),
+            "dm_thread_id": msg.get("dm_thread_id")
+        }
+        
+        # Add context (channel name or DM participant)
+        if msg.get("channel_id"):
+            channel = await db.chat_channels.find_one({"id": msg["channel_id"]}, {"_id": 0, "name": 1})
+            result["context"] = f"#{channel['name']}" if channel else "Unknown channel"
+            result["context_type"] = "channel"
+        elif msg.get("dm_thread_id"):
+            thread = await db.chat_dm_threads.find_one({"id": msg["dm_thread_id"]}, {"_id": 0})
+            if thread:
+                other_user_id = next((p for p in thread["participants"] if p != user_id), None)
+                if other_user_id:
+                    other_user = await db.users.find_one({"id": other_user_id}, {"_id": 0, "name": 1})
+                    result["context"] = other_user.get("name", "Unknown") if other_user else "Unknown"
+            result["context_type"] = "dm"
+        
+        results.append(result)
+    
+    return results
+
+
+@api_router.post("/chat/messages/{message_id}/reactions")
+async def add_reaction(
+    message_id: str,
+    emoji: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Add a reaction to a message"""
+    user_id = current_user["id"]
+    user_name = current_user.get("name", "Unknown")
+    
+    # Verify message exists
+    message = await db.chat_messages.find_one({"id": message_id}, {"_id": 0})
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    # Get or create reactions for this message
+    existing = await db.chat_reactions.find_one({
+        "message_id": message_id,
+        "emoji": emoji,
+        "user_id": user_id
+    })
+    
+    if existing:
+        # Remove reaction (toggle off)
+        await db.chat_reactions.delete_one({
+            "message_id": message_id,
+            "emoji": emoji,
+            "user_id": user_id
+        })
+        action = "removed"
+    else:
+        # Add reaction
+        reaction = {
+            "id": str(uuid.uuid4()),
+            "message_id": message_id,
+            "emoji": emoji,
+            "user_id": user_id,
+            "user_name": user_name,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.chat_reactions.insert_one(reaction)
+        action = "added"
+    
+    # Get updated reaction counts for this message
+    reactions = await db.chat_reactions.find({"message_id": message_id}, {"_id": 0}).to_list(100)
+    
+    # Group by emoji
+    reaction_summary = {}
+    for r in reactions:
+        emoji_key = r["emoji"]
+        if emoji_key not in reaction_summary:
+            reaction_summary[emoji_key] = {"emoji": emoji_key, "count": 0, "users": []}
+        reaction_summary[emoji_key]["count"] += 1
+        reaction_summary[emoji_key]["users"].append({"id": r["user_id"], "name": r["user_name"]})
+    
+    # Broadcast reaction update via WebSocket
+    ws_message = {
+        "type": "reaction_update",
+        "message_id": message_id,
+        "reactions": list(reaction_summary.values()),
+        "action": action,
+        "user_id": user_id,
+        "emoji": emoji
+    }
+    
+    if message.get("channel_id"):
+        await manager.broadcast_to_channel(ws_message, message["channel_id"])
+    elif message.get("dm_thread_id"):
+        thread = await db.chat_dm_threads.find_one({"id": message["dm_thread_id"]}, {"_id": 0})
+        if thread:
+            for participant in thread.get("participants", []):
+                await manager.send_personal_message(ws_message, participant)
+    
+    return {"action": action, "reactions": list(reaction_summary.values())}
+
+
+@api_router.get("/chat/messages/{message_id}/reactions")
+async def get_reactions(
+    message_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all reactions for a message"""
+    reactions = await db.chat_reactions.find({"message_id": message_id}, {"_id": 0}).to_list(100)
+    
+    # Group by emoji
+    reaction_summary = {}
+    for r in reactions:
+        emoji_key = r["emoji"]
+        if emoji_key not in reaction_summary:
+            reaction_summary[emoji_key] = {"emoji": emoji_key, "count": 0, "users": []}
+        reaction_summary[emoji_key]["count"] += 1
+        reaction_summary[emoji_key]["users"].append({"id": r["user_id"], "name": r["user_name"]})
+    
+    return list(reaction_summary.values())
+
+
+@api_router.get("/chat/user-status")
+async def get_all_user_status(current_user: dict = Depends(get_current_user)):
+    """Get online/offline status for all users"""
+    statuses = await db.chat_user_status.find({}, {"_id": 0}).to_list(500)
+    
+    # Convert to dict for easy lookup
+    status_map = {}
+    for s in statuses:
+        status_map[s["user_id"]] = {
+            "status": s.get("status", "offline"),
+            "last_seen": s.get("last_seen")
+        }
+    
+    return status_map
+
+
 # WebSocket endpoint for real-time messaging
 @app.websocket("/api/ws/{token}")
 async def websocket_endpoint(websocket: WebSocket, token: str):
