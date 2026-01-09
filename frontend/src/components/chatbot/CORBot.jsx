@@ -177,16 +177,16 @@ const CORBot = () => {
     setInputValue('');
   };
 
-  // Calculate position styles
+  // Calculate position styles for both button and panel
   const getPositionStyles = () => {
     if (position.y === null) {
-      // Default position: bottom-left
+      // Default position: bottom-left using CSS positioning
       return {
         left: position.x,
         bottom: 24,
       };
     }
-    // Custom dragged position: use top/left
+    // Custom dragged position: use absolute top/left
     return {
       left: position.x,
       top: position.y,
@@ -195,32 +195,57 @@ const CORBot = () => {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Drag constraints container - covers full viewport */}
+      <div 
+        ref={constraintsRef} 
+        className="fixed inset-0 pointer-events-none z-40"
+        style={{ margin: 10 }} // 10px padding from edges
+      />
+
+      {/* Floating Button - Draggable */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
+            data-testid="corbot-trigger-button"
+            drag
+            dragConstraints={constraintsRef}
+            dragElastic={0}
+            dragMomentum={false}
+            onDragStart={() => setIsDragging(true)}
+            onDragEnd={handleDragEnd}
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0 }}
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: isDragging ? 1 : 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 left-6 z-50 w-14 h-14 rounded-full shadow-lg
+            onClick={() => !isDragging && setIsOpen(true)}
+            style={getPositionStyles()}
+            className={`fixed z-50 w-14 h-14 rounded-full shadow-lg
                        bg-gradient-to-r from-brand-red to-red-600 hover:from-red-600 hover:to-red-700
-                       flex items-center justify-center transition-all group"
+                       flex items-center justify-center transition-colors group
+                       ${isDragging ? 'cursor-grabbing shadow-2xl ring-2 ring-brand-red/30' : 'cursor-grab'}`}
           >
-            <Bot className="w-6 h-6 text-white" />
-            {/* Pulse animation */}
-            <span className="absolute inset-0 rounded-full bg-brand-red animate-ping opacity-25" />
+            <Bot className="w-6 h-6 text-white pointer-events-none" />
+            {/* Pulse animation - hide during drag */}
+            {!isDragging && (
+              <span className="absolute inset-0 rounded-full bg-brand-red animate-ping opacity-25" />
+            )}
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* Chat Panel */}
+      {/* Chat Panel - Draggable via header */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            ref={dragRef}
+            data-testid="corbot-chat-panel"
+            drag
+            dragConstraints={constraintsRef}
+            dragElastic={0}
+            dragMomentum={false}
+            dragListener={false}
+            onDragStart={() => setIsDragging(true)}
+            onDragEnd={handleDragEnd}
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ 
               opacity: 1, 
@@ -235,14 +260,15 @@ const CORBot = () => {
                        flex flex-col transition-shadow duration-200
                        ${isDragging ? 'shadow-2xl ring-2 ring-brand-red/20' : 'shadow-xl'}`}
           >
-            {/* Header - Draggable */}
-            <div
-              onMouseDown={handleDragStart}
+            {/* Header - Drag Handle */}
+            <motion.div
+              drag="parent"
+              data-testid="corbot-drag-handle"
               className={`flex items-center justify-between px-4 py-3 bg-gradient-to-r from-brand-red to-red-600
                          select-none transition-all
                          ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 pointer-events-none">
                 <div className="bg-white/95 rounded px-1.5 py-0.5 flex items-center">
                   <img 
                     src={CORTRACKER_LOGO} 
@@ -256,8 +282,9 @@ const CORBot = () => {
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setIsMinimized(!isMinimized)}
-                  className="p-1.5 hover:bg-white/10 rounded-full transition-colors"
+                  className="p-1.5 hover:bg-white/10 rounded-full transition-colors pointer-events-auto"
                   title={isMinimized ? 'Expand' : 'Minimize'}
+                  data-testid="corbot-minimize-button"
                 >
                   <Minus className="w-4 h-4 text-white" />
                 </button>
@@ -266,13 +293,14 @@ const CORBot = () => {
                     setIsOpen(false);
                     setIsMinimized(false);
                   }}
-                  className="p-1.5 hover:bg-white/10 rounded-full transition-colors"
+                  className="p-1.5 hover:bg-white/10 rounded-full transition-colors pointer-events-auto"
                   title="Close"
+                  data-testid="corbot-close-button"
                 >
                   <X className="w-4 h-4 text-white" />
                 </button>
               </div>
-            </div>
+            </motion.div>
 
             {/* Body - Only show when not minimized */}
             <AnimatePresence>
