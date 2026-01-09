@@ -1,6 +1,11 @@
 export { default as CORChat } from './CORChat';
-export { default as ChatButton } from './ChatButton';
 export { default as ChatPanel } from './ChatPanel';
+export { default as ChatButton } from './ChatButton';
 export { default as ChannelList } from './ChannelList';
 export { default as DMList } from './DMList';
 export { default as MessageView } from './MessageView';
+export { default as CreateChannelModal } from './CreateChannelModal';
+export { default as NewDMModal } from './NewDMModal';
+export { default as SearchResults } from './SearchResults';
+export { default as EmojiPicker } from './EmojiPicker';
+export { default as MessageReactions } from './MessageReactions';
