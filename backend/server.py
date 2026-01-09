@@ -659,9 +659,19 @@ class ChatMessage(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class ChatAttachment(BaseModel):
+    id: Optional[str] = None
+    filename: str
+    file_url: str
+    content_type: Optional[str] = None
+    size: Optional[int] = None
+    is_image: bool = False
+
+
 class ChatMessageCreate(BaseModel):
     content: str = Field(..., min_length=1, max_length=4000)
     message_type: str = "text"
+    attachment: Optional[ChatAttachment] = None
 
 
 class ChatMessageResponse(BaseModel):
