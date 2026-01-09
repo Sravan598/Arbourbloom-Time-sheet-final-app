@@ -1,139 +1,128 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, ChevronDown, ChevronRight, Circle } from 'lucide-react';
-
-// Extracted ThreadItem component to avoid nested component definition
-const ThreadItem = ({ thread, isSelected, onSelectThread }) => {
-  return (
-    <motion.button
-      onClick={() => onSelectThread(thread)}
-      className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-left
-                  transition-colors group ${
-                    isSelected 
-                      ? 'bg-brand-red/10' 
-                      : 'hover:bg-gray-100'
-                  }`}
-      whileHover={{ x: 2 }}
-      whileTap={{ scale: 0.98 }}
-    >
-      {/* Avatar */}
-      <div className="relative">
-        {thread.other_user_image ? (
-          <img 
-            src={thread.other_user_image} 
-            alt={thread.other_user_name}
-            className="w-8 h-8 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-red to-red-600 flex items-center justify-center">
-            <span className="text-white text-xs font-medium">
-              {thread.other_user_name?.charAt(0)?.toUpperCase() || '?'}
-            </span>
-          </div>
-        )}
-        {/* Online indicator (placeholder - would need real-time status) */}
-        <Circle className="w-2.5 h-2.5 absolute bottom-0 right-0 text-gray-400 fill-gray-400" />
-      </div>
-
-      {/* Name and preview */}
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm truncate ${
-          isSelected ? 'text-brand-red font-medium' : 'text-gray-900'
-        }`}>
-          {thread.other_user_name}
-        </p>
-        {thread.last_message && (
-          <p className="text-xs text-gray-500 truncate">
-            {thread.last_message.content}
-          </p>
-        )}
-      </div>
-
-      {/* Unread badge */}
-      {thread.unread_count > 0 && (
-        <span className="bg-brand-red text-white text-xs px-1.5 py-0.5 rounded-full font-medium min-w-[20px] text-center">
-          {thread.unread_count > 99 ? '99+' : thread.unread_count}
-        </span>
-      )}
-    </motion.button>
-  );
-};
+import React from 'react';
+import { motion } from 'framer-motion';
+import { MessageCircle, Plus, User } from 'lucide-react';
+import { format, isToday, isYesterday } from 'date-fns';
 
 const DMList = ({ 
   threads, 
   selectedThread, 
   onSelectThread, 
-  onStartNewDM,
-  loading 
+  onStartNewDM, 
+  loading, 
+  userStatus = {} 
 }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const formatTime = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    if (isToday(date)) return format(date, 'h:mm a');
+    if (isYesterday(date)) return 'Yesterday';
+    return format(date, 'MMM d');
+  };
+
+  // Get user status
+  const getUserStatus = (userId) => {
+    return userStatus[userId]?.status || 'offline';
+  };
 
   return (
-    <div className="py-2 border-t border-gray-100">
-      {/* Direct Messages header */}
-      <div className="px-3 mb-2">
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-1 text-xs font-semibold text-gray-500 uppercase tracking-wider
-                     hover:text-gray-700 transition-colors w-full"
-        >
-          {isExpanded ? (
-            <ChevronDown className="w-3 h-3" />
-          ) : (
-            <ChevronRight className="w-3 h-3" />
-          )}
+    <div className="mt-4">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-2">
+        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
           Direct Messages
+        </h3>
+        <button
+          onClick={onStartNewDM}
+          className="p-1 hover:bg-gray-100 rounded transition-colors"
+          title="New message"
+        >
+          <Plus className="w-4 h-4 text-gray-500" />
         </button>
       </div>
 
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            {/* Thread list */}
-            <div className="px-2 space-y-0.5">
-              {threads.map(thread => (
-                <ThreadItem 
-                  key={thread.id} 
-                  thread={thread}
-                  isSelected={selectedThread?.id === thread.id}
-                  onSelectThread={onSelectThread}
-                />
-              ))}
-              
-              {threads.length === 0 && !loading && (
-                <p className="text-xs text-gray-400 px-3 py-2">No conversations yet</p>
-              )}
-            </div>
-
-            {/* Start new DM button */}
-            <div className="px-2 mt-2">
-              <button
-                onClick={onStartNewDM}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-500
-                           hover:bg-gray-100 hover:text-gray-700 rounded-md transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                <span>New Message</span>
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {loading && (
-        <div className="px-3 py-2">
-          <div className="animate-pulse space-y-2">
-            <div className="h-8 bg-gray-200 rounded"></div>
-            <div className="h-8 bg-gray-200 rounded"></div>
+      {/* Thread list */}
+      <div className="space-y-0.5">
+        {loading ? (
+          <div className="px-4 py-8 text-center">
+            <div className="animate-spin w-6 h-6 border-2 border-brand-red border-t-transparent rounded-full mx-auto" />
           </div>
-        </div>
-      )}
+        ) : threads.length === 0 ? (
+          <div className="px-4 py-8 text-center">
+            <MessageCircle className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+            <p className="text-sm text-gray-500">No conversations yet</p>
+            <button
+              onClick={onStartNewDM}
+              className="mt-2 text-sm text-brand-red hover:underline"
+            >
+              Start a conversation
+            </button>
+          </div>
+        ) : (
+          threads.map((thread) => {
+            const isSelected = selectedThread?.id === thread.id;
+            const status = getUserStatus(thread.other_user_id);
+            
+            return (
+              <motion.button
+                key={thread.id}
+                onClick={() => onSelectThread(thread)}
+                className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors ${
+                  isSelected 
+                    ? 'bg-brand-red/10' 
+                    : 'hover:bg-gray-50'
+                }`}
+                whileHover={{ x: 2 }}
+              >
+                {/* Avatar with status indicator */}
+                <div className="relative flex-shrink-0">
+                  {thread.other_user_image ? (
+                    <img
+                      src={thread.other_user_image}
+                      alt={thread.other_user_name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
+                      <span className="text-white text-sm font-medium">
+                        {thread.other_user_name?.charAt(0)?.toUpperCase() || '?'}
+                      </span>
+                    </div>
+                  )}
+                  {/* Online status indicator */}
+                  <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
+                    status === 'online' ? 'bg-green-500' : 'bg-gray-300'
+                  }`} />
+                </div>
+
+                {/* Thread info */}
+                <div className="flex-1 min-w-0 text-left">
+                  <div className="flex items-center justify-between">
+                    <span className={`font-medium truncate ${
+                      isSelected ? 'text-brand-red' : 'text-gray-900'
+                    }`}>
+                      {thread.other_user_name}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {formatTime(thread.last_message?.created_at)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <p className="text-sm text-gray-500 truncate flex-1">
+                      {thread.last_message?.content || 'No messages yet'}
+                    </p>
+                    {/* Unread indicator */}
+                    {thread.unread_count > 0 && (
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-brand-red text-white text-xs flex items-center justify-center">
+                        {thread.unread_count > 9 ? '9+' : thread.unread_count}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </motion.button>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 };
