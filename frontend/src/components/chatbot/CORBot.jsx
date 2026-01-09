@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { Bot, X, Minus, Send } from 'lucide-react';
 import { findAnswer } from './faqData';
 
@@ -8,6 +8,9 @@ const CORTRACKER_LOGO = "https://customer-assets.emergentagent.com/job_readable-
 
 // Storage key for position persistence
 const POSITION_STORAGE_KEY = 'corbot_position';
+
+// Default position (bottom-left corner)
+const DEFAULT_POSITION = { x: 24, y: null };
 
 const CORBot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,24 +25,26 @@ const CORBot = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const constraintsRef = useRef(null);
 
-  // Drag state
+  // Load saved position from localStorage on mount
   const [position, setPosition] = useState(() => {
-    // Load saved position from localStorage
-    const saved = localStorage.getItem(POSITION_STORAGE_KEY);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return { x: 24, y: null };
+    try {
+      const saved = localStorage.getItem(POSITION_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Validate saved position is within current viewport
+        if (parsed && typeof parsed.x === 'number') {
+          return parsed;
+        }
       }
+    } catch {
+      // Ignore parse errors
     }
-    return { x: 24, y: null }; // Default: bottom-left
+    return DEFAULT_POSITION;
   });
+
   const [isDragging, setIsDragging] = useState(false);
-  const dragRef = useRef(null);
-  const dragStartPos = useRef({ x: 0, y: 0 });
-  const initialPos = useRef({ x: 0, y: 0 });
 
   // Save position to localStorage whenever it changes
   useEffect(() => {
