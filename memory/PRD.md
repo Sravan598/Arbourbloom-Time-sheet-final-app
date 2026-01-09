@@ -87,10 +87,19 @@ CORtracker is a comprehensive time-tracking and workforce management application
 - `/app/frontend/src/services/chatService.js` - Chat API and WebSocket manager
 - `/app/frontend/src/components/chatbot/CORBot.jsx` - FAQ chatbot with drag persistence
 
-### Calendar API Endpoints
-- `GET /api/calendar/token` - Get calendar feed URLs (personal + team for admins)
-- `GET /api/calendar/feed/{token}.ics` - Public ICS feed endpoint
-- `POST /api/calendar/regenerate-token` - Regenerate calendar URL
+### Chat API Endpoints
+- `GET /api/chat/channels` - List all channels
+- `POST /api/chat/channels` - Create a channel
+- `GET /api/chat/channels/{id}/messages` - Get channel messages
+- `POST /api/chat/channels/{id}/messages` - Send channel message
+- `GET /api/chat/dm` - List DM threads
+- `POST /api/chat/dm/{user_id}` - Start DM thread
+- `GET /api/chat/dm/{id}/messages` - Get DM messages
+- `POST /api/chat/dm/{id}/messages` - Send DM message
+- `GET /api/chat/search?q=query` - Search all messages
+- `POST /api/chat/messages/{id}/reactions?emoji=👍` - Add/remove reaction
+- `GET /api/chat/user-status` - Get all users' online status
+- `WS /api/ws/{token}` - WebSocket for real-time updates
 
 ## Upcoming Tasks
 
