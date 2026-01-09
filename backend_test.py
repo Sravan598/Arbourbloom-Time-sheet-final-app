@@ -472,18 +472,529 @@ class DocumentAPITester:
         
         print("\n" + "=" * 80)
 
+class LeaveAPITester:
+    def __init__(self):
+        self.employee_token = None
+        self.admin_token = None
+        self.employee_id = None
+        self.admin_id = None
+        self.test_leave_type_id = None
+        self.test_leave_request_id = None
+        self.test_notification_id = None
+        self.results = []
+        
+    def log_result(self, test_name, success, details="", response_code=None):
+        """Log test result"""
+        status = "✅ PASS" if success else "❌ FAIL"
+        result = {
+            "test": test_name,
+            "status": status,
+            "details": details,
+            "response_code": response_code,
+            "timestamp": datetime.now().isoformat()
+        }
+        self.results.append(result)
+        print(f"{status} - {test_name}")
+        if details:
+            print(f"    Details: {details}")
+        if response_code:
+            print(f"    Response Code: {response_code}")
+        print()
+
+    def login_user(self, credentials, user_type):
+        """Login and get authentication token"""
+        try:
+            response = requests.post(f"{BASE_URL}/auth/login", json=credentials)
+            
+            if response.status_code == 200:
+                data = response.json()
+                token = data.get("access_token")
+                user_id = data.get("user", {}).get("id")
+                
+                if user_type == "employee":
+                    self.employee_token = token
+                    self.employee_id = user_id
+                else:
+                    self.admin_token = token
+                    self.admin_id = user_id
+                    
+                self.log_result(f"{user_type.title()} Login", True, 
+                              f"Successfully logged in as {credentials['email']}", response.status_code)
+                return True
+            else:
+                self.log_result(f"{user_type.title()} Login", False, 
+                              f"Login failed: {response.text}", response.status_code)
+                return False
+                
+        except Exception as e:
+            self.log_result(f"{user_type.title()} Login", False, f"Exception: {str(e)}")
+            return False
+
+    def get_headers(self, user_type="employee"):
+        """Get authorization headers"""
+        token = self.employee_token if user_type == "employee" else self.admin_token
+        return {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+
+    # Leave Types API Tests
+    def test_get_leave_types(self):
+        """Test GET /api/leave/types - Get default leave types"""
+        try:
+            response = requests.get(f"{BASE_URL}/leave/types", headers=self.get_headers())
+            
+            if response.status_code == 200:
+                data = response.json()
+                type_count = len(data) if isinstance(data, list) else 0
+                type_names = [t.get("name", "") for t in data] if isinstance(data, list) else []
+                self.log_result("Get Leave Types", True, 
+                              f"Retrieved {type_count} leave types: {', '.join(type_names)}", response.status_code)
+                return data
+            else:
+                self.log_result("Get Leave Types", False, 
+                              f"Failed to get leave types: {response.text}", response.status_code)
+                return None
+                
+        except Exception as e:
+            self.log_result("Get Leave Types", False, f"Exception: {str(e)}")
+            return None
+
+    def test_create_leave_type(self):
+        """Test POST /api/admin/leave/types - Create a new leave type"""
+        try:
+            leave_type_data = {
+                "name": "Remote Work",
+                "icon": "🏠"
+            }
+            
+            response = requests.post(f"{BASE_URL}/admin/leave/types", 
+                                   json=leave_type_data, headers=self.get_headers("admin"))
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.test_leave_type_id = data.get("id")
+                message = data.get("message", "")
+                self.log_result("Create Leave Type", True, 
+                              f"Leave type created: {message}", response.status_code)
+                return True
+            else:
+                self.log_result("Create Leave Type", False, 
+                              f"Failed to create leave type: {response.text}", response.status_code)
+                return False
+                
+        except Exception as e:
+            self.log_result("Create Leave Type", False, f"Exception: {str(e)}")
+            return False
+
+    def test_update_leave_type(self):
+        """Test PUT /api/admin/leave/types/{id} - Update a leave type"""
+        if not self.test_leave_type_id:
+            self.log_result("Update Leave Type", False, "No test leave type ID available")
+            return False
+            
+        try:
+            update_data = {
+                "name": "Remote Work Updated",
+                "icon": "🏡"
+            }
+            
+            response = requests.put(f"{BASE_URL}/admin/leave/types/{self.test_leave_type_id}", 
+                                  json=update_data, headers=self.get_headers("admin"))
+            
+            if response.status_code == 200:
+                data = response.json()
+                message = data.get("message", "")
+                self.log_result("Update Leave Type", True, 
+                              f"Leave type updated: {message}", response.status_code)
+                return True
+            else:
+                self.log_result("Update Leave Type", False, 
+                              f"Failed to update leave type: {response.text}", response.status_code)
+                return False
+                
+        except Exception as e:
+            self.log_result("Update Leave Type", False, f"Exception: {str(e)}")
+            return False
+
+    def test_delete_leave_type(self):
+        """Test DELETE /api/admin/leave/types/{id} - Delete a leave type"""
+        if not self.test_leave_type_id:
+            self.log_result("Delete Leave Type", False, "No test leave type ID available")
+            return False
+            
+        try:
+            response = requests.delete(f"{BASE_URL}/admin/leave/types/{self.test_leave_type_id}", 
+                                     headers=self.get_headers("admin"))
+            
+            if response.status_code == 200:
+                data = response.json()
+                message = data.get("message", "")
+                self.log_result("Delete Leave Type", True, 
+                              f"Leave type deleted: {message}", response.status_code)
+                return True
+            else:
+                self.log_result("Delete Leave Type", False, 
+                              f"Failed to delete leave type: {response.text}", response.status_code)
+                return False
+                
+        except Exception as e:
+            self.log_result("Delete Leave Type", False, f"Exception: {str(e)}")
+            return False
+
+    # Employee Leave Request Tests
+    def test_get_employee_leave_requests(self):
+        """Test GET /api/leave/requests - Get employee's leave requests"""
+        try:
+            response = requests.get(f"{BASE_URL}/leave/requests", 
+                                  headers=self.get_headers("employee"))
+            
+            if response.status_code == 200:
+                data = response.json()
+                request_count = len(data) if isinstance(data, list) else 0
+                self.log_result("Get Employee Leave Requests", True, 
+                              f"Retrieved {request_count} leave requests", response.status_code)
+                return data
+            else:
+                self.log_result("Get Employee Leave Requests", False, 
+                              f"Failed to get leave requests: {response.text}", response.status_code)
+                return None
+                
+        except Exception as e:
+            self.log_result("Get Employee Leave Requests", False, f"Exception: {str(e)}")
+            return None
+
+    def test_create_leave_request(self):
+        """Test POST /api/leave/requests - Create a new leave request"""
+        try:
+            # Calculate dates (tomorrow to day after tomorrow)
+            from datetime import datetime, timedelta
+            tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+            day_after = (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d")
+            
+            leave_request_data = {
+                "leave_type": "Vacation",
+                "is_custom_type": False,
+                "start_date": tomorrow,
+                "end_date": day_after,
+                "reason": "Family vacation - API test request"
+            }
+            
+            response = requests.post(f"{BASE_URL}/leave/requests", 
+                                   json=leave_request_data, headers=self.get_headers("employee"))
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.test_leave_request_id = data.get("id")
+                message = data.get("message", "")
+                self.log_result("Create Leave Request", True, 
+                              f"Leave request created: {message}", response.status_code)
+                return True
+            else:
+                self.log_result("Create Leave Request", False, 
+                              f"Failed to create leave request: {response.text}", response.status_code)
+                return False
+                
+        except Exception as e:
+            self.log_result("Create Leave Request", False, f"Exception: {str(e)}")
+            return False
+
+    def test_cancel_leave_request(self):
+        """Test DELETE /api/leave/requests/{id} - Cancel a pending request"""
+        if not self.test_leave_request_id:
+            self.log_result("Cancel Leave Request", False, "No test leave request ID available")
+            return False
+            
+        try:
+            response = requests.delete(f"{BASE_URL}/leave/requests/{self.test_leave_request_id}", 
+                                     headers=self.get_headers("employee"))
+            
+            if response.status_code == 200:
+                data = response.json()
+                message = data.get("message", "")
+                self.log_result("Cancel Leave Request", True, 
+                              f"Leave request cancelled: {message}", response.status_code)
+                return True
+            else:
+                self.log_result("Cancel Leave Request", False, 
+                              f"Failed to cancel leave request: {response.text}", response.status_code)
+                return False
+                
+        except Exception as e:
+            self.log_result("Cancel Leave Request", False, f"Exception: {str(e)}")
+            return False
+
+    # Admin Leave Request Tests
+    def test_get_all_leave_requests(self):
+        """Test GET /api/admin/leave/requests - Get all leave requests"""
+        try:
+            response = requests.get(f"{BASE_URL}/admin/leave/requests", 
+                                  headers=self.get_headers("admin"))
+            
+            if response.status_code == 200:
+                data = response.json()
+                request_count = len(data) if isinstance(data, list) else 0
+                self.log_result("Get All Leave Requests", True, 
+                              f"Admin retrieved {request_count} leave requests", response.status_code)
+                return data
+            else:
+                self.log_result("Get All Leave Requests", False, 
+                              f"Admin failed to get leave requests: {response.text}", response.status_code)
+                return None
+                
+        except Exception as e:
+            self.log_result("Get All Leave Requests", False, f"Exception: {str(e)}")
+            return None
+
+    def test_create_leave_request_for_approval(self):
+        """Create a leave request that can be approved by admin"""
+        try:
+            # Calculate dates (3 days from now to 5 days from now)
+            from datetime import datetime, timedelta
+            start_date = (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d")
+            end_date = (datetime.now() + timedelta(days=5)).strftime("%Y-%m-%d")
+            
+            leave_request_data = {
+                "leave_type": "Sick Leave",
+                "is_custom_type": False,
+                "start_date": start_date,
+                "end_date": end_date,
+                "reason": "Medical appointment - API test request for approval"
+            }
+            
+            response = requests.post(f"{BASE_URL}/leave/requests", 
+                                   json=leave_request_data, headers=self.get_headers("employee"))
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.test_leave_request_id = data.get("id")
+                message = data.get("message", "")
+                self.log_result("Create Leave Request for Approval", True, 
+                              f"Leave request created for approval: {message}", response.status_code)
+                return True
+            else:
+                self.log_result("Create Leave Request for Approval", False, 
+                              f"Failed to create leave request: {response.text}", response.status_code)
+                return False
+                
+        except Exception as e:
+            self.log_result("Create Leave Request for Approval", False, f"Exception: {str(e)}")
+            return False
+
+    def test_approve_leave_request(self):
+        """Test PUT /api/admin/leave/requests/{id} - Approve a request"""
+        if not self.test_leave_request_id:
+            self.log_result("Approve Leave Request", False, "No test leave request ID available")
+            return False
+            
+        try:
+            approval_data = {
+                "status": "APPROVED",
+                "review_note": "Approved for medical reasons - API test"
+            }
+            
+            response = requests.put(f"{BASE_URL}/admin/leave/requests/{self.test_leave_request_id}", 
+                                  json=approval_data, headers=self.get_headers("admin"))
+            
+            if response.status_code == 200:
+                data = response.json()
+                message = data.get("message", "")
+                self.log_result("Approve Leave Request", True, 
+                              f"Leave request approved: {message}", response.status_code)
+                return True
+            else:
+                self.log_result("Approve Leave Request", False, 
+                              f"Failed to approve leave request: {response.text}", response.status_code)
+                return False
+                
+        except Exception as e:
+            self.log_result("Approve Leave Request", False, f"Exception: {str(e)}")
+            return False
+
+    # Notification Tests
+    def test_get_notifications(self):
+        """Test GET /api/notifications - Get notifications"""
+        try:
+            response = requests.get(f"{BASE_URL}/notifications", 
+                                  headers=self.get_headers("employee"))
+            
+            if response.status_code == 200:
+                data = response.json()
+                notif_count = len(data) if isinstance(data, list) else 0
+                
+                # Store first notification ID for testing
+                if isinstance(data, list) and len(data) > 0:
+                    self.test_notification_id = data[0].get("id")
+                
+                self.log_result("Get Notifications", True, 
+                              f"Retrieved {notif_count} notifications", response.status_code)
+                return data
+            else:
+                self.log_result("Get Notifications", False, 
+                              f"Failed to get notifications: {response.text}", response.status_code)
+                return None
+                
+        except Exception as e:
+            self.log_result("Get Notifications", False, f"Exception: {str(e)}")
+            return None
+
+    def test_get_unread_count(self):
+        """Test GET /api/notifications/unread-count - Get unread count"""
+        try:
+            response = requests.get(f"{BASE_URL}/notifications/unread-count", 
+                                  headers=self.get_headers("employee"))
+            
+            if response.status_code == 200:
+                data = response.json()
+                count = data.get("count", 0)
+                self.log_result("Get Unread Count", True, 
+                              f"Unread notifications count: {count}", response.status_code)
+                return True
+            else:
+                self.log_result("Get Unread Count", False, 
+                              f"Failed to get unread count: {response.text}", response.status_code)
+                return False
+                
+        except Exception as e:
+            self.log_result("Get Unread Count", False, f"Exception: {str(e)}")
+            return False
+
+    def test_mark_notification_read(self):
+        """Test PUT /api/notifications/{id}/read - Mark as read"""
+        if not self.test_notification_id:
+            self.log_result("Mark Notification Read", False, "No test notification ID available")
+            return False
+            
+        try:
+            response = requests.put(f"{BASE_URL}/notifications/{self.test_notification_id}/read", 
+                                  headers=self.get_headers("employee"))
+            
+            if response.status_code == 200:
+                data = response.json()
+                message = data.get("message", "")
+                self.log_result("Mark Notification Read", True, 
+                              f"Notification marked as read: {message}", response.status_code)
+                return True
+            else:
+                self.log_result("Mark Notification Read", False, 
+                              f"Failed to mark notification as read: {response.text}", response.status_code)
+                return False
+                
+        except Exception as e:
+            self.log_result("Mark Notification Read", False, f"Exception: {str(e)}")
+            return False
+
+    def test_mark_all_notifications_read(self):
+        """Test PUT /api/notifications/read-all - Mark all as read"""
+        try:
+            response = requests.put(f"{BASE_URL}/notifications/read-all", 
+                                  headers=self.get_headers("employee"))
+            
+            if response.status_code == 200:
+                data = response.json()
+                message = data.get("message", "")
+                self.log_result("Mark All Notifications Read", True, 
+                              f"All notifications marked as read: {message}", response.status_code)
+                return True
+            else:
+                self.log_result("Mark All Notifications Read", False, 
+                              f"Failed to mark all notifications as read: {response.text}", response.status_code)
+                return False
+                
+        except Exception as e:
+            self.log_result("Mark All Notifications Read", False, f"Exception: {str(e)}")
+            return False
+
+    def run_all_tests(self):
+        """Run all Leave/PTO API tests"""
+        print("=" * 80)
+        print("CORtracker Leave/PTO Module Backend API Testing")
+        print("=" * 80)
+        print()
+        
+        # Login tests
+        print("🔐 Authentication Tests")
+        print("-" * 40)
+        
+        # Use the credentials from the review request
+        employee_creds = {"email": "testleave@test.com", "password": "password123"}
+        admin_creds = {"email": "admin@company.com", "password": "password123"}
+        
+        employee_login_success = self.login_user(employee_creds, "employee")
+        admin_login_success = self.login_user(admin_creds, "admin")
+        
+        if not employee_login_success:
+            print("❌ Cannot proceed without employee login")
+            return
+            
+        if not admin_login_success:
+            print("⚠️  Admin tests will be skipped")
+        
+        # Leave Types API Tests
+        print("📋 Leave Types API Tests")
+        print("-" * 40)
+        self.test_get_leave_types()
+        
+        if admin_login_success:
+            self.test_create_leave_type()
+            self.test_update_leave_type()
+            self.test_delete_leave_type()
+        
+        # Employee Leave Request Tests
+        print("📝 Employee Leave Request Tests")
+        print("-" * 40)
+        self.test_get_employee_leave_requests()
+        self.test_create_leave_request()
+        self.test_cancel_leave_request()
+        
+        # Admin Leave Request Tests
+        if admin_login_success:
+            print("👑 Admin Leave Request Tests")
+            print("-" * 40)
+            self.test_get_all_leave_requests()
+            self.test_create_leave_request_for_approval()
+            self.test_approve_leave_request()
+        
+        # Notification Tests
+        print("🔔 Notification Tests")
+        print("-" * 40)
+        self.test_get_notifications()
+        self.test_get_unread_count()
+        self.test_mark_notification_read()
+        self.test_mark_all_notifications_read()
+        
+        # Summary
+        self.print_summary()
+
+    def print_summary(self):
+        """Print test summary"""
+        print("\n" + "=" * 80)
+        print("LEAVE/PTO API TEST SUMMARY")
+        print("=" * 80)
+        
+        passed = sum(1 for r in self.results if "✅ PASS" in r["status"])
+        failed = sum(1 for r in self.results if "❌ FAIL" in r["status"])
+        total = len(self.results)
+        
+        print(f"Total Tests: {total}")
+        print(f"Passed: {passed}")
+        print(f"Failed: {failed}")
+        print(f"Success Rate: {(passed/total*100):.1f}%" if total > 0 else "0%")
+        
+        if failed > 0:
+            print("\n❌ FAILED TESTS:")
+            for result in self.results:
+                if "❌ FAIL" in result["status"]:
+                    print(f"  - {result['test']}: {result['details']}")
+        
+        print("\n" + "=" * 80)
+
+
 if __name__ == "__main__":
-    # Run Document API tests
-    print("Running Document API Tests...")
-    doc_tester = DocumentAPITester()
-    doc_tester.run_all_tests()
-    
-    print("\n" + "="*100 + "\n")
-    
-    # Run CORChat API tests
-    print("Running CORChat API Tests...")
-    chat_tester = CORChatAPITester()
-    chat_tester.run_all_tests()
+    # Run Leave/PTO API tests
+    print("Running Leave/PTO API Tests...")
+    leave_tester = LeaveAPITester()
+    leave_tester.run_all_tests()
 
 
 class CORChatAPITester:
