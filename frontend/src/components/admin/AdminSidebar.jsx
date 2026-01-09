@@ -6,7 +6,9 @@ import {
   FileText, 
   Folder,
   FolderKanban,
-  Users
+  Users,
+  Calendar,
+  Settings
 } from 'lucide-react';
 
 const AdminSidebar = () => {
@@ -42,6 +44,16 @@ const AdminSidebar = () => {
       path: '/admin/employee-docs', 
       label: 'Employee Docs', 
       icon: Folder 
+    },
+    { 
+      path: '/admin/leave-requests', 
+      label: 'Leave Requests', 
+      icon: Calendar 
+    },
+    { 
+      path: '/admin/leave-settings', 
+      label: 'Leave Settings', 
+      icon: Settings 
     }
   ];
 
