@@ -708,6 +708,81 @@ class ChatUserStatus(BaseModel):
     last_seen: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+# ============== LEAVE/PTO MODELS ==============
+class LeaveStatus(str, Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    DENIED = "DENIED"
+
+
+class LeaveType(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    icon: str = "📅"
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class LeaveTypeCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=50)
+    icon: str = "📅"
+
+
+class LeaveRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    user_name: str
+    user_image: Optional[str] = None
+    leave_type: str
+    is_custom_type: bool = False
+    start_date: str  # YYYY-MM-DD
+    end_date: str    # YYYY-MM-DD
+    days: int
+    reason: str
+    status: LeaveStatus = LeaveStatus.PENDING
+    reviewed_by: Optional[str] = None
+    reviewer_name: Optional[str] = None
+    review_note: Optional[str] = None
+    reviewed_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class LeaveRequestCreate(BaseModel):
+    leave_type: str = Field(..., min_length=1, max_length=50)
+    is_custom_type: bool = False
+    start_date: str  # YYYY-MM-DD
+    end_date: str    # YYYY-MM-DD
+    reason: str = Field(..., min_length=1, max_length=500)
+
+
+class LeaveRequestReview(BaseModel):
+    status: Literal["APPROVED", "DENIED"]
+    review_note: Optional[str] = Field(None, max_length=200)
+
+
+class NotificationType(str, Enum):
+    LEAVE_APPROVED = "LEAVE_APPROVED"
+    LEAVE_DENIED = "LEAVE_DENIED"
+    LEAVE_REQUEST = "LEAVE_REQUEST"  # For admins
+
+
+class Notification(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    type: NotificationType
+    title: str
+    message: str
+    reference_id: Optional[str] = None  # Leave request ID
+    is_read: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 # ============== HELPER FUNCTIONS ==============
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
