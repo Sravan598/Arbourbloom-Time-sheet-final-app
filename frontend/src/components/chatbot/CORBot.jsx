@@ -87,6 +87,9 @@ const CORBot = () => {
     const newPos = { x, y, hasCustomPosition: true };
     setPosition(newPos);
     localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify({ x, y }));
+    
+    // Increment key to reset Framer Motion's internal transform state
+    setDragKey(prev => prev + 1);
   };
 
   // Handle resize
