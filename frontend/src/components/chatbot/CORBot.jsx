@@ -241,6 +241,7 @@ const CORBot = () => {
           <motion.div
             data-testid="corbot-chat-panel"
             drag
+            dragControls={dragControls}
             dragConstraints={constraintsRef}
             dragElastic={0}
             dragMomentum={false}
@@ -262,22 +263,11 @@ const CORBot = () => {
                        ${isDragging ? 'shadow-2xl ring-2 ring-brand-red/20' : 'shadow-xl'}`}
           >
             {/* Header - Drag Handle */}
-            <motion.div
+            <div
               onPointerDown={(e) => {
-                // Only start drag if not clicking buttons
+                // Only initiate drag if not clicking on buttons
                 if (!e.target.closest('button')) {
-                  e.stopPropagation();
-                  const parent = e.currentTarget.parentElement;
-                  if (parent) {
-                    parent.dispatchEvent(new PointerEvent('pointerdown', {
-                      bubbles: true,
-                      cancelable: true,
-                      clientX: e.clientX,
-                      clientY: e.clientY,
-                      pointerId: e.pointerId,
-                      pointerType: e.pointerType,
-                    }));
-                  }
+                  dragControls.start(e);
                 }
               }}
               data-testid="corbot-drag-handle"
