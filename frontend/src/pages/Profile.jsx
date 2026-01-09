@@ -24,7 +24,11 @@ import {
   EyeOff,
   UserCircle,
   Heart,
-  Globe
+  Globe,
+  Copy,
+  RefreshCw,
+  ExternalLink,
+  CalendarDays
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
