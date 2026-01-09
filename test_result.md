@@ -101,6 +101,54 @@
 user_problem_statement: "CORtracker time-tracking application - Leave/PTO module testing"
 
 backend:
+  - task: "Leave/PTO - Leave Types API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: All Leave Types APIs working correctly. ✅ GET /api/leave/types - 200 OK (returns 5 default leave types: Vacation, Sick Leave, Personal, Bereavement, Parental Leave) ✅ POST /api/admin/leave/types - 200 OK (successfully creates new leave type 'Remote Work' with icon 🏠) ✅ PUT /api/admin/leave/types/{id} - 200 OK (successfully updates leave type name and icon) ✅ DELETE /api/admin/leave/types/{id} - 200 OK (successfully soft-deletes leave type by marking as inactive). All CRUD operations working as expected."
+
+  - task: "Leave/PTO - Employee Leave Requests API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: All Employee Leave Request APIs working correctly. ✅ GET /api/leave/requests - 200 OK (retrieves employee's leave requests) ✅ POST /api/leave/requests - 200 OK (successfully creates leave request with validation for dates, overlap checking, and automatic notification to admins) ✅ DELETE /api/leave/requests/{id} - 200 OK (successfully cancels pending leave requests). Date validation, overlap detection, and business logic working properly."
+
+  - task: "Leave/PTO - Admin Leave Requests API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: All Admin Leave Request APIs working correctly. ✅ GET /api/admin/leave/requests - 200 OK (admin can view all leave requests from all employees) ✅ PUT /api/admin/leave/requests/{id} - 200 OK (admin can approve/deny leave requests with optional review notes, automatically sends notifications to employees). Admin approval workflow and notification system working as expected."
+
+  - task: "Leave/PTO - Notifications API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "VERIFIED: All Notification APIs working correctly. ✅ GET /api/notifications - 200 OK (retrieves user's notifications with proper formatting) ✅ GET /api/notifications/unread-count - 200 OK (returns accurate unread count) ✅ PUT /api/notifications/{id}/read - 200 OK (marks individual notification as read) ✅ PUT /api/notifications/read-all - 200 OK (marks all notifications as read). Notification system fully functional with proper read/unread tracking."
+
   - task: "Document Section - PIN Setup/Verify API"
     implemented: true
     working: true
