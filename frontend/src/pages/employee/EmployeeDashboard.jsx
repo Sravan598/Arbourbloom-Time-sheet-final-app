@@ -76,23 +76,14 @@ const EmployeeDashboard = () => {
     }
   }, []);
 
-  const fetchTodayPunches = useCallback(async () => {
-    try {
-      const response = await axios.get(`${API}/employee/today-punches`);
-      setTodayPunches(response.data);
-    } catch (err) {
-      console.error('Failed to fetch today punches:', err);
-    }
-  }, []);
-
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      await Promise.all([fetchCurrentShift(), fetchTodayPunches()]);
+      await fetchCurrentShift();
       setIsLoading(false);
     };
     loadData();
-  }, [fetchCurrentShift, fetchTodayPunches]);
+  }, [fetchCurrentShift]);
 
   // Timer for elapsed time
   useEffect(() => {
