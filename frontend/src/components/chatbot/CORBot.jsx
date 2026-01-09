@@ -151,13 +151,20 @@ const CORBot = () => {
     }, 500);
   };
 
-  // Get position style
+  // Get position style - always use top/left for consistent drag behavior
   const getPositionStyle = () => {
     if (position.hasCustomPosition) {
       return { left: position.x, top: position.y };
     }
-    // Default: bottom-left corner
-    return { left: 24, bottom: 24 };
+    // Default: bottom-left corner - convert to top/left
+    const buttonHeight = 56;
+    const panelHeight = isMinimized ? 56 : 500;
+    const height = isOpen ? panelHeight : buttonHeight;
+    // Calculate top position from bottom
+    const topPosition = typeof window !== 'undefined' 
+      ? window.innerHeight - height - 24 
+      : 500;
+    return { left: 24, top: topPosition };
   };
 
   return (
