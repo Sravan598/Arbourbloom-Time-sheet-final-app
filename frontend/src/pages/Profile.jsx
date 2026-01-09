@@ -223,6 +223,7 @@ const Profile = () => {
     { id: 'personal', label: 'Personal Info', icon: User },
     { id: 'work', label: 'Work Info', icon: Briefcase },
     { id: 'emergency', label: 'Emergency', icon: Heart },
+    { id: 'calendar', label: 'Calendar', icon: CalendarDays },
     { id: 'settings', label: 'Settings', icon: Shield }
   ];
 
