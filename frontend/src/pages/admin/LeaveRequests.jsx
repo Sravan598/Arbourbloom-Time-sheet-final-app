@@ -1,12 +1,29 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Calendar, Clock, CheckCircle, XCircle, Search,
-  User, MessageSquare, Check, X
+  MessageSquare, Check, X
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import leaveService from '../../services/leaveService';
+
+// Status badge - moved outside to avoid re-renders
+const StatusBadge = ({ status }) => {
+  const config = {
+    PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700', icon: Clock, label: 'Pending' },
+    APPROVED: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle, label: 'Approved' },
+    DENIED: { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle, label: 'Denied' }
+  };
+  const { bg, text, icon: Icon, label } = config[status] || config.PENDING;
+  
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${bg} ${text}`}>
+      <Icon className="w-4 h-4" />
+      {label}
+    </span>
+  );
+};
 
 const LeaveRequests = () => {
   const [requests, setRequests] = useState([]);
