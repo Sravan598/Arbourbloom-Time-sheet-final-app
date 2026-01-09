@@ -5,6 +5,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import CursorDot from './components/ui/CursorDot';
 import { CORChat } from './components/chat';
 import { CORBot } from './components/chatbot';
+import { NotificationBell } from './components/notifications';
 
 // Pages
 import Home from './pages/Home';
@@ -14,12 +15,15 @@ import Profile from './pages/Profile';
 import EmployeeDashboard from './pages/employee/EmployeeDashboard';
 import EmployeeTimesheet from './pages/employee/EmployeeTimesheet';
 import Documents from './pages/employee/Documents';
+import Leave from './pages/employee/Leave';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminTimesheets from './pages/admin/AdminTimesheets';
 import PerformanceInsights from './pages/admin/PerformanceInsights';
 import Projects from './pages/admin/Projects';
 import EmployeeDocs from './pages/admin/EmployeeDocs';
 import Employees from './pages/admin/Employees';
+import LeaveRequests from './pages/admin/LeaveRequests';
+import LeaveSettings from './pages/admin/LeaveSettings';
 
 import './App.css';
 
@@ -30,6 +34,19 @@ const ChatWidget = () => {
   if (!isAuthenticated) return null;
   
   return <CORChat currentUser={user} />;
+};
+
+// Notification bell wrapper
+const NotificationWidget = () => {
+  const { isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) return null;
+  
+  return (
+    <div className="fixed top-4 right-4 z-50">
+      <NotificationBell />
+    </div>
+  );
 };
 
 function App() {
@@ -45,6 +62,9 @@ function App() {
           
           {/* CORChat floating widget - appears on all pages when logged in */}
           <ChatWidget />
+          
+          {/* Notification Bell - appears on all pages when logged in */}
+          <NotificationWidget />
           
           <Routes>
             {/* Public Routes */}
@@ -84,6 +104,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="EMPLOYEE">
                   <Documents />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/employee/leave" 
+              element={
+                <ProtectedRoute requiredRole="EMPLOYEE">
+                  <Leave />
                 </ProtectedRoute>
               } 
             />
@@ -134,6 +162,22 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="ADMIN">
                   <EmployeeDocs />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/leave-requests" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <LeaveRequests />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/leave-settings" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <LeaveSettings />
                 </ProtectedRoute>
               } 
             />
