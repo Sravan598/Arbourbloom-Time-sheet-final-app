@@ -40,6 +40,17 @@ CORtracker is a comprehensive time-tracking and workforce management application
 - **Position Persistence**: Position saved to localStorage and restored on page reload
 - Can be placed anywhere on the screen by dragging
 
+### 8. Calendar Integration ✅ NEW (January 2025)
+- **ICS Feed subscription** for calendar apps (Google Calendar, Outlook, Apple Calendar)
+- **Personal Calendar**: Shows user's approved leave/PTO events
+- **Team Calendar** (Admin only): Shows all team members' approved leave events
+- Accessible from Profile → Calendar tab and Sidebar → Calendar Sync
+- Features:
+  - Copy calendar URL to clipboard
+  - Regenerate URL for security
+  - Download ICS file directly
+  - Instructions for major calendar apps
+
 ## Technical Architecture
 
 ### Frontend
@@ -53,17 +64,16 @@ CORtracker is a comprehensive time-tracking and workforce management application
 - WebSocket support for real-time features
 
 ### Key Files
-- `/app/backend/server.py` - Main backend file
+- `/app/backend/server.py` - Main backend file with Calendar API endpoints
+- `/app/frontend/src/pages/Profile.jsx` - Profile page with Calendar tab
+- `/app/frontend/src/components/employee/EmployeeSidebar.jsx` - Employee sidebar with Calendar Sync
+- `/app/frontend/src/components/admin/AdminSidebar.jsx` - Admin sidebar with Calendar Sync
 - `/app/frontend/src/components/chatbot/CORBot.jsx` - FAQ chatbot with drag persistence
-- `/app/frontend/src/components/chat/` - CORChat components
-- `/app/frontend/src/pages/employee/Leave.jsx` - Employee leave requests
-- `/app/frontend/src/pages/admin/LeaveRequests.jsx` - Admin leave management
 
-## Completed Work (This Session)
-- [x] CORBot drag-and-drop enhancement with localStorage persistence
-  - Position saved on drag end
-  - Position restored on page load
-  - Works for both floating button and chat panel
+### Calendar API Endpoints
+- `GET /api/calendar/token` - Get calendar feed URLs (personal + team for admins)
+- `GET /api/calendar/feed/{token}.ics` - Public ICS feed endpoint
+- `POST /api/calendar/regenerate-token` - Regenerate calendar URL
 
 ## Upcoming Tasks
 
@@ -75,7 +85,6 @@ CORtracker is a comprehensive time-tracking and workforce management application
 ### P1 - Medium Priority
 1. **CORChat Phase 5**: Unread counts, search, attachments
 2. **Daily Summary Email**: Automated work hour summaries
-3. **Calendar Integration**: Google/Outlook sync
 
 ### P2 - Future
 1. Shift Scheduling module
@@ -83,13 +92,10 @@ CORtracker is a comprehensive time-tracking and workforce management application
 
 ## Test Credentials
 - **Admin**: `admin@company.com` / `password123`
-- **Employee**: Can be created via signup or use `test@test.com` / `password123`
+- **Employee**: Create via signup
 
 ## Known Issues
 - React Three Fiber incompatibility (3D logo feature)
-- During drag, CORBot may visually extend outside viewport (snaps back on release)
 
 ## Refactoring Needs
-- `/app/backend/server.py` is monolithic - consider splitting into:
-  - `/app/backend/routes/` for API routes
-  - `/app/backend/models/` for data models
+- `/app/backend/server.py` is monolithic - consider splitting into routes/models/services
