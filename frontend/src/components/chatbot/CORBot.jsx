@@ -40,6 +40,7 @@ const CORBot = () => {
   });
 
   const [isDragging, setIsDragging] = useState(false);
+  const [dragKey, setDragKey] = useState(0); // Key to force remount after drag
   const dragControls = useDragControls();
   const buttonRef = useRef(null);
   const panelRef = useRef(null);
