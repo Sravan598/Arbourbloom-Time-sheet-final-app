@@ -59,6 +59,11 @@ const Profile = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  
+  // Calendar integration state
+  const [calendarFeeds, setCalendarFeeds] = useState(null);
+  const [isLoadingCalendar, setIsLoadingCalendar] = useState(false);
+  const [copiedFeed, setCopiedFeed] = useState(null);
 
   const fetchProfile = useCallback(async () => {
     try {
