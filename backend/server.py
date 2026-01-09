@@ -5482,7 +5482,7 @@ async def get_calendar_token(
 ):
     """Get or generate calendar feed tokens for the current user"""
     user_id = current_user["id"]
-    is_admin = current_user.get("role") == "admin"
+    is_admin = current_user.get("role", "").upper() == "ADMIN"
     
     # Generate personal token
     personal_token = generate_calendar_token(user_id, "personal")
