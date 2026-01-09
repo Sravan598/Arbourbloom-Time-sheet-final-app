@@ -42,7 +42,8 @@ const CORBot = () => {
 
   const [isDragging, setIsDragging] = useState(false);
   const dragControls = useDragControls();
-  const elementRef = useRef(null);
+  const buttonRef = useRef(null);
+  const panelRef = useRef(null);
 
   // Auto-scroll messages
   useEffect(() => {
