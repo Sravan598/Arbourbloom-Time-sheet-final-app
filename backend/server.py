@@ -4562,18 +4562,37 @@ async def send_channel_message(
     if channel.get("type") == "PRIVATE" and current_user["id"] not in channel.get("members", []):
         raise HTTPException(status_code=403, detail="Access denied")
     
+    # Handle attachment
+    attachment_data = None
+    file_url = None
+    file_name = None
+    msg_type = message_data.message_type
+    
+    if message_data.attachment:
+        attachment_data = message_data.attachment.model_dump()
+        file_url = attachment_data.get("file_url")
+        file_name = attachment_data.get("filename")
+        if attachment_data.get("is_image"):
+            msg_type = "image"
+        else:
+            msg_type = "file"
+    
     message = ChatMessage(
         channel_id=channel_id,
         sender_id=current_user["id"],
         sender_name=current_user.get("name", "Unknown"),
         sender_image=current_user.get("profile_image"),
         content=message_data.content,
-        message_type=message_data.message_type
+        message_type=msg_type,
+        file_url=file_url,
+        file_name=file_name
     )
     
     doc = message.model_dump()
     doc["created_at"] = doc["created_at"].isoformat()
     doc["updated_at"] = doc["updated_at"].isoformat()
+    if attachment_data:
+        doc["attachment"] = attachment_data
     
     await db.chat_messages.insert_one(doc)
     
@@ -4588,7 +4607,8 @@ async def send_channel_message(
             "sender_name": message.sender_name,
             "sender_image": message.sender_image,
             "content": message.content,
-            "message_type": message.message_type,
+            "message_type": msg_type,
+            "attachment": attachment_data,
             "created_at": doc["created_at"]
         }
     }
@@ -4602,9 +4622,10 @@ async def send_channel_message(
         sender_name=message.sender_name,
         sender_image=message.sender_image,
         content=message.content,
-        message_type=message.message_type,
-        file_url=None,
-        file_name=None,
+        message_type=msg_type,
+        file_url=file_url,
+        file_name=file_name,
+        attachment=attachment_data,
         is_edited=False,
         reactions={},
         created_at=message.created_at
