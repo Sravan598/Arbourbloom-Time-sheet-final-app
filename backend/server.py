@@ -54,6 +54,9 @@ UPLOAD_DIR = Path("/app/uploads/chat")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+
+# PDF Logo configuration
+LOGO_PATH = ROOT_DIR / "assets" / "cortracker_logo.png"
 ALLOWED_DOC_TYPES = {"application/pdf", "application/msword", 
                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                      "application/vnd.ms-excel",
