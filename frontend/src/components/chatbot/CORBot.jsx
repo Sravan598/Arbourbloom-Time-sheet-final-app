@@ -1,10 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, X, Minus, Send, MessageCircle } from 'lucide-react';
+import { Bot, X, Minus, Send } from 'lucide-react';
 import { findAnswer } from './faqData';
 
 // CORtracker logo URL
 const CORTRACKER_LOGO = "https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png";
+
+// Storage key for position persistence
+const POSITION_STORAGE_KEY = 'corbot_position';
 
 const CORBot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,10 +24,29 @@ const CORBot = () => {
   const inputRef = useRef(null);
 
   // Drag state
-  const [position, setPosition] = useState({ x: 24, y: null }); // bottom-left default
+  const [position, setPosition] = useState(() => {
+    // Load saved position from localStorage
+    const saved = localStorage.getItem(POSITION_STORAGE_KEY);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return { x: 24, y: null };
+      }
+    }
+    return { x: 24, y: null }; // Default: bottom-left
+  });
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef(null);
   const dragStartPos = useRef({ x: 0, y: 0 });
+  const initialPos = useRef({ x: 0, y: 0 });
+
+  // Save position to localStorage whenever it changes
+  useEffect(() => {
+    if (position.y !== null) {
+      localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(position));
+    }
+  }, [position]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -55,7 +77,7 @@ const CORBot = () => {
       const response = findAnswer(userMessage);
       setMessages(prev => [...prev, { type: 'bot', text: response.answer }]);
       setIsTyping(false);
-    }, 500 + Math.random() * 500); // Random delay for natural feel
+    }, 500 + Math.random() * 500);
   };
 
   // Handle key press
@@ -66,46 +88,90 @@ const CORBot = () => {
     }
   };
 
+  // Get panel dimensions
+  const getPanelDimensions = () => {
+    const width = 360;
+    const height = isMinimized ? 56 : 500;
+    return { width, height };
+  };
+
   // Drag handlers
   const handleDragStart = (e) => {
+    // Don't start drag if clicking on buttons or input
     if (e.target.closest('button') || e.target.closest('input')) return;
+    
+    e.preventDefault();
     setIsDragging(true);
+    
     const rect = dragRef.current.getBoundingClientRect();
     dragStartPos.current = {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
     };
+    initialPos.current = {
+      x: rect.left,
+      y: rect.top
+    };
   };
 
-  const handleDrag = (e) => {
+  const handleDrag = useCallback((e) => {
     if (!isDragging) return;
-    const newX = e.clientX - dragStartPos.current.x;
-    const newY = e.clientY - dragStartPos.current.y;
     
-    // Keep within viewport
-    const maxX = window.innerWidth - 380;
-    const maxY = window.innerHeight - 500;
+    const { width, height } = getPanelDimensions();
+    const padding = 10; // Minimum distance from viewport edges
     
-    setPosition({
-      x: Math.max(0, Math.min(newX, maxX)),
-      y: Math.max(0, Math.min(newY, maxY))
-    });
-  };
+    let newX = e.clientX - dragStartPos.current.x;
+    let newY = e.clientY - dragStartPos.current.y;
+    
+    // Keep within viewport bounds
+    const maxX = window.innerWidth - width - padding;
+    const maxY = window.innerHeight - height - padding;
+    
+    newX = Math.max(padding, Math.min(newX, maxX));
+    newY = Math.max(padding, Math.min(newY, maxY));
+    
+    setPosition({ x: newX, y: newY });
+  }, [isDragging, isMinimized]);
 
-  const handleDragEnd = () => {
+  const handleDragEnd = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
+  // Add/remove event listeners for drag
   useEffect(() => {
     if (isDragging) {
       window.addEventListener('mousemove', handleDrag);
       window.addEventListener('mouseup', handleDragEnd);
+      // Prevent text selection while dragging
+      document.body.style.userSelect = 'none';
+      
       return () => {
         window.removeEventListener('mousemove', handleDrag);
         window.removeEventListener('mouseup', handleDragEnd);
+        document.body.style.userSelect = '';
       };
     }
-  }, [isDragging]);
+  }, [isDragging, handleDrag, handleDragEnd]);
+
+  // Handle window resize - keep panel in bounds
+  useEffect(() => {
+    const handleResize = () => {
+      if (position.y !== null) {
+        const { width, height } = getPanelDimensions();
+        const padding = 10;
+        const maxX = window.innerWidth - width - padding;
+        const maxY = window.innerHeight - height - padding;
+        
+        setPosition(prev => ({
+          x: Math.max(padding, Math.min(prev.x, maxX)),
+          y: Math.max(padding, Math.min(prev.y, maxY))
+        }));
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [position.y, isMinimized]);
 
   // Quick questions
   const quickQuestions = [
@@ -127,6 +193,22 @@ const CORBot = () => {
       }, 500);
     }, 100);
     setInputValue('');
+  };
+
+  // Calculate position styles
+  const getPositionStyles = () => {
+    if (position.y === null) {
+      // Default position: bottom-left
+      return {
+        left: position.x,
+        bottom: 24,
+      };
+    }
+    // Custom dragged position: use top/left
+    return {
+      left: position.x,
+      top: position.y,
+    };
   };
 
   return (
@@ -161,25 +243,22 @@ const CORBot = () => {
             animate={{ 
               opacity: 1, 
               y: 0, 
-              scale: 1,
+              scale: isDragging ? 1.02 : 1,
               height: isMinimized ? 'auto' : 500
             }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            style={{
-              left: position.x,
-              bottom: position.y === null ? 24 : 'auto',
-              top: position.y !== null ? position.y : 'auto',
-            }}
-            className={`fixed w-[360px] bg-white rounded-2xl shadow-2xl
-                       flex flex-col overflow-hidden border border-gray-200 z-50
-                       ${isDragging ? 'cursor-grabbing' : ''}`}
+            style={getPositionStyles()}
+            className={`fixed w-[360px] bg-white rounded-2xl overflow-hidden border border-gray-200 z-50
+                       flex flex-col transition-shadow duration-200
+                       ${isDragging ? 'shadow-2xl ring-2 ring-brand-red/20' : 'shadow-xl'}`}
           >
             {/* Header - Draggable */}
             <div
               onMouseDown={handleDragStart}
               className={`flex items-center justify-between px-4 py-3 bg-gradient-to-r from-brand-red to-red-600
-                         ${!isDragging ? 'cursor-grab' : 'cursor-grabbing'} select-none`}
+                         select-none transition-all
+                         ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
             >
               <div className="flex items-center gap-2">
                 <div className="bg-white/95 rounded px-1.5 py-0.5 flex items-center">
