@@ -134,7 +134,6 @@ const EmployeeDashboard = () => {
       setClockInNote('');
       setShowNoteInput(false);
       await fetchCurrentShift();
-      await fetchTodayPunches();
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to clock in');
     } finally {
@@ -155,7 +154,6 @@ const EmployeeDashboard = () => {
       setClockOutNote('');
       setShowNoteInput(false);
       await fetchCurrentShift();
-      await fetchTodayPunches();
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to clock out');
     } finally {
