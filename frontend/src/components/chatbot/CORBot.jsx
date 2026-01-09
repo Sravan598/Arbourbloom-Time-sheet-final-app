@@ -46,7 +46,7 @@ const CORBot = () => {
 
   const [isDragging, setIsDragging] = useState(false);
 
-  // Save position to localStorage whenever it changes
+  // Save position to localStorage whenever it changes (debounced)
   useEffect(() => {
     if (position.y !== null) {
       localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(position));
@@ -64,6 +64,68 @@ const CORBot = () => {
       inputRef.current?.focus();
     }
   }, [isOpen, isMinimized]);
+
+  // Get dimensions for bounds calculation
+  const getElementSize = (isButton = false) => {
+    if (isButton) {
+      return { width: 56, height: 56 }; // Button size (w-14 h-14)
+    }
+    return { width: 360, height: isMinimized ? 56 : 500 }; // Panel size
+  };
+
+  // Handle drag end - save final position
+  const handleDragEnd = (event, info) => {
+    setIsDragging(false);
+    
+    // Calculate the final position from the drag offset
+    const size = getElementSize(!isOpen);
+    const padding = 10;
+    
+    // Get current element position
+    let finalX, finalY;
+    
+    if (position.y === null) {
+      // Was at default bottom-left position, calculate new absolute position
+      finalX = 24 + info.offset.x;
+      finalY = window.innerHeight - 24 - size.height + info.offset.y;
+    } else {
+      // Already has absolute position, add offset
+      finalX = position.x + info.offset.x;
+      finalY = position.y + info.offset.y;
+    }
+    
+    // Clamp to viewport bounds
+    const maxX = window.innerWidth - size.width - padding;
+    const maxY = window.innerHeight - size.height - padding;
+    
+    finalX = Math.max(padding, Math.min(finalX, maxX));
+    finalY = Math.max(padding, Math.min(finalY, maxY));
+    
+    // Save the new position
+    const newPosition = { x: finalX, y: finalY };
+    setPosition(newPosition);
+    localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(newPosition));
+  };
+
+  // Handle window resize - keep element in bounds
+  useEffect(() => {
+    const handleResize = () => {
+      if (position.y !== null) {
+        const size = getElementSize(!isOpen);
+        const padding = 10;
+        const maxX = window.innerWidth - size.width - padding;
+        const maxY = window.innerHeight - size.height - padding;
+        
+        setPosition(prev => ({
+          x: Math.max(padding, Math.min(prev.x, maxX)),
+          y: Math.max(padding, Math.min(prev.y, maxY))
+        }));
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [position.y, isOpen, isMinimized]);
 
   // Handle sending message
   const handleSend = () => {
@@ -92,91 +154,6 @@ const CORBot = () => {
       handleSend();
     }
   };
-
-  // Get panel dimensions
-  const getPanelDimensions = () => {
-    const width = 360;
-    const height = isMinimized ? 56 : 500;
-    return { width, height };
-  };
-
-  // Drag handlers
-  const handleDragStart = (e) => {
-    // Don't start drag if clicking on buttons or input
-    if (e.target.closest('button') || e.target.closest('input')) return;
-    
-    e.preventDefault();
-    setIsDragging(true);
-    
-    const rect = dragRef.current.getBoundingClientRect();
-    dragStartPos.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    };
-    initialPos.current = {
-      x: rect.left,
-      y: rect.top
-    };
-  };
-
-  const handleDrag = useCallback((e) => {
-    if (!isDragging) return;
-    
-    const { width, height } = getPanelDimensions();
-    const padding = 10; // Minimum distance from viewport edges
-    
-    let newX = e.clientX - dragStartPos.current.x;
-    let newY = e.clientY - dragStartPos.current.y;
-    
-    // Keep within viewport bounds
-    const maxX = window.innerWidth - width - padding;
-    const maxY = window.innerHeight - height - padding;
-    
-    newX = Math.max(padding, Math.min(newX, maxX));
-    newY = Math.max(padding, Math.min(newY, maxY));
-    
-    setPosition({ x: newX, y: newY });
-  }, [isDragging, isMinimized]);
-
-  const handleDragEnd = useCallback(() => {
-    setIsDragging(false);
-  }, []);
-
-  // Add/remove event listeners for drag
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleDrag);
-      window.addEventListener('mouseup', handleDragEnd);
-      // Prevent text selection while dragging
-      document.body.style.userSelect = 'none';
-      
-      return () => {
-        window.removeEventListener('mousemove', handleDrag);
-        window.removeEventListener('mouseup', handleDragEnd);
-        document.body.style.userSelect = '';
-      };
-    }
-  }, [isDragging, handleDrag, handleDragEnd]);
-
-  // Handle window resize - keep panel in bounds
-  useEffect(() => {
-    const handleResize = () => {
-      if (position.y !== null) {
-        const { width, height } = getPanelDimensions();
-        const padding = 10;
-        const maxX = window.innerWidth - width - padding;
-        const maxY = window.innerHeight - height - padding;
-        
-        setPosition(prev => ({
-          x: Math.max(padding, Math.min(prev.x, maxX)),
-          y: Math.max(padding, Math.min(prev.y, maxY))
-        }));
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [position.y, isMinimized]);
 
   // Quick questions
   const quickQuestions = [
