@@ -177,7 +177,7 @@ const CORBot = () => {
       <AnimatePresence>
         {!isOpen && (
           <motion.button
-            ref={elementRef}
+            ref={buttonRef}
             data-testid="corbot-trigger-button"
             drag
             dragConstraints={constraintsRef}
