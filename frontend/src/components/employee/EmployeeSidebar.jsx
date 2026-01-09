@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   Home, 
   FileText, 
-  Folder
+  Folder,
+  Calendar
 } from 'lucide-react';
 
 const EmployeeSidebar = () => {
@@ -24,6 +25,11 @@ const EmployeeSidebar = () => {
       path: '/employee/documents', 
       label: 'Documents', 
       icon: Folder 
+    },
+    { 
+      path: '/employee/leave', 
+      label: 'Leave / PTO', 
+      icon: Calendar 
     }
   ];
 
