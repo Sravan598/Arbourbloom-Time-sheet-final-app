@@ -231,7 +231,7 @@ const CORBot = () => {
             data-testid="corbot-chat-panel"
             drag
             dragControls={dragControls}
-            dragConstraints={constraintsRef}
+            dragConstraints={getDragConstraints()}
             dragElastic={0}
             dragMomentum={false}
             dragListener={false}
