@@ -22,26 +22,28 @@ const CORBot = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-
-  // Load saved position from localStorage
-  const [position, setPosition] = useState(() => {
+  const dragControls = useDragControls();
+  
+  // Track if user has dragged (to show at saved position)
+  const [isDragging, setIsDragging] = useState(false);
+  
+  // Load initial position from localStorage
+  const [initialPosition] = useState(() => {
     try {
       const saved = localStorage.getItem(POSITION_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed.x === 'number' && typeof parsed.y === 'number') {
-          return { x: parsed.x, y: parsed.y, hasCustomPosition: true };
+          return { x: parsed.x, y: parsed.y };
         }
       }
     } catch {
       // Ignore
     }
-    return { x: 24, y: null, hasCustomPosition: false }; // null y means use bottom positioning
+    return null;
   });
 
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragKey, setDragKey] = useState(0); // Key to force remount after drag
-  const dragControls = useDragControls();
+  // Refs for tracking position
   const buttonRef = useRef(null);
   const panelRef = useRef(null);
 
@@ -57,66 +59,47 @@ const CORBot = () => {
     }
   }, [isOpen, isMinimized]);
 
-  // Get element dimensions
-  const getSize = () => {
-    const width = isOpen ? 360 : 56;
-    const height = isOpen ? (isMinimized ? 56 : 500) : 56;
-    return { width, height };
+  // Get element size
+  const getSize = (forButton = false) => {
+    if (forButton) return { width: 56, height: 56 };
+    return { width: 360, height: isMinimized ? 56 : 500 };
   };
 
-  // Handle drag end
-  const handleDragEnd = (event, info) => {
-    setIsDragging(false);
+  // Save position to localStorage
+  const savePosition = (element) => {
+    if (!element) return;
     
-    // Get the element that was dragged
-    const el = isOpen ? panelRef.current : buttonRef.current;
-    if (!el) return;
-    
-    const rect = el.getBoundingClientRect();
-    const { width, height } = getSize();
+    const rect = element.getBoundingClientRect();
+    const { width, height } = getSize(!isOpen);
     const padding = 10;
     
-    // Clamp position to viewport
+    // Clamp to viewport
     const maxX = window.innerWidth - width - padding;
     const maxY = window.innerHeight - height - padding;
     
     const x = Math.max(padding, Math.min(rect.left, maxX));
     const y = Math.max(padding, Math.min(rect.top, maxY));
     
-    // Save position
-    const newPos = { x, y, hasCustomPosition: true };
-    setPosition(newPos);
     localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify({ x, y }));
-    
-    // Increment key to reset Framer Motion's internal transform state
-    setDragKey(prev => prev + 1);
   };
 
-  // Handle resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (position.hasCustomPosition) {
-        const { width, height } = getSize();
-        const padding = 10;
-        const maxX = window.innerWidth - width - padding;
-        const maxY = window.innerHeight - height - padding;
-        
-        const newX = Math.max(padding, Math.min(position.x, maxX));
-        const newY = Math.max(padding, Math.min(position.y, maxY));
-        
-        if (newX !== position.x || newY !== position.y) {
-          const newPos = { x: newX, y: newY, hasCustomPosition: true };
-          setPosition(newPos);
-          localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify({ x: newX, y: newY }));
-        }
-      }
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [position, isOpen, isMinimized]);
+  // Handle drag end
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    const el = isOpen ? panelRef.current : buttonRef.current;
+    savePosition(el);
+  };
 
-  // Handlers
+  // Get base position style
+  const getBaseStyle = () => {
+    if (initialPosition) {
+      return { left: initialPosition.x, top: initialPosition.y };
+    }
+    // Default: bottom-left
+    return { left: 24, bottom: 24 };
+  };
+
+  // Message handlers
   const handleSend = () => {
     if (!inputValue.trim()) return;
     const userMessage = inputValue.trim();
@@ -154,50 +137,16 @@ const CORBot = () => {
     }, 500);
   };
 
-  // Calculate drag constraints based on viewport and element size
-  const getDragConstraints = () => {
-    const { width, height } = getSize();
-    const padding = 10;
-    const currentPos = position.hasCustomPosition 
-      ? { x: position.x, y: position.y }
-      : { x: 24, y: typeof window !== 'undefined' ? window.innerHeight - height - 24 : 500 };
-    
-    return {
-      left: padding - currentPos.x,
-      right: (typeof window !== 'undefined' ? window.innerWidth : 1920) - width - padding - currentPos.x,
-      top: padding - currentPos.y,
-      bottom: (typeof window !== 'undefined' ? window.innerHeight : 800) - height - padding - currentPos.y
-    };
-  };
-
-  // Get position style - always use top/left for consistent drag behavior
-  const getPositionStyle = () => {
-    if (position.hasCustomPosition) {
-      return { left: position.x, top: position.y };
-    }
-    // Default: bottom-left corner - convert to top/left
-    const buttonHeight = 56;
-    const panelHeight = isMinimized ? 56 : 500;
-    const height = isOpen ? panelHeight : buttonHeight;
-    // Calculate top position from bottom
-    const topPosition = typeof window !== 'undefined' 
-      ? window.innerHeight - height - 24 
-      : 500;
-    return { left: 24, top: topPosition };
-  };
-
   return (
     <>
       {/* Floating Button */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {!isOpen && (
           <motion.button
-            key={`corbot-btn-${dragKey}`}
             ref={buttonRef}
             data-testid="corbot-trigger-button"
             drag
-            dragConstraints={getDragConstraints()}
-            dragElastic={0}
+            dragElastic={0.1}
             dragMomentum={false}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={handleDragEnd}
@@ -206,11 +155,13 @@ const CORBot = () => {
             exit={{ opacity: 0, scale: 0 }}
             whileHover={{ scale: isDragging ? 1 : 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => !isDragging && setIsOpen(true)}
-            style={getPositionStyle()}
+            onClick={() => {
+              if (!isDragging) setIsOpen(true);
+            }}
+            style={getBaseStyle()}
             className={`fixed z-50 w-14 h-14 rounded-full shadow-lg
                        bg-gradient-to-r from-brand-red to-red-600 hover:from-red-600 hover:to-red-700
-                       flex items-center justify-center transition-colors group
+                       flex items-center justify-center group
                        ${isDragging ? 'cursor-grabbing shadow-2xl ring-2 ring-brand-red/30' : 'cursor-grab'}`}
           >
             <Bot className="w-6 h-6 text-white pointer-events-none" />
@@ -222,16 +173,14 @@ const CORBot = () => {
       </AnimatePresence>
 
       {/* Chat Panel */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {isOpen && (
           <motion.div
-            key={`corbot-panel-${dragKey}`}
             ref={panelRef}
             data-testid="corbot-chat-panel"
             drag
             dragControls={dragControls}
-            dragConstraints={getDragConstraints()}
-            dragElastic={0}
+            dragElastic={0.1}
             dragMomentum={false}
             dragListener={false}
             onDragStart={() => setIsDragging(true)}
@@ -244,12 +193,12 @@ const CORBot = () => {
             }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            style={getPositionStyle()}
+            style={getBaseStyle()}
             className={`fixed w-[360px] bg-white rounded-2xl overflow-hidden border border-gray-200 z-50
-                       flex flex-col transition-shadow duration-200
-                       ${isDragging ? 'shadow-2xl ring-2 ring-brand-red/20' : 'shadow-xl'}`}
+                       flex flex-col shadow-xl
+                       ${isDragging ? 'shadow-2xl ring-2 ring-brand-red/20' : ''}`}
           >
-            {/* Header */}
+            {/* Header - Drag Handle */}
             <div
               onPointerDown={(e) => {
                 if (!e.target.closest('button')) {
