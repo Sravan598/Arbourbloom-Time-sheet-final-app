@@ -8,6 +8,23 @@ import { format } from 'date-fns';
 import EmployeeSidebar from '../../components/employee/EmployeeSidebar';
 import leaveService from '../../services/leaveService';
 
+// Status badge component - moved outside to avoid re-renders
+const StatusBadge = ({ status }) => {
+  const config = {
+    PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700', icon: Clock },
+    APPROVED: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle },
+    DENIED: { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle }
+  };
+  const { bg, text, icon: Icon } = config[status] || config.PENDING;
+  
+  return (
+    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${bg} ${text}`}>
+      <Icon className="w-3.5 h-3.5" />
+      {status}
+    </span>
+  );
+};
+
 const Leave = () => {
   const [requests, setRequests] = useState([]);
   const [leaveTypes, setLeaveTypes] = useState([]);
