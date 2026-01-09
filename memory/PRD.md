@@ -35,6 +35,7 @@ CORtracker is a comprehensive time-tracking and workforce management application
 - **Phase 3**: WebSocket real-time messaging, typing indicators ✅
 - **Phase 4**: Direct Messages, online/offline user status ✅
 - **Phase 5**: Search, emoji reactions, unread counts ✅
+- **Phase 6**: File Attachments ✅ (January 9, 2025)
 - Features:
   - Create public/private channels
   - Real-time messaging via WebSocket
@@ -44,6 +45,7 @@ CORtracker is a comprehensive time-tracking and workforce management application
   - Online/offline status for users
   - Unread message counts
   - Date-grouped messages
+  - **Image and document attachments** (PNG, JPG, GIF, PDF, TXT, DOC, XLS)
 
 ### 7. CORBot - FAQ Chatbot ✅ ENHANCED
 - Draggable FAQ chatbot widget
@@ -51,7 +53,7 @@ CORtracker is a comprehensive time-tracking and workforce management application
 - **Position Persistence**: Position saved to localStorage and restored on page reload
 - Can be placed anywhere on the screen by dragging
 
-### 8. Calendar Integration ✅ NEW (January 2025)
+### 8. Calendar Integration ✅ (January 2025)
 - **ICS Feed subscription** for calendar apps (Google Calendar, Outlook, Apple Calendar)
 - **Personal Calendar**: Shows user's approved leave/PTO events
 - **Team Calendar** (Admin only): Shows all team members' approved leave events
@@ -61,6 +63,12 @@ CORtracker is a comprehensive time-tracking and workforce management application
   - Regenerate URL for security
   - Download ICS file directly
   - Instructions for major calendar apps
+
+### 9. PDF Reports ✅ ENHANCED (January 9, 2025)
+- **Timesheet PDF Export**: Employee timesheet reports
+- **Performance Insights PDF** (Admin): Team performance reports
+- **Professional Header**: CORtracker logo with tagline centered at top
+- Logo stored at `/app/backend/assets/cortracker_logo.png`
 
 ## Technical Architecture
 
@@ -73,14 +81,16 @@ CORtracker is a comprehensive time-tracking and workforce management application
 - FastAPI (Python)
 - MongoDB database
 - WebSocket support for real-time features
+- `aiofiles` for async file handling
 
 ### Key Files
-- `/app/backend/server.py` - Main backend file with Calendar API and Chat API endpoints
+- `/app/backend/server.py` - Main backend with Calendar, Chat, PDF APIs
+- `/app/backend/assets/cortracker_logo.png` - Logo for PDF reports
 - `/app/frontend/src/pages/Profile.jsx` - Profile page with Calendar tab
 - `/app/frontend/src/components/chat/` - CORChat components (11 files)
   - `CORChat.jsx` - Main chat component with WebSocket integration
   - `ChatPanel.jsx` - Chat panel with channels/DMs/search
-  - `MessageView.jsx` - Message display with reactions
+  - `MessageView.jsx` - Message display with reactions and file attachments
   - `SearchResults.jsx` - Search results component
   - `EmojiPicker.jsx` - Emoji picker for messages/reactions
   - `MessageReactions.jsx` - Reaction display component
@@ -91,15 +101,21 @@ CORtracker is a comprehensive time-tracking and workforce management application
 - `GET /api/chat/channels` - List all channels
 - `POST /api/chat/channels` - Create a channel
 - `GET /api/chat/channels/{id}/messages` - Get channel messages
-- `POST /api/chat/channels/{id}/messages` - Send channel message
+- `POST /api/chat/channels/{id}/messages` - Send channel message (with attachment support)
 - `GET /api/chat/dm` - List DM threads
 - `POST /api/chat/dm/{user_id}` - Start DM thread
 - `GET /api/chat/dm/{id}/messages` - Get DM messages
-- `POST /api/chat/dm/{id}/messages` - Send DM message
+- `POST /api/chat/dm/{id}/messages` - Send DM message (with attachment support)
 - `GET /api/chat/search?q=query` - Search all messages
 - `POST /api/chat/messages/{id}/reactions?emoji=👍` - Add/remove reaction
 - `GET /api/chat/user-status` - Get all users' online status
+- `POST /api/chat/upload` - Upload file for chat attachment
+- `GET /api/chat/files/{category}/{filename}` - Serve uploaded files
 - `WS /api/ws/{token}` - WebSocket for real-time updates
+
+### PDF Export Endpoints
+- `GET /api/export/timesheet/pdf` - Export employee timesheet as PDF
+- `GET /api/admin/performance/export-pdf` - Export performance insights as PDF
 
 ## Upcoming Tasks
 
@@ -107,7 +123,7 @@ CORtracker is a comprehensive time-tracking and workforce management application
 1. **Daily Summary Email**: Automated work hour summaries (ON HOLD per user request)
 
 ### P1 - Medium Priority
-1. **CORChat File Attachments**: Image and document sharing in chat
+1. Calendar Integration Phase 2 (Two-Way OAuth Sync)
 
 ### P2 - Future
 1. Shift Scheduling module
@@ -115,10 +131,18 @@ CORtracker is a comprehensive time-tracking and workforce management application
 
 ## Test Credentials
 - **Admin**: `admin@company.com` / `password123`
-- **Employee**: Create via signup
+- **Employee**: `demo@employee.com` / `password123`
 
 ## Known Issues
 - React Three Fiber incompatibility (3D logo feature)
 
 ## Refactoring Needs
 - `/app/backend/server.py` is monolithic - consider splitting into routes/models/services
+
+## Change Log
+
+### January 9, 2025
+- ✅ Fixed CORBot drag-and-drop with improved state handling
+- ✅ Added CORtracker logo to PDF reports (centered header with tagline)
+- ✅ Completed CORChat file attachments (image/document sharing)
+- ✅ Added 12 backend tests for new features (all passing)
