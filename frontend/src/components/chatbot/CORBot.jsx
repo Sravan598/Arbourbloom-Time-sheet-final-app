@@ -307,7 +307,7 @@ const CORBot = () => {
                   <X className="w-4 h-4 text-white" />
                 </button>
               </div>
-            </motion.div>
+            </div>
 
             {/* Body - Only show when not minimized */}
             <AnimatePresence>
