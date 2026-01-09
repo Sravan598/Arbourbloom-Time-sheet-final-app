@@ -262,7 +262,23 @@ const CORBot = () => {
           >
             {/* Header - Drag Handle */}
             <motion.div
-              drag="parent"
+              onPointerDown={(e) => {
+                // Only start drag if not clicking buttons
+                if (!e.target.closest('button')) {
+                  e.stopPropagation();
+                  const parent = e.currentTarget.parentElement;
+                  if (parent) {
+                    parent.dispatchEvent(new PointerEvent('pointerdown', {
+                      bubbles: true,
+                      cancelable: true,
+                      clientX: e.clientX,
+                      clientY: e.clientY,
+                      pointerId: e.pointerId,
+                      pointerType: e.pointerType,
+                    }));
+                  }
+                }
+              }}
               data-testid="corbot-drag-handle"
               className={`flex items-center justify-between px-4 py-3 bg-gradient-to-r from-brand-red to-red-600
                          select-none transition-all
