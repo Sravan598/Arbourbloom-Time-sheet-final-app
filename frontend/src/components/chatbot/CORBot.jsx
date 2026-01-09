@@ -46,6 +46,8 @@ const CORBot = () => {
 
   const [isDragging, setIsDragging] = useState(false);
   const dragControls = useDragControls();
+  const panelRef = useRef(null);
+  const buttonRef = useRef(null);
 
   // Save position to localStorage whenever it changes (debounced)
   useEffect(() => {
