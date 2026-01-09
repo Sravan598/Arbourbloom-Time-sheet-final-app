@@ -8,7 +8,8 @@ import {
   FolderKanban,
   Users,
   Calendar,
-  Settings
+  Settings,
+  CalendarDays
 } from 'lucide-react';
 
 const AdminSidebar = () => {
