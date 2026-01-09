@@ -685,6 +685,7 @@ class ChatMessageResponse(BaseModel):
     message_type: str
     file_url: Optional[str]
     file_name: Optional[str]
+    attachment: Optional[dict] = None
     is_edited: bool
     reactions: Dict[str, List[str]]
     created_at: datetime
