@@ -26,6 +26,8 @@ const CORBot = () => {
   
   // Track if user has dragged (to show at saved position)
   const [isDragging, setIsDragging] = useState(false);
+  // Use ref to track drag state to avoid closure issues
+  const isDraggingRef = useRef(false);
   
   // Load initial position from localStorage
   const [initialPosition] = useState(() => {
