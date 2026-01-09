@@ -151,6 +151,22 @@ const CORBot = () => {
     }, 500);
   };
 
+  // Calculate drag constraints based on viewport and element size
+  const getDragConstraints = () => {
+    const { width, height } = getSize();
+    const padding = 10;
+    const currentPos = position.hasCustomPosition 
+      ? { x: position.x, y: position.y }
+      : { x: 24, y: typeof window !== 'undefined' ? window.innerHeight - height - 24 : 500 };
+    
+    return {
+      left: padding - currentPos.x,
+      right: (typeof window !== 'undefined' ? window.innerWidth : 1920) - width - padding - currentPos.x,
+      top: padding - currentPos.y,
+      bottom: (typeof window !== 'undefined' ? window.innerHeight : 800) - height - padding - currentPos.y
+    };
+  };
+
   // Get position style - always use top/left for consistent drag behavior
   const getPositionStyle = () => {
     if (position.hasCustomPosition) {
