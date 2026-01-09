@@ -4,7 +4,8 @@ import {
   Home, 
   FileText, 
   Folder,
-  Calendar
+  Calendar,
+  CalendarDays
 } from 'lucide-react';
 
 const EmployeeSidebar = () => {
@@ -30,6 +31,14 @@ const EmployeeSidebar = () => {
       path: '/employee/leave', 
       label: 'Leave / PTO', 
       icon: Calendar 
+    }
+  ];
+
+  const settingsItems = [
+    {
+      path: '/profile?tab=calendar',
+      label: 'Calendar Sync',
+      icon: CalendarDays
     }
   ];
 
