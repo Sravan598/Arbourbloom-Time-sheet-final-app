@@ -11,7 +11,8 @@ import {
   AlertCircle,
   User,
   ChevronDown,
-  Settings
+  Settings,
+  MessageSquare
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
