@@ -81,23 +81,6 @@ const LeaveRequests = () => {
     }
   };
 
-  // Status badge
-  const StatusBadge = ({ status }) => {
-    const config = {
-      PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700', icon: Clock, label: 'Pending' },
-      APPROVED: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle, label: 'Approved' },
-      DENIED: { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle, label: 'Denied' }
-    };
-    const { bg, text, icon: Icon, label } = config[status] || config.PENDING;
-    
-    return (
-      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${bg} ${text}`}>
-        <Icon className="w-4 h-4" />
-        {label}
-      </span>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <AdminSidebar />
