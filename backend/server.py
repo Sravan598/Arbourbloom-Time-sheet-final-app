@@ -5166,6 +5166,104 @@ async def get_all_user_status(current_user: dict = Depends(get_current_user)):
     return status_map
 
 
+@api_router.post("/chat/upload")
+async def upload_chat_file(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload a file for chat (images and documents)"""
+    
+    # Validate file size
+    file_content = await file.read()
+    file_size = len(file_content)
+    
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024*1024)}MB")
+    
+    # Validate file type
+    content_type = file.content_type or mimetypes.guess_type(file.filename)[0]
+    if content_type not in ALLOWED_FILE_TYPES:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"File type not allowed. Allowed types: images (JPEG, PNG, GIF, WebP) and documents (PDF, Word, Excel, TXT, CSV)"
+        )
+    
+    # Determine file category
+    is_image = content_type in ALLOWED_IMAGE_TYPES
+    file_category = "images" if is_image else "documents"
+    
+    # Generate unique filename
+    file_ext = Path(file.filename).suffix.lower() if file.filename else ""
+    if not file_ext:
+        # Guess extension from content type
+        ext_map = {
+            "image/jpeg": ".jpg", "image/png": ".png", "image/gif": ".gif", "image/webp": ".webp",
+            "application/pdf": ".pdf", "text/plain": ".txt", "text/csv": ".csv"
+        }
+        file_ext = ext_map.get(content_type, ".bin")
+    
+    unique_filename = f"{uuid.uuid4()}{file_ext}"
+    
+    # Create category subdirectory
+    category_dir = UPLOAD_DIR / file_category
+    category_dir.mkdir(parents=True, exist_ok=True)
+    
+    file_path = category_dir / unique_filename
+    
+    # Save file
+    async with aiofiles.open(file_path, 'wb') as f:
+        await f.write(file_content)
+    
+    # Generate URL
+    file_url = f"/api/chat/files/{file_category}/{unique_filename}"
+    
+    # Store file metadata in database
+    file_record = {
+        "id": str(uuid.uuid4()),
+        "filename": file.filename,
+        "stored_filename": unique_filename,
+        "file_url": file_url,
+        "content_type": content_type,
+        "size": file_size,
+        "category": file_category,
+        "uploaded_by": current_user["id"],
+        "uploaded_by_name": current_user.get("name", "Unknown"),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.chat_files.insert_one(file_record)
+    
+    return {
+        "id": file_record["id"],
+        "filename": file.filename,
+        "file_url": file_url,
+        "content_type": content_type,
+        "size": file_size,
+        "is_image": is_image
+    }
+
+
+@api_router.get("/chat/files/{category}/{filename}")
+async def get_chat_file(category: str, filename: str):
+    """Serve uploaded chat files"""
+    if category not in ["images", "documents"]:
+        raise HTTPException(status_code=400, detail="Invalid category")
+    
+    file_path = UPLOAD_DIR / category / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Determine content type
+    content_type = mimetypes.guess_type(str(file_path))[0] or "application/octet-stream"
+    
+    return FileResponse(
+        path=file_path,
+        media_type=content_type,
+        filename=filename
+    )
+
+
 # WebSocket endpoint for real-time messaging
 @app.websocket("/api/ws/{token}")
 async def websocket_endpoint(websocket: WebSocket, token: str):
