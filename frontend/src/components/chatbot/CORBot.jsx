@@ -68,8 +68,12 @@ const CORBot = () => {
   const handleDragEnd = (event, info) => {
     setIsDragging(false);
     
-    const el = elementRef.current;
-    if (!el) return;
+    // Get the element that was dragged
+    const el = isOpen ? panelRef.current : buttonRef.current;
+    if (!el) {
+      console.warn('CORBot: No element ref found');
+      return;
+    }
     
     const rect = el.getBoundingClientRect();
     const { width, height } = getSize();
@@ -81,6 +85,8 @@ const CORBot = () => {
     
     const x = Math.max(padding, Math.min(rect.left, maxX));
     const y = Math.max(padding, Math.min(rect.top, maxY));
+    
+    console.log('CORBot: Saving position', { x, y });
     
     // Save position
     const newPos = { x, y, hasCustomPosition: true };
