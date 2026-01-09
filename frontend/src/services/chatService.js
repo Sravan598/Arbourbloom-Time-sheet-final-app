@@ -76,10 +76,14 @@ export const getDMMessages = async (threadId, limit = 50) => {
   return response.data;
 };
 
-export const sendDMMessage = async (threadId, content, messageType = 'text') => {
+export const sendDMMessage = async (threadId, content, messageType = 'text', attachment = null) => {
+  const payload = { content, message_type: messageType };
+  if (attachment) {
+    payload.attachment = attachment;
+  }
   const response = await axios.post(
     `${API_URL}/api/chat/dm/${threadId}/messages`,
-    { content, message_type: messageType },
+    payload,
     { headers: getAuthHeaders() }
   );
   return response.data;
