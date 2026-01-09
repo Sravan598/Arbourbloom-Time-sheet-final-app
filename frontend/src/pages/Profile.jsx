@@ -710,6 +710,232 @@ const Profile = () => {
             </div>
           )}
 
+          {/* Calendar Tab */}
+          {activeTab === 'calendar' && (
+            <div className="space-y-8">
+              {/* Info Section */}
+              <div className="bg-gradient-to-r from-brand-red/5 to-red-50 rounded-xl p-6 border border-brand-red/10">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-brand-red/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <CalendarDays className="w-6 h-6 text-brand-red" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-brand-dark mb-1">Calendar Integration</h3>
+                    <p className="text-sm text-gray-600">
+                      Subscribe to your CORtracker calendar to see your approved leave and PTO events in Google Calendar, 
+                      Outlook, Apple Calendar, or any calendar app that supports ICS feeds.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {isLoadingCalendar ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-8 h-8 border-4 border-brand-red border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Personal Feed */}
+                  {calendarFeeds?.personal_feed && (
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <User className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-brand-dark">Personal Calendar</h4>
+                            <p className="text-sm text-gray-500">{calendarFeeds.personal_feed.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-6 space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Calendar URL</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              readOnly
+                              value={`${BACKEND_URL}${calendarFeeds.personal_feed.url}`}
+                              className="flex-1 px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-600 font-mono"
+                            />
+                            <button
+                              onClick={() => copyToClipboard(`${BACKEND_URL}${calendarFeeds.personal_feed.url}`, 'personal')}
+                              className={`px-4 py-3 rounded-xl border transition-all flex items-center gap-2 ${
+                                copiedFeed === 'personal'
+                                  ? 'bg-green-50 border-green-200 text-green-600'
+                                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                              }`}
+                            >
+                              {copiedFeed === 'personal' ? (
+                                <>
+                                  <Check className="w-4 h-4" />
+                                  Copied!
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-4 h-4" />
+                                  Copy
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between pt-2">
+                          <button
+                            onClick={() => regenerateToken('personal')}
+                            className="text-sm text-gray-500 hover:text-brand-red flex items-center gap-2 transition-colors"
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                            Regenerate URL
+                          </button>
+                          <a
+                            href={`${BACKEND_URL}${calendarFeeds.personal_feed.url}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-brand-red hover:text-red-700 flex items-center gap-2 transition-colors"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            Download ICS
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Team Feed (Admin Only) */}
+                  {calendarFeeds?.team_feed && (
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                            <Building className="w-5 h-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-brand-dark">Team Calendar</h4>
+                            <p className="text-sm text-gray-500">{calendarFeeds.team_feed.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-6 space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Calendar URL</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              readOnly
+                              value={`${BACKEND_URL}${calendarFeeds.team_feed.url}`}
+                              className="flex-1 px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-600 font-mono"
+                            />
+                            <button
+                              onClick={() => copyToClipboard(`${BACKEND_URL}${calendarFeeds.team_feed.url}`, 'team')}
+                              className={`px-4 py-3 rounded-xl border transition-all flex items-center gap-2 ${
+                                copiedFeed === 'team'
+                                  ? 'bg-green-50 border-green-200 text-green-600'
+                                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                              }`}
+                            >
+                              {copiedFeed === 'team' ? (
+                                <>
+                                  <Check className="w-4 h-4" />
+                                  Copied!
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-4 h-4" />
+                                  Copy
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between pt-2">
+                          <button
+                            onClick={() => regenerateToken('team')}
+                            className="text-sm text-gray-500 hover:text-brand-red flex items-center gap-2 transition-colors"
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                            Regenerate URL
+                          </button>
+                          <a
+                            href={`${BACKEND_URL}${calendarFeeds.team_feed.url}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-brand-red hover:text-red-700 flex items-center gap-2 transition-colors"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            Download ICS
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* How to Add Instructions */}
+                  <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                      <h4 className="font-semibold text-brand-dark">How to Subscribe</h4>
+                    </div>
+                    <div className="p-6">
+                      <div className="grid md:grid-cols-3 gap-6">
+                        {/* Google Calendar */}
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                              <span className="text-lg">📅</span>
+                            </div>
+                            <span className="font-medium text-brand-dark">Google Calendar</span>
+                          </div>
+                          <ol className="text-sm text-gray-600 space-y-2 pl-4 list-decimal">
+                            <li>Open Google Calendar</li>
+                            <li>Click "+" next to "Other calendars"</li>
+                            <li>Select "From URL"</li>
+                            <li>Paste the calendar URL</li>
+                            <li>Click "Add calendar"</li>
+                          </ol>
+                        </div>
+
+                        {/* Outlook */}
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <span className="text-lg">📧</span>
+                            </div>
+                            <span className="font-medium text-brand-dark">Outlook</span>
+                          </div>
+                          <ol className="text-sm text-gray-600 space-y-2 pl-4 list-decimal">
+                            <li>Open Outlook Calendar</li>
+                            <li>Click "Add calendar"</li>
+                            <li>Select "Subscribe from web"</li>
+                            <li>Paste the calendar URL</li>
+                            <li>Click "Import"</li>
+                          </ol>
+                        </div>
+
+                        {/* Apple Calendar */}
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                              <span className="text-lg">🍎</span>
+                            </div>
+                            <span className="font-medium text-brand-dark">Apple Calendar</span>
+                          </div>
+                          <ol className="text-sm text-gray-600 space-y-2 pl-4 list-decimal">
+                            <li>Open Calendar app</li>
+                            <li>File → New Calendar Subscription</li>
+                            <li>Paste the calendar URL</li>
+                            <li>Click "Subscribe"</li>
+                            <li>Choose update frequency</li>
+                          </ol>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Settings Tab */}
           {activeTab === 'settings' && (
             <div className="space-y-8">
