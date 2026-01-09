@@ -85,9 +85,20 @@ const CORBot = () => {
     localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify({ x, y }));
   };
 
+  // Handle drag start
+  const handleDragStart = () => {
+    isDraggingRef.current = true;
+    setIsDragging(true);
+  };
+
   // Handle drag end
   const handleDragEnd = () => {
-    setIsDragging(false);
+    // Use setTimeout to ensure the drag state persists long enough
+    // to prevent accidental click triggers
+    setTimeout(() => {
+      isDraggingRef.current = false;
+      setIsDragging(false);
+    }, 100);
     const el = isOpen ? panelRef.current : buttonRef.current;
     savePosition(el);
   };
