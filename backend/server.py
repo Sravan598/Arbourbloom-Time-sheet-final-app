@@ -5282,6 +5282,359 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
         await websocket.close(code=4000)
 
 
+# ============== LEAVE/PTO API ROUTES ==============
+
+# Helper function to calculate business days
+def calculate_days(start_date: str, end_date: str) -> int:
+    from datetime import datetime
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d")
+    delta = end - start
+    return delta.days + 1  # Include both start and end date
+
+
+# Initialize default leave types
+async def ensure_default_leave_types():
+    """Create default leave types if they don't exist"""
+    default_types = [
+        {"name": "Vacation", "icon": "🏖️"},
+        {"name": "Sick Leave", "icon": "🤒"},
+        {"name": "Personal", "icon": "👤"},
+        {"name": "Bereavement", "icon": "🖤"},
+        {"name": "Parental Leave", "icon": "👶"}
+    ]
+    
+    for lt in default_types:
+        existing = await db.leave_types.find_one({"name": lt["name"]})
+        if not existing:
+            leave_type = LeaveType(name=lt["name"], icon=lt["icon"])
+            doc = leave_type.model_dump()
+            doc["created_at"] = doc["created_at"].isoformat()
+            await db.leave_types.insert_one(doc)
+
+
+# Initialize default leave types on startup
+@app.on_event("startup")
+async def startup_leave_types():
+    await ensure_default_leave_types()
+
+
+# Helper to send notification
+async def create_notification(user_id: str, notif_type: NotificationType, title: str, message: str, reference_id: str = None):
+    notification = Notification(
+        user_id=user_id,
+        type=notif_type,
+        title=title,
+        message=message,
+        reference_id=reference_id
+    )
+    doc = notification.model_dump()
+    doc["created_at"] = doc["created_at"].isoformat()
+    doc["type"] = doc["type"].value
+    await db.notifications.insert_one(doc)
+    return notification
+
+
+# Leave Types APIs
+@api_router.get("/leave/types")
+async def get_leave_types(current_user: dict = Depends(get_current_user)):
+    """Get all active leave types"""
+    types = await db.leave_types.find({"is_active": True}, {"_id": 0}).to_list(100)
+    return types
+
+
+@api_router.post("/admin/leave/types")
+async def create_leave_type(
+    type_data: LeaveTypeCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Admin: Create a new leave type"""
+    if current_user.get("role") != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Check if type already exists
+    existing = await db.leave_types.find_one({"name": type_data.name})
+    if existing:
+        raise HTTPException(status_code=400, detail="Leave type already exists")
+    
+    leave_type = LeaveType(name=type_data.name, icon=type_data.icon)
+    doc = leave_type.model_dump()
+    doc["created_at"] = doc["created_at"].isoformat()
+    await db.leave_types.insert_one(doc)
+    
+    return {"message": "Leave type created", "id": leave_type.id}
+
+
+@api_router.put("/admin/leave/types/{type_id}")
+async def update_leave_type(
+    type_id: str,
+    type_data: LeaveTypeCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Admin: Update a leave type"""
+    if current_user.get("role") != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    existing = await db.leave_types.find_one({"id": type_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Leave type not found")
+    
+    await db.leave_types.update_one(
+        {"id": type_id},
+        {"$set": {"name": type_data.name, "icon": type_data.icon}}
+    )
+    
+    return {"message": "Leave type updated"}
+
+
+@api_router.delete("/admin/leave/types/{type_id}")
+async def delete_leave_type(
+    type_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Admin: Delete (deactivate) a leave type"""
+    if current_user.get("role") != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    existing = await db.leave_types.find_one({"id": type_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Leave type not found")
+    
+    # Soft delete - just mark as inactive
+    await db.leave_types.update_one(
+        {"id": type_id},
+        {"$set": {"is_active": False}}
+    )
+    
+    return {"message": "Leave type deleted"}
+
+
+# Leave Requests APIs (Employee)
+@api_router.get("/leave/requests")
+async def get_my_leave_requests(
+    status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get current user's leave requests"""
+    query = {"user_id": current_user["id"]}
+    if status:
+        query["status"] = status.upper()
+    
+    requests = await db.leave_requests.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return requests
+
+
+@api_router.post("/leave/requests")
+async def create_leave_request(
+    request_data: LeaveRequestCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Submit a new leave request"""
+    # Validate dates
+    try:
+        start = datetime.strptime(request_data.start_date, "%Y-%m-%d")
+        end = datetime.strptime(request_data.end_date, "%Y-%m-%d")
+        if end < start:
+            raise HTTPException(status_code=400, detail="End date must be after start date")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    
+    days = calculate_days(request_data.start_date, request_data.end_date)
+    
+    # Check for overlapping requests
+    overlap = await db.leave_requests.find_one({
+        "user_id": current_user["id"],
+        "status": {"$ne": "DENIED"},
+        "$or": [
+            {"start_date": {"$lte": request_data.end_date}, "end_date": {"$gte": request_data.start_date}}
+        ]
+    })
+    if overlap:
+        raise HTTPException(status_code=400, detail="You already have a leave request for overlapping dates")
+    
+    # Check if it's a custom type
+    is_custom = request_data.is_custom_type
+    if not is_custom:
+        existing_type = await db.leave_types.find_one({"name": request_data.leave_type, "is_active": True})
+        if not existing_type:
+            is_custom = True
+    
+    leave_request = LeaveRequest(
+        user_id=current_user["id"],
+        user_name=current_user.get("name", "Unknown"),
+        user_image=current_user.get("profile_image"),
+        leave_type=request_data.leave_type,
+        is_custom_type=is_custom,
+        start_date=request_data.start_date,
+        end_date=request_data.end_date,
+        days=days,
+        reason=request_data.reason
+    )
+    
+    doc = leave_request.model_dump()
+    doc["created_at"] = doc["created_at"].isoformat()
+    doc["status"] = doc["status"].value
+    await db.leave_requests.insert_one(doc)
+    
+    # Notify all admins
+    admins = await db.users.find({"role": "ADMIN", "is_active": True}, {"_id": 0, "id": 1}).to_list(100)
+    for admin in admins:
+        await create_notification(
+            user_id=admin["id"],
+            notif_type=NotificationType.LEAVE_REQUEST,
+            title="New Leave Request",
+            message=f"📝 {current_user.get('name', 'An employee')} requested {request_data.leave_type} ({days} day{'s' if days > 1 else ''})",
+            reference_id=leave_request.id
+        )
+    
+    return {"message": "Leave request submitted", "id": leave_request.id}
+
+
+@api_router.delete("/leave/requests/{request_id}")
+async def cancel_leave_request(
+    request_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Cancel a pending leave request"""
+    request = await db.leave_requests.find_one({"id": request_id, "user_id": current_user["id"]}, {"_id": 0})
+    if not request:
+        raise HTTPException(status_code=404, detail="Leave request not found")
+    
+    if request.get("status") != "PENDING":
+        raise HTTPException(status_code=400, detail="Can only cancel pending requests")
+    
+    await db.leave_requests.delete_one({"id": request_id})
+    
+    return {"message": "Leave request cancelled"}
+
+
+# Leave Requests APIs (Admin)
+@api_router.get("/admin/leave/requests")
+async def get_all_leave_requests(
+    status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Admin: Get all leave requests"""
+    if current_user.get("role") != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    query = {}
+    if status:
+        query["status"] = status.upper()
+    
+    requests = await db.leave_requests.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return requests
+
+
+@api_router.put("/admin/leave/requests/{request_id}")
+async def review_leave_request(
+    request_id: str,
+    review: LeaveRequestReview,
+    current_user: dict = Depends(get_current_user)
+):
+    """Admin: Approve or deny a leave request"""
+    if current_user.get("role") != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    request = await db.leave_requests.find_one({"id": request_id}, {"_id": 0})
+    if not request:
+        raise HTTPException(status_code=404, detail="Leave request not found")
+    
+    if request.get("status") != "PENDING":
+        raise HTTPException(status_code=400, detail="Request has already been reviewed")
+    
+    # Update request
+    await db.leave_requests.update_one(
+        {"id": request_id},
+        {
+            "$set": {
+                "status": review.status,
+                "reviewed_by": current_user["id"],
+                "reviewer_name": current_user.get("name"),
+                "review_note": review.review_note,
+                "reviewed_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    # Notify employee
+    if review.status == "APPROVED":
+        notif_type = NotificationType.LEAVE_APPROVED
+        title = "Leave Approved ✅"
+        message = f"Your {request['leave_type']} request ({request['start_date']} to {request['end_date']}) has been approved"
+        if review.review_note:
+            message += f". Note: {review.review_note}"
+    else:
+        notif_type = NotificationType.LEAVE_DENIED
+        title = "Leave Denied ❌"
+        message = f"Your {request['leave_type']} request ({request['start_date']} to {request['end_date']}) has been denied"
+        if review.review_note:
+            message += f". Reason: {review.review_note}"
+    
+    await create_notification(
+        user_id=request["user_id"],
+        notif_type=notif_type,
+        title=title,
+        message=message,
+        reference_id=request_id
+    )
+    
+    return {"message": f"Leave request {review.status.lower()}"}
+
+
+# Notification APIs
+@api_router.get("/notifications")
+async def get_notifications(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get current user's notifications"""
+    notifications = await db.notifications.find(
+        {"user_id": current_user["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(50).to_list(50)
+    return notifications
+
+
+@api_router.get("/notifications/unread-count")
+async def get_unread_count(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get count of unread notifications"""
+    count = await db.notifications.count_documents({
+        "user_id": current_user["id"],
+        "is_read": False
+    })
+    return {"count": count}
+
+
+@api_router.put("/notifications/{notification_id}/read")
+async def mark_notification_read(
+    notification_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Mark a notification as read"""
+    result = await db.notifications.update_one(
+        {"id": notification_id, "user_id": current_user["id"]},
+        {"$set": {"is_read": True}}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    
+    return {"message": "Notification marked as read"}
+
+
+@api_router.put("/notifications/read-all")
+async def mark_all_notifications_read(
+    current_user: dict = Depends(get_current_user)
+):
+    """Mark all notifications as read"""
+    await db.notifications.update_many(
+        {"user_id": current_user["id"], "is_read": False},
+        {"$set": {"is_read": True}}
+    )
+    return {"message": "All notifications marked as read"}
+
+
 # ============== LEGACY ROUTES ==============
 class StatusCheck(BaseModel):
     model_config = ConfigDict(extra="ignore")
