@@ -9,8 +9,6 @@ import {
   Timer,
   CheckCircle,
   AlertCircle,
-  Calendar,
-  MessageSquare,
   User,
   ChevronDown,
   Settings
@@ -18,7 +16,6 @@ import {
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
-import LeavePTOSection from '../../components/employee/LeavePTOSection';
 import BreakTimerSection from '../../components/employee/BreakTimerSection';
 import WeeklyProgressSection from '../../components/employee/WeeklyProgressSection';
 import AnnouncementsSection from '../../components/employee/AnnouncementsSection';
@@ -34,7 +31,6 @@ const EmployeeDashboard = () => {
   
   const [currentShift, setCurrentShift] = useState(null);
   const [isClockedIn, setIsClockedIn] = useState(false);
-  const [todayPunches, setTodayPunches] = useState([]);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
