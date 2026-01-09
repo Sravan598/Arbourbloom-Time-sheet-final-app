@@ -25,23 +25,24 @@ const CORBot = () => {
   const constraintsRef = useRef(null);
 
   // Load saved position from localStorage
-  const getSavedPosition = () => {
+  const [position, setPosition] = useState(() => {
     try {
       const saved = localStorage.getItem(POSITION_STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed.x === 'number' && typeof parsed.y === 'number') {
+          return { x: parsed.x, y: parsed.y, hasCustomPosition: true };
+        }
       }
     } catch {
       // Ignore
     }
-    return null;
-  };
+    return { x: 24, y: null, hasCustomPosition: false }; // null y means use bottom positioning
+  });
 
-  const [savedPosition, setSavedPosition] = useState(getSavedPosition);
   const [isDragging, setIsDragging] = useState(false);
   const dragControls = useDragControls();
-  const panelRef = useRef(null);
-  const buttonRef = useRef(null);
+  const elementRef = useRef(null);
 
   // Auto-scroll messages
   useEffect(() => {
@@ -55,83 +56,68 @@ const CORBot = () => {
     }
   }, [isOpen, isMinimized]);
 
-  // Get default position (bottom-left)
-  const getDefaultPosition = (isButton = false) => {
-    const size = isButton ? 56 : 360;
-    const height = isButton ? 56 : (isMinimized ? 56 : 500);
-    return {
-      left: 24,
-      top: typeof window !== 'undefined' ? window.innerHeight - height - 24 : 300
-    };
+  // Get element dimensions
+  const getSize = () => {
+    const width = isOpen ? 360 : 56;
+    const height = isOpen ? (isMinimized ? 56 : 500) : 56;
+    return { width, height };
   };
 
-  // Get current position (saved or default)
-  const getPosition = (isButton = false) => {
-    if (savedPosition) {
-      return { left: savedPosition.x, top: savedPosition.y };
-    }
-    return getDefaultPosition(isButton);
-  };
-
-  // Handle drag end - save position
-  const handleDragEnd = () => {
+  // Handle drag end
+  const handleDragEnd = (event, info) => {
     setIsDragging(false);
     
-    const element = isOpen ? panelRef.current : buttonRef.current;
-    if (!element) return;
+    const el = elementRef.current;
+    if (!el) return;
     
-    const rect = element.getBoundingClientRect();
-    const isButton = !isOpen;
-    const width = isButton ? 56 : 360;
-    const height = isButton ? 56 : (isMinimized ? 56 : 500);
+    const rect = el.getBoundingClientRect();
+    const { width, height } = getSize();
     const padding = 10;
     
-    // Clamp to viewport
+    // Clamp position to viewport
     const maxX = window.innerWidth - width - padding;
     const maxY = window.innerHeight - height - padding;
     
     const x = Math.max(padding, Math.min(rect.left, maxX));
     const y = Math.max(padding, Math.min(rect.top, maxY));
     
-    const newPos = { x, y };
-    setSavedPosition(newPos);
-    localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(newPos));
+    // Save position
+    const newPos = { x, y, hasCustomPosition: true };
+    setPosition(newPos);
+    localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify({ x, y }));
   };
 
-  // Handle window resize
+  // Handle resize
   useEffect(() => {
     const handleResize = () => {
-      if (savedPosition) {
-        const width = isOpen ? 360 : 56;
-        const height = isOpen ? (isMinimized ? 56 : 500) : 56;
+      if (position.hasCustomPosition) {
+        const { width, height } = getSize();
         const padding = 10;
         const maxX = window.innerWidth - width - padding;
         const maxY = window.innerHeight - height - padding;
         
-        const newX = Math.max(padding, Math.min(savedPosition.x, maxX));
-        const newY = Math.max(padding, Math.min(savedPosition.y, maxY));
+        const newX = Math.max(padding, Math.min(position.x, maxX));
+        const newY = Math.max(padding, Math.min(position.y, maxY));
         
-        if (newX !== savedPosition.x || newY !== savedPosition.y) {
-          const newPos = { x: newX, y: newY };
-          setSavedPosition(newPos);
-          localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(newPos));
+        if (newX !== position.x || newY !== position.y) {
+          const newPos = { x: newX, y: newY, hasCustomPosition: true };
+          setPosition(newPos);
+          localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify({ x: newX, y: newY }));
         }
       }
     };
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [savedPosition, isOpen, isMinimized]);
+  }, [position, isOpen, isMinimized]);
 
-  // Handle sending message
+  // Handlers
   const handleSend = () => {
     if (!inputValue.trim()) return;
-    
     const userMessage = inputValue.trim();
     setInputValue('');
     setMessages(prev => [...prev, { type: 'user', text: userMessage }]);
     setIsTyping(true);
-    
     setTimeout(() => {
       const response = findAnswer(userMessage);
       setMessages(prev => [...prev, { type: 'bot', text: response.answer }]);
@@ -139,7 +125,6 @@ const CORBot = () => {
     }, 500 + Math.random() * 500);
   };
 
-  // Handle key press
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -147,7 +132,6 @@ const CORBot = () => {
     }
   };
 
-  // Quick questions
   const quickQuestions = [
     'What is CORtracker?',
     'How do I track time?',
@@ -165,23 +149,28 @@ const CORBot = () => {
     }, 500);
   };
 
-  const buttonPosition = getPosition(true);
-  const panelPosition = getPosition(false);
+  // Get position style
+  const getPositionStyle = () => {
+    if (position.hasCustomPosition) {
+      return { left: position.x, top: position.y };
+    }
+    // Default: bottom-left corner
+    return { left: 24, bottom: 24 };
+  };
 
   return (
     <>
       {/* Drag constraints */}
       <div 
         ref={constraintsRef} 
-        className="fixed inset-0 pointer-events-none z-40"
-        style={{ margin: 10 }}
+        className="fixed inset-2 pointer-events-none z-40"
       />
 
       {/* Floating Button */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
-            ref={buttonRef}
+            ref={elementRef}
             data-testid="corbot-trigger-button"
             drag
             dragConstraints={constraintsRef}
@@ -189,12 +178,13 @@ const CORBot = () => {
             dragMomentum={false}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={handleDragEnd}
-            initial={{ opacity: 0, scale: 0, left: buttonPosition.left, top: buttonPosition.top }}
-            animate={{ opacity: 1, scale: 1, left: buttonPosition.left, top: buttonPosition.top }}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0 }}
             whileHover={{ scale: isDragging ? 1 : 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => !isDragging && setIsOpen(true)}
+            style={getPositionStyle()}
             className={`fixed z-50 w-14 h-14 rounded-full shadow-lg
                        bg-gradient-to-r from-brand-red to-red-600 hover:from-red-600 hover:to-red-700
                        flex items-center justify-center transition-colors group
@@ -212,7 +202,7 @@ const CORBot = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            ref={panelRef}
+            ref={elementRef}
             data-testid="corbot-chat-panel"
             drag
             dragControls={dragControls}
@@ -222,21 +212,20 @@ const CORBot = () => {
             dragListener={false}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={handleDragEnd}
-            initial={{ opacity: 0, scale: 0.95, left: panelPosition.left, top: panelPosition.top }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ 
               opacity: 1, 
               scale: isDragging ? 1.02 : 1,
-              left: panelPosition.left, 
-              top: panelPosition.top,
               height: isMinimized ? 'auto' : 500
             }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            style={getPositionStyle()}
             className={`fixed w-[360px] bg-white rounded-2xl overflow-hidden border border-gray-200 z-50
                        flex flex-col transition-shadow duration-200
                        ${isDragging ? 'shadow-2xl ring-2 ring-brand-red/20' : 'shadow-xl'}`}
           >
-            {/* Header - Drag Handle */}
+            {/* Header */}
             <div
               onPointerDown={(e) => {
                 if (!e.target.closest('button')) {
@@ -245,16 +234,11 @@ const CORBot = () => {
               }}
               data-testid="corbot-drag-handle"
               className={`flex items-center justify-between px-4 py-3 bg-gradient-to-r from-brand-red to-red-600
-                         select-none transition-all
-                         ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                         select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
             >
               <div className="flex items-center gap-2 pointer-events-none">
                 <div className="bg-white/95 rounded px-1.5 py-0.5 flex items-center">
-                  <img 
-                    src={CORTRACKER_LOGO} 
-                    alt="CORtracker" 
-                    className="h-4 w-auto"
-                  />
+                  <img src={CORTRACKER_LOGO} alt="CORtracker" className="h-4 w-auto" />
                 </div>
                 <h2 className="font-semibold text-white text-lg">CORBot</h2>
                 <span className="text-xs text-white/70 bg-white/20 px-2 py-0.5 rounded-full">FAQ</span>
@@ -263,18 +247,13 @@ const CORBot = () => {
                 <button
                   onClick={() => setIsMinimized(!isMinimized)}
                   className="p-1.5 hover:bg-white/10 rounded-full transition-colors pointer-events-auto"
-                  title={isMinimized ? 'Expand' : 'Minimize'}
                   data-testid="corbot-minimize-button"
                 >
                   <Minus className="w-4 h-4 text-white" />
                 </button>
                 <button
-                  onClick={() => {
-                    setIsOpen(false);
-                    setIsMinimized(false);
-                  }}
+                  onClick={() => { setIsOpen(false); setIsMinimized(false); }}
                   className="p-1.5 hover:bg-white/10 rounded-full transition-colors pointer-events-auto"
-                  title="Close"
                   data-testid="corbot-close-button"
                 >
                   <X className="w-4 h-4 text-white" />
@@ -306,25 +285,18 @@ const CORBot = () => {
                             <Bot className="w-4 h-4 text-white" />
                           </div>
                         )}
-                        <div
-                          className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap ${
-                            msg.type === 'user'
-                              ? 'bg-brand-red text-white rounded-tr-md'
-                              : 'bg-white text-gray-800 rounded-tl-md shadow-sm border border-gray-100'
-                          }`}
-                        >
+                        <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap ${
+                          msg.type === 'user'
+                            ? 'bg-brand-red text-white rounded-tr-md'
+                            : 'bg-white text-gray-800 rounded-tl-md shadow-sm border border-gray-100'
+                        }`}>
                           {msg.text}
                         </div>
                       </motion.div>
                     ))}
                     
-                    {/* Typing indicator */}
                     {isTyping && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex items-center gap-2"
-                      >
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-red to-red-600 
                                       flex items-center justify-center flex-shrink-0">
                           <Bot className="w-4 h-4 text-white" />
@@ -371,16 +343,14 @@ const CORBot = () => {
                         onKeyPress={handleKeyPress}
                         placeholder="Ask me anything..."
                         className="flex-1 px-4 py-2 bg-gray-100 rounded-full text-sm
-                                   focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:bg-white
-                                   transition-all"
+                                   focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:bg-white transition-all"
                       />
                       <motion.button
                         onClick={handleSend}
                         disabled={!inputValue.trim()}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="p-2 rounded-full bg-brand-red text-white disabled:opacity-50
-                                   disabled:cursor-not-allowed transition-opacity"
+                        className="p-2 rounded-full bg-brand-red text-white disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Send className="w-5 h-5" />
                       </motion.button>
