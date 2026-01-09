@@ -185,12 +185,6 @@ const CORBot = () => {
 
   return (
     <>
-      {/* Drag constraints */}
-      <div 
-        ref={constraintsRef} 
-        className="fixed inset-2 pointer-events-none z-40"
-      />
-
       {/* Floating Button */}
       <AnimatePresence>
         {!isOpen && (
