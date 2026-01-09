@@ -100,13 +100,14 @@ const CORBot = () => {
     const finalX = Math.max(padding, Math.min(rect.left, maxX));
     const finalY = Math.max(padding, Math.min(rect.top, maxY));
     
-    // Save the new position
+    // Save the new position and reset drag offset
     const newPosition = { x: finalX, y: finalY };
     setPosition(newPosition);
     localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(newPosition));
     
-    // Increment key to force re-mount and reset Framer Motion's internal transform state
-    setPositionKey(prev => prev + 1);
+    // Reset the motion values (the CSS position now handles the absolute position)
+    dragX.set(0);
+    dragY.set(0);
   };
 
   // Handle window resize - keep element in bounds
