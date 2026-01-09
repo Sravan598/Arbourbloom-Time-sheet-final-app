@@ -60,8 +60,8 @@ const EmployeeSidebar = () => {
       </div>
       
       {/* Navigation */}
-      <nav className="p-4">
-        <div className="space-y-1">
+      <nav className="p-4 flex flex-col h-[calc(100%-80px)]">
+        <div className="space-y-1 flex-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
@@ -75,6 +75,24 @@ const EmployeeSidebar = () => {
                     ? 'bg-brand-red/10 text-brand-red font-medium' 
                     : 'text-gray-600 hover:bg-gray-50'
                 }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+        
+        {/* Settings Section */}
+        <div className="border-t border-gray-100 pt-4 mt-4">
+          <p className="px-4 text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Settings</p>
+          {settingsItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors"
               >
                 <Icon className="w-5 h-5" />
                 <span>{item.label}</span>
