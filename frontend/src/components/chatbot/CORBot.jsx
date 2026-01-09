@@ -33,8 +33,8 @@ const CORBot = () => {
       const saved = localStorage.getItem(POSITION_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Validate saved position is within current viewport
-        if (parsed && typeof parsed.x === 'number') {
+        // Validate saved position has y value (was dragged before)
+        if (parsed && typeof parsed.x === 'number' && typeof parsed.y === 'number') {
           return parsed;
         }
       }
@@ -45,6 +45,8 @@ const CORBot = () => {
   });
 
   const [isDragging, setIsDragging] = useState(false);
+  // Key to force re-mount after position update (resets Framer Motion's internal state)
+  const [positionKey, setPositionKey] = useState(0);
   const dragControls = useDragControls();
   const panelRef = useRef(null);
   const buttonRef = useRef(null);
