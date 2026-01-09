@@ -198,7 +198,7 @@ const CORBot = () => {
             ref={buttonRef}
             data-testid="corbot-trigger-button"
             drag
-            dragConstraints={constraintsRef}
+            dragConstraints={getDragConstraints()}
             dragElastic={0}
             dragMomentum={false}
             onDragStart={() => setIsDragging(true)}
