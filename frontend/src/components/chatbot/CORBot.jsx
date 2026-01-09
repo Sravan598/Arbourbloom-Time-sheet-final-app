@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence, useDragControls, useMotionValue } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { Bot, X, Minus, Send } from 'lucide-react';
 import { findAnswer } from './faqData';
 
@@ -8,9 +8,6 @@ const CORTRACKER_LOGO = "https://customer-assets.emergentagent.com/job_readable-
 
 // Storage key for position persistence
 const POSITION_STORAGE_KEY = 'corbot_position';
-
-// Default position (bottom-left corner)
-const DEFAULT_POSITION = { x: 24, y: null };
 
 const CORBot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,40 +24,26 @@ const CORBot = () => {
   const inputRef = useRef(null);
   const constraintsRef = useRef(null);
 
-  // Load saved position from localStorage on mount
-  const [position, setPosition] = useState(() => {
+  // Load saved position from localStorage
+  const getSavedPosition = () => {
     try {
       const saved = localStorage.getItem(POSITION_STORAGE_KEY);
       if (saved) {
-        const parsed = JSON.parse(saved);
-        // Validate saved position has y value (was dragged before)
-        if (parsed && typeof parsed.x === 'number' && typeof parsed.y === 'number') {
-          return parsed;
-        }
+        return JSON.parse(saved);
       }
     } catch {
-      // Ignore parse errors
+      // Ignore
     }
-    return DEFAULT_POSITION;
-  });
+    return null;
+  };
 
+  const [savedPosition, setSavedPosition] = useState(getSavedPosition);
   const [isDragging, setIsDragging] = useState(false);
   const dragControls = useDragControls();
   const panelRef = useRef(null);
   const buttonRef = useRef(null);
-  
-  // Motion values for external position control - initialized to 0 since CSS handles base position
-  const dragX = useMotionValue(0);
-  const dragY = useMotionValue(0);
 
-  // Save position to localStorage whenever it changes (debounced)
-  useEffect(() => {
-    if (position.y !== null) {
-      localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(position));
-    }
-  }, [position]);
-
-  // Auto-scroll to bottom
+  // Auto-scroll messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -72,75 +55,81 @@ const CORBot = () => {
     }
   }, [isOpen, isMinimized]);
 
-  // Get dimensions for bounds calculation
-  const getElementSize = (isButton = false) => {
-    if (isButton) {
-      return { width: 56, height: 56 }; // Button size (w-14 h-14)
-    }
-    return { width: 360, height: isMinimized ? 56 : 500 }; // Panel size
+  // Get default position (bottom-left)
+  const getDefaultPosition = (isButton = false) => {
+    const size = isButton ? 56 : 360;
+    const height = isButton ? 56 : (isMinimized ? 56 : 500);
+    return {
+      left: 24,
+      top: typeof window !== 'undefined' ? window.innerHeight - height - 24 : 300
+    };
   };
 
-  // Handle drag end - save final position using bounding box
+  // Get current position (saved or default)
+  const getPosition = (isButton = false) => {
+    if (savedPosition) {
+      return { left: savedPosition.x, top: savedPosition.y };
+    }
+    return getDefaultPosition(isButton);
+  };
+
+  // Handle drag end - save position
   const handleDragEnd = () => {
     setIsDragging(false);
     
-    // Get the actual element that was dragged
     const element = isOpen ? panelRef.current : buttonRef.current;
     if (!element) return;
     
-    // Get the current bounding box after drag (includes transform)
     const rect = element.getBoundingClientRect();
-    const size = getElementSize(!isOpen);
+    const isButton = !isOpen;
+    const width = isButton ? 56 : 360;
+    const height = isButton ? 56 : (isMinimized ? 56 : 500);
     const padding = 10;
     
-    // Clamp to viewport bounds
-    const maxX = window.innerWidth - size.width - padding;
-    const maxY = window.innerHeight - size.height - padding;
+    // Clamp to viewport
+    const maxX = window.innerWidth - width - padding;
+    const maxY = window.innerHeight - height - padding;
     
-    const finalX = Math.max(padding, Math.min(rect.left, maxX));
-    const finalY = Math.max(padding, Math.min(rect.top, maxY));
+    const x = Math.max(padding, Math.min(rect.left, maxX));
+    const y = Math.max(padding, Math.min(rect.top, maxY));
     
-    // Save the new position and reset drag offset
-    const newPosition = { x: finalX, y: finalY };
-    setPosition(newPosition);
-    localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(newPosition));
-    
-    // Reset the motion values (the CSS position now handles the absolute position)
-    dragX.set(0);
-    dragY.set(0);
+    const newPos = { x, y };
+    setSavedPosition(newPos);
+    localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(newPos));
   };
 
-  // Handle window resize - keep element in bounds
+  // Handle window resize
   useEffect(() => {
     const handleResize = () => {
-      if (position.y !== null) {
-        const size = getElementSize(!isOpen);
+      if (savedPosition) {
+        const width = isOpen ? 360 : 56;
+        const height = isOpen ? (isMinimized ? 56 : 500) : 56;
         const padding = 10;
-        const maxX = window.innerWidth - size.width - padding;
-        const maxY = window.innerHeight - size.height - padding;
+        const maxX = window.innerWidth - width - padding;
+        const maxY = window.innerHeight - height - padding;
         
-        setPosition(prev => ({
-          x: Math.max(padding, Math.min(prev.x, maxX)),
-          y: Math.max(padding, Math.min(prev.y, maxY))
-        }));
+        const newX = Math.max(padding, Math.min(savedPosition.x, maxX));
+        const newY = Math.max(padding, Math.min(savedPosition.y, maxY));
+        
+        if (newX !== savedPosition.x || newY !== savedPosition.y) {
+          const newPos = { x: newX, y: newY };
+          setSavedPosition(newPos);
+          localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(newPos));
+        }
       }
     };
-
+    
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [position.y, isOpen, isMinimized]);
+  }, [savedPosition, isOpen, isMinimized]);
 
   // Handle sending message
   const handleSend = () => {
     if (!inputValue.trim()) return;
-
+    
     const userMessage = inputValue.trim();
     setInputValue('');
-    
-    // Add user message
     setMessages(prev => [...prev, { type: 'user', text: userMessage }]);
-    
-    // Simulate typing
     setIsTyping(true);
     
     setTimeout(() => {
@@ -167,45 +156,28 @@ const CORBot = () => {
   ];
 
   const handleQuickQuestion = (question) => {
-    setInputValue(question);
+    setMessages(prev => [...prev, { type: 'user', text: question }]);
+    setIsTyping(true);
     setTimeout(() => {
-      setMessages(prev => [...prev, { type: 'user', text: question }]);
-      setIsTyping(true);
-      setTimeout(() => {
-        const response = findAnswer(question);
-        setMessages(prev => [...prev, { type: 'bot', text: response.answer }]);
-        setIsTyping(false);
-      }, 500);
-    }, 100);
-    setInputValue('');
+      const response = findAnswer(question);
+      setMessages(prev => [...prev, { type: 'bot', text: response.answer }]);
+      setIsTyping(false);
+    }, 500);
   };
 
-  // Calculate position styles for both button and panel
-  const getPositionStyles = () => {
-    if (position.y === null) {
-      // Default position: bottom-left using CSS positioning
-      return {
-        left: position.x,
-        bottom: 24,
-      };
-    }
-    // Custom dragged position: use absolute top/left
-    return {
-      left: position.x,
-      top: position.y,
-    };
-  };
+  const buttonPosition = getPosition(true);
+  const panelPosition = getPosition(false);
 
   return (
     <>
-      {/* Drag constraints container - covers full viewport */}
+      {/* Drag constraints */}
       <div 
         ref={constraintsRef} 
         className="fixed inset-0 pointer-events-none z-40"
-        style={{ margin: 10 }} // 10px padding from edges
+        style={{ margin: 10 }}
       />
 
-      {/* Floating Button - Draggable */}
+      {/* Floating Button */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
@@ -217,9 +189,8 @@ const CORBot = () => {
             dragMomentum={false}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={handleDragEnd}
-            style={{ ...getPositionStyles(), x: dragX, y: dragY }}
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0, left: buttonPosition.left, top: buttonPosition.top }}
+            animate={{ opacity: 1, scale: 1, left: buttonPosition.left, top: buttonPosition.top }}
             exit={{ opacity: 0, scale: 0 }}
             whileHover={{ scale: isDragging ? 1 : 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -230,7 +201,6 @@ const CORBot = () => {
                        ${isDragging ? 'cursor-grabbing shadow-2xl ring-2 ring-brand-red/30' : 'cursor-grab'}`}
           >
             <Bot className="w-6 h-6 text-white pointer-events-none" />
-            {/* Pulse animation - hide during drag */}
             {!isDragging && (
               <span className="absolute inset-0 rounded-full bg-brand-red animate-ping opacity-25" />
             )}
@@ -238,7 +208,7 @@ const CORBot = () => {
         )}
       </AnimatePresence>
 
-      {/* Chat Panel - Draggable via header */}
+      {/* Chat Panel */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -252,16 +222,16 @@ const CORBot = () => {
             dragListener={false}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={handleDragEnd}
-            style={{ ...getPositionStyles(), x: dragX, y: dragY }}
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.95, left: panelPosition.left, top: panelPosition.top }}
             animate={{ 
               opacity: 1, 
               scale: isDragging ? 1.02 : 1,
+              left: panelPosition.left, 
+              top: panelPosition.top,
               height: isMinimized ? 'auto' : 500
             }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            style={getPositionStyles()}
             className={`fixed w-[360px] bg-white rounded-2xl overflow-hidden border border-gray-200 z-50
                        flex flex-col transition-shadow duration-200
                        ${isDragging ? 'shadow-2xl ring-2 ring-brand-red/20' : 'shadow-xl'}`}
@@ -269,7 +239,6 @@ const CORBot = () => {
             {/* Header - Drag Handle */}
             <div
               onPointerDown={(e) => {
-                // Only initiate drag if not clicking on buttons
                 if (!e.target.closest('button')) {
                   dragControls.start(e);
                 }
@@ -313,7 +282,7 @@ const CORBot = () => {
               </div>
             </div>
 
-            {/* Body - Only show when not minimized */}
+            {/* Body */}
             <AnimatePresence>
               {!isMinimized && (
                 <motion.div
