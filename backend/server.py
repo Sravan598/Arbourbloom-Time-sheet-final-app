@@ -5588,7 +5588,7 @@ async def regenerate_calendar_token(
 ):
     """Regenerate calendar feed token (invalidates old URLs)"""
     user_id = current_user["id"]
-    is_admin = current_user.get("role") == "admin"
+    is_admin = current_user.get("role", "").upper() == "ADMIN"
     
     if feed_type == "team" and not is_admin:
         raise HTTPException(status_code=403, detail="Only admins can access team feed")
