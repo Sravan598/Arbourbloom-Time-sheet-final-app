@@ -89,13 +89,10 @@ CORtracker is a comprehensive time-tracking and workforce management application
 ## Upcoming Tasks
 
 ### P0 - High Priority
-1. **CORChat Phase 2**: Channel creation modal and message view
-2. **CORChat Phase 3**: Real-time WebSocket messaging
-3. **CORChat Phase 4**: Direct Messages and online status
+1. **Daily Summary Email**: Automated work hour summaries (ON HOLD per user request)
 
 ### P1 - Medium Priority
-1. **CORChat Phase 5**: Unread counts, search, attachments
-2. **Daily Summary Email**: Automated work hour summaries
+1. **CORChat File Attachments**: Image and document sharing in chat
 
 ### P2 - Future
 1. Shift Scheduling module
