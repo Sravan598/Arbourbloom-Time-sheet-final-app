@@ -2047,6 +2047,38 @@ async def get_time_summary(
 
 # ============== PDF EXPORT ROUTES ==============
 
+def create_pdf_header_with_logo(elements: list, styles, subtitle_text: str = ""):
+    """Create a centered PDF header with the CORtracker logo and optional subtitle"""
+    # Add logo centered
+    if LOGO_PATH.exists():
+        logo = Image(str(LOGO_PATH), width=2.5*inch, height=0.8*inch)
+        logo.hAlign = 'CENTER'
+        elements.append(logo)
+        elements.append(Spacer(1, 10))
+    else:
+        # Fallback to text if logo not found
+        title_style = ParagraphStyle(
+            'FallbackTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
+            textColor=colors.HexColor('#C41E3A'),
+            spaceAfter=10,
+            alignment=TA_CENTER
+        )
+        elements.append(Paragraph("CORtracker", title_style))
+    
+    # Add subtitle if provided
+    if subtitle_text:
+        subtitle_style = ParagraphStyle(
+            'PDFSubtitle',
+            parent=styles['Normal'],
+            fontSize=14,
+            textColor=colors.HexColor('#333333'),
+            alignment=TA_CENTER,
+            spaceAfter=20
+        )
+        elements.append(Paragraph(subtitle_text, subtitle_style))
+
 def generate_timesheet_pdf(user_data: dict, timesheets: list, breaks: list, week_start: datetime, week_end: datetime) -> bytes:
     """Generate a professional timesheet PDF"""
     buffer = io.BytesIO()
