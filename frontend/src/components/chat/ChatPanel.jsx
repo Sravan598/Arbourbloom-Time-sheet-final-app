@@ -1,170 +1,335 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { X, Search } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Settings, Search, Plus, X as CloseIcon } from 'lucide-react';
 import ChannelList from './ChannelList';
 import DMList from './DMList';
 import MessageView from './MessageView';
-import chatService from '../../services/chatService';
+import CreateChannelModal from './CreateChannelModal';
+import NewDMModal from './NewDMModal';
+import SearchResults from './SearchResults';
+import chatService, { wsManager } from '../../services/chatService';
 
-// CORtracker logo URL
 const CORTRACKER_LOGO = "https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png";
 
-const ChatPanel = ({ isOpen, onClose, currentUser }) => {
-  const [view, setView] = useState('list'); // 'list' | 'channel' | 'dm'
+const ChatPanel = ({ isOpen, onClose, currentUser, onMessageRead }) => {
+  // View state
+  const [view, setView] = useState('list'); // 'list', 'channel', 'dm', 'search'
+  const [selectedChannel, setSelectedChannel] = useState(null);
+  const [selectedDMThread, setSelectedDMThread] = useState(null);
+
+  // Data state
   const [channels, setChannels] = useState([]);
   const [dmThreads, setDMThreads] = useState([]);
-  const [selectedChannel, setSelectedChannel] = useState(null);
-  const [selectedThread, setSelectedThread] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [chatUsers, setChatUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [messagesLoading, setMessagesLoading] = useState(false);
-  const [sending, setSending] = useState(false);
+  const [userStatus, setUserStatus] = useState({});
+
+  // Loading states
+  const [loadingChannels, setLoadingChannels] = useState(true);
+  const [loadingDMs, setLoadingDMs] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
+
+  // Modal states
   const [showCreateChannel, setShowCreateChannel] = useState(false);
   const [showNewDM, setShowNewDM] = useState(false);
-  const [newChannelName, setNewChannelName] = useState('');
-  const [newChannelDesc, setNewChannelDesc] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch channels and DM threads
-  const fetchData = useCallback(async () => {
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+
+  // Typing indicator state
+  const [typingUsers, setTypingUsers] = useState({});
+  const typingTimeoutRef = useRef({});
+
+  // Fetch channels
+  const fetchChannels = useCallback(async () => {
     try {
-      setLoading(true);
-      const [channelsData, threadsData, usersData] = await Promise.all([
-        chatService.getChannels(),
-        chatService.getDMThreads(),
-        chatService.getChatUsers()
-      ]);
-      setChannels(channelsData);
-      setDMThreads(threadsData);
-      setChatUsers(usersData);
+      setLoadingChannels(true);
+      const data = await chatService.getChannels();
+      setChannels(data);
     } catch (error) {
-      console.error('Error fetching chat data:', error);
+      console.error('Error fetching channels:', error);
     } finally {
-      setLoading(false);
+      setLoadingChannels(false);
     }
   }, []);
 
+  // Fetch DM threads
+  const fetchDMThreads = useCallback(async () => {
+    try {
+      setLoadingDMs(true);
+      const data = await chatService.getDMThreads();
+      setDMThreads(data);
+    } catch (error) {
+      console.error('Error fetching DM threads:', error);
+    } finally {
+      setLoadingDMs(false);
+    }
+  }, []);
+
+  // Fetch user status
+  const fetchUserStatus = useCallback(async () => {
+    try {
+      const data = await chatService.getUserStatus();
+      setUserStatus(data);
+    } catch (error) {
+      console.error('Error fetching user status:', error);
+    }
+  }, []);
+
+  // Fetch messages for selected channel
+  const fetchChannelMessages = useCallback(async (channelId) => {
+    try {
+      setLoadingMessages(true);
+      const data = await chatService.getChannelMessages(channelId);
+      setMessages(data);
+    } catch (error) {
+      console.error('Error fetching channel messages:', error);
+    } finally {
+      setLoadingMessages(false);
+    }
+  }, []);
+
+  // Fetch messages for selected DM thread
+  const fetchDMMessages = useCallback(async (threadId) => {
+    try {
+      setLoadingMessages(true);
+      const data = await chatService.getDMMessages(threadId);
+      setMessages(data);
+    } catch (error) {
+      console.error('Error fetching DM messages:', error);
+    } finally {
+      setLoadingMessages(false);
+    }
+  }, []);
+
+  // Initial data fetch
   useEffect(() => {
     if (isOpen) {
-      fetchData();
+      fetchChannels();
+      fetchDMThreads();
+      fetchUserStatus();
     }
-  }, [isOpen, fetchData]);
+  }, [isOpen, fetchChannels, fetchDMThreads, fetchUserStatus]);
 
-  // Fetch messages for selected channel/thread
-  const fetchMessages = useCallback(async () => {
-    if (view === 'channel' && selectedChannel) {
-      setMessagesLoading(true);
-      try {
-        const data = await chatService.getChannelMessages(selectedChannel.id);
-        setMessages(data);
-      } catch (error) {
-        console.error('Error fetching channel messages:', error);
-      } finally {
-        setMessagesLoading(false);
-      }
-    } else if (view === 'dm' && selectedThread) {
-      setMessagesLoading(true);
-      try {
-        const data = await chatService.getDMMessages(selectedThread.id);
-        setMessages(data);
-      } catch (error) {
-        console.error('Error fetching DM messages:', error);
-      } finally {
-        setMessagesLoading(false);
-      }
-    }
-  }, [view, selectedChannel, selectedThread]);
-
+  // WebSocket event handlers
   useEffect(() => {
-    fetchMessages();
-  }, [fetchMessages]);
+    // Handle new messages
+    const unsubMessage = wsManager.on('newMessage', (data) => {
+      const { channel_id, dm_thread_id, message } = data;
+      
+      // Update messages if viewing the relevant conversation
+      if ((channel_id && selectedChannel?.id === channel_id) ||
+          (dm_thread_id && selectedDMThread?.id === dm_thread_id)) {
+        setMessages(prev => [...prev, message]);
+      }
+      
+      // Update channel/thread preview
+      if (channel_id) {
+        setChannels(prev => prev.map(ch => 
+          ch.id === channel_id 
+            ? { ...ch, last_message: message, unread_count: (ch.unread_count || 0) + 1 }
+            : ch
+        ));
+      } else if (dm_thread_id) {
+        setDMThreads(prev => prev.map(t => 
+          t.id === dm_thread_id
+            ? { ...t, last_message: message, unread_count: (t.unread_count || 0) + 1 }
+            : t
+        ));
+      }
+    });
 
-  // Handle channel selection
+    // Handle typing indicators
+    const unsubTyping = wsManager.on('typing', (data) => {
+      const { channel_id, thread_id, user_id, user_name } = data;
+      const key = channel_id || thread_id;
+      
+      if (user_id === currentUser?.id) return; // Ignore own typing
+      
+      setTypingUsers(prev => ({
+        ...prev,
+        [key]: { user_name, timestamp: Date.now() }
+      }));
+      
+      // Clear typing indicator after 3 seconds
+      if (typingTimeoutRef.current[key]) {
+        clearTimeout(typingTimeoutRef.current[key]);
+      }
+      typingTimeoutRef.current[key] = setTimeout(() => {
+        setTypingUsers(prev => {
+          const newState = { ...prev };
+          delete newState[key];
+          return newState;
+        });
+      }, 3000);
+    });
+
+    // Handle reaction updates
+    const unsubReaction = wsManager.on('reactionUpdate', (data) => {
+      const { message_id, reactions } = data;
+      setMessages(prev => prev.map(msg => 
+        msg.id === message_id ? { ...msg, reactions } : msg
+      ));
+    });
+
+    // Handle user status updates
+    const unsubStatus = wsManager.on('userStatus', (data) => {
+      const { user_id, status } = data;
+      setUserStatus(prev => ({
+        ...prev,
+        [user_id]: { ...prev[user_id], status }
+      }));
+    });
+
+    return () => {
+      unsubMessage();
+      unsubTyping();
+      unsubReaction();
+      unsubStatus();
+    };
+  }, [selectedChannel, selectedDMThread, currentUser]);
+
+  // Select channel handler
   const handleSelectChannel = (channel) => {
     setSelectedChannel(channel);
+    setSelectedDMThread(null);
     setView('channel');
+    fetchChannelMessages(channel.id);
+    onMessageRead?.();
   };
 
-  // Handle DM thread selection
-  const handleSelectThread = (thread) => {
-    setSelectedThread(thread);
+  // Select DM thread handler
+  const handleSelectDMThread = (thread) => {
+    setSelectedDMThread(thread);
+    setSelectedChannel(null);
     setView('dm');
+    fetchDMMessages(thread.id);
+    onMessageRead?.();
   };
 
-  // Send message
+  // Send message handler
   const handleSendMessage = async (content) => {
-    setSending(true);
+    if (sendingMessage) return;
+    
     try {
+      setSendingMessage(true);
+      
       if (view === 'channel' && selectedChannel) {
-        const newMsg = await chatService.sendChannelMessage(selectedChannel.id, content);
-        setMessages(prev => [...prev, newMsg]);
-      } else if (view === 'dm' && selectedThread) {
-        const newMsg = await chatService.sendDMMessage(selectedThread.id, content);
-        setMessages(prev => [...prev, newMsg]);
+        const newMessage = await chatService.sendChannelMessage(selectedChannel.id, content);
+        setMessages(prev => [...prev, newMessage]);
+      } else if (view === 'dm' && selectedDMThread) {
+        const newMessage = await chatService.sendDMMessage(selectedDMThread.id, content);
+        setMessages(prev => [...prev, newMessage]);
       }
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
-      setSending(false);
+      setSendingMessage(false);
     }
   };
 
-  // Create new channel
-  const handleCreateChannel = async (e) => {
-    e.preventDefault();
-    if (!newChannelName.trim()) return;
+  // Handle typing
+  const handleTyping = useCallback(() => {
+    if (view === 'channel' && selectedChannel) {
+      wsManager.sendTyping(selectedChannel.id, null);
+    } else if (view === 'dm' && selectedDMThread) {
+      wsManager.sendTyping(null, selectedDMThread.id);
+    }
+  }, [view, selectedChannel, selectedDMThread]);
+
+  // Search handler
+  const handleSearch = async (query) => {
+    if (!query || query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
     
     try {
-      const channel = await chatService.createChannel({
-        name: newChannelName.trim().toLowerCase().replace(/\s+/g, '-'),
-        description: newChannelDesc.trim() || null,
-        type: 'PUBLIC'
-      });
-      setChannels(prev => [...prev, channel]);
-      setNewChannelName('');
-      setNewChannelDesc('');
-      setShowCreateChannel(false);
-      handleSelectChannel(channel);
+      setIsSearching(true);
+      const results = await chatService.searchMessages(query);
+      setSearchResults(results);
     } catch (error) {
-      console.error('Error creating channel:', error);
-      alert(error.response?.data?.detail || 'Failed to create channel');
+      console.error('Error searching:', error);
+    } finally {
+      setIsSearching(false);
     }
   };
 
-  // Start new DM
-  const handleStartNewDM = async (userId) => {
+  // Debounced search
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (showSearch) {
+        handleSearch(searchQuery);
+      }
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [searchQuery, showSearch]);
+
+  // Create channel handler
+  const handleCreateChannel = async (channelData) => {
+    try {
+      const newChannel = await chatService.createChannel(channelData);
+      setChannels(prev => [...prev, newChannel]);
+      setShowCreateChannel(false);
+      handleSelectChannel(newChannel);
+    } catch (error) {
+      console.error('Error creating channel:', error);
+      throw error;
+    }
+  };
+
+  // Start new DM handler
+  const handleStartDM = async (userId) => {
     try {
       const thread = await chatService.startDMThread(userId);
-      // Refresh threads and select the new one
-      const threadsData = await chatService.getDMThreads();
-      setDMThreads(threadsData);
-      const newThread = threadsData.find(t => t.id === thread.id);
-      if (newThread) {
-        handleSelectThread(newThread);
-      }
+      setDMThreads(prev => {
+        const exists = prev.find(t => t.id === thread.id);
+        if (exists) return prev;
+        return [...prev, thread];
+      });
       setShowNewDM(false);
+      handleSelectDMThread(thread);
     } catch (error) {
       console.error('Error starting DM:', error);
     }
   };
 
-  // Back to list
-  const handleBack = () => {
+  // Back to list handler
+  const handleBackToList = () => {
     setView('list');
     setSelectedChannel(null);
-    setSelectedThread(null);
+    setSelectedDMThread(null);
     setMessages([]);
-    fetchData(); // Refresh data for updated unread counts
+    onMessageRead?.();
   };
 
-  // Filter users for new DM
-  const filteredUsers = chatUsers.filter(user => 
-    user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Get typing indicator for current view
+  const getTypingIndicator = () => {
+    const key = selectedChannel?.id || selectedDMThread?.id;
+    return typingUsers[key];
+  };
 
-  if (!isOpen) return null;
+  // Handle search result click
+  const handleSearchResultClick = (result) => {
+    if (result.context_type === 'channel') {
+      const channel = channels.find(c => c.id === result.channel_id);
+      if (channel) {
+        setShowSearch(false);
+        setSearchQuery('');
+        handleSelectChannel(channel);
+      }
+    } else if (result.context_type === 'dm') {
+      const thread = dmThreads.find(t => t.id === result.dm_thread_id);
+      if (thread) {
+        setShowSearch(false);
+        setSearchQuery('');
+        handleSelectDMThread(thread);
+      }
+    }
+  };
 
   return (
     <motion.div
@@ -172,193 +337,139 @@ const ChatPanel = ({ isOpen, onClose, currentUser }) => {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.95 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed bottom-24 right-6 w-[380px] h-[520px] bg-white rounded-2xl shadow-2xl
-                 flex flex-col overflow-hidden border border-gray-200 z-50"
+      className="fixed bottom-24 right-6 w-[380px] h-[550px] bg-white rounded-2xl shadow-2xl 
+                 border border-gray-200 overflow-hidden z-50 flex flex-col"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-brand-red to-red-600">
-        <div className="flex items-center gap-2">
-          <div className="bg-white/95 rounded px-1.5 py-0.5 flex items-center">
-            <img 
-              src={CORTRACKER_LOGO} 
-              alt="CORtracker" 
-              className="h-4 w-auto"
-            />
+        <div className="flex items-center gap-3">
+          <div className="bg-white/95 rounded px-1.5 py-0.5">
+            <img src={CORTRACKER_LOGO} alt="CORtracker" className="h-4 w-auto" />
           </div>
-          <h2 className="font-semibold text-white text-lg">CORChat</h2>
+          <div>
+            <h2 className="font-semibold text-white text-lg">CORChat</h2>
+            <p className="text-xs text-white/70">Team Communication</p>
+          </div>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1 hover:bg-white/10 rounded-full transition-colors"
-        >
-          <X className="w-5 h-5 text-white" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setShowSearch(!showSearch)}
+            className={`p-2 rounded-full transition-colors ${
+              showSearch ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+            title="Search messages"
+          >
+            <Search className="w-4 h-4 text-white" />
+          </button>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+          >
+            <X className="w-4 h-4 text-white" />
+          </button>
+        </div>
       </div>
 
-      {/* Content */}
+      {/* Search Bar */}
+      <AnimatePresence>
+        {showSearch && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="border-b border-gray-200 overflow-hidden"
+          >
+            <div className="p-3 flex items-center gap-2">
+              <Search className="w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search messages..."
+                className="flex-1 bg-transparent text-sm focus:outline-none"
+                autoFocus
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSearchResults([]);
+                  }}
+                  className="p-1 hover:bg-gray-100 rounded"
+                >
+                  <CloseIcon className="w-3 h-3 text-gray-400" />
+                </button>
+              )}
+            </div>
+            
+            {/* Search Results */}
+            {(searchQuery.length >= 2 || searchResults.length > 0) && (
+              <SearchResults
+                results={searchResults}
+                loading={isSearching}
+                onResultClick={handleSearchResultClick}
+              />
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Content Area */}
       <div className="flex-1 overflow-hidden">
         {view === 'list' ? (
           <div className="h-full overflow-y-auto">
-            {/* Channel List */}
+            {/* Channels */}
             <ChannelList
               channels={channels}
               selectedChannel={selectedChannel}
               onSelectChannel={handleSelectChannel}
               onCreateChannel={() => setShowCreateChannel(true)}
-              loading={loading}
+              loading={loadingChannels}
             />
-
-            {/* DM List */}
+            
+            {/* DMs */}
             <DMList
               threads={dmThreads}
-              selectedThread={selectedThread}
-              onSelectThread={handleSelectThread}
+              selectedThread={selectedDMThread}
+              onSelectThread={handleSelectDMThread}
               onStartNewDM={() => setShowNewDM(true)}
-              loading={loading}
+              loading={loadingDMs}
+              userStatus={userStatus}
             />
           </div>
         ) : (
           <MessageView
-            type={view}
-            target={view === 'channel' ? selectedChannel : selectedThread}
+            type={view === 'channel' ? 'channel' : 'dm'}
+            target={view === 'channel' ? selectedChannel : selectedDMThread}
             messages={messages}
             currentUserId={currentUser?.id}
             onSendMessage={handleSendMessage}
-            onBack={handleBack}
-            loading={messagesLoading}
-            sending={sending}
+            onBack={handleBackToList}
+            onTyping={handleTyping}
+            loading={loadingMessages}
+            sending={sendingMessage}
+            typingIndicator={getTypingIndicator()}
           />
         )}
       </div>
 
-      {/* Create Channel Modal */}
-      {showCreateChannel && (
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-xl p-4 m-4 w-full max-w-[320px] shadow-xl"
-          >
-            <h3 className="font-semibold text-gray-900 mb-3">Create Channel</h3>
-            <form onSubmit={handleCreateChannel}>
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm text-gray-600">Channel Name</label>
-                  <div className="flex items-center mt-1">
-                    <span className="text-gray-400 text-lg mr-1">#</span>
-                    <input
-                      type="text"
-                      value={newChannelName}
-                      onChange={(e) => setNewChannelName(e.target.value)}
-                      placeholder="new-channel"
-                      className="flex-1 px-2 py-1.5 border border-gray-300 rounded-md text-sm
-                                 focus:outline-none focus:ring-2 focus:ring-brand-red/20"
-                      autoFocus
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">Description (optional)</label>
-                  <input
-                    type="text"
-                    value={newChannelDesc}
-                    onChange={(e) => setNewChannelDesc(e.target.value)}
-                    placeholder="What's this channel about?"
-                    className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm mt-1
-                               focus:outline-none focus:ring-2 focus:ring-brand-red/20"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2 mt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateChannel(false)}
-                  className="flex-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!newChannelName.trim()}
-                  className="flex-1 px-3 py-2 text-sm bg-brand-red text-white rounded-md
-                             hover:bg-red-600 disabled:opacity-50 transition-colors"
-                >
-                  Create
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
-
-      {/* New DM Modal */}
-      {showNewDM && (
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-xl p-4 m-4 w-full max-w-[320px] shadow-xl max-h-[400px] flex flex-col"
-          >
-            <h3 className="font-semibold text-gray-900 mb-3">New Message</h3>
-            
-            {/* Search */}
-            <div className="relative mb-3">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search people..."
-                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md text-sm
-                           focus:outline-none focus:ring-2 focus:ring-brand-red/20"
-                autoFocus
-              />
-            </div>
-
-            {/* User list */}
-            <div className="flex-1 overflow-y-auto space-y-1">
-              {filteredUsers.map(user => (
-                <button
-                  key={user.id}
-                  onClick={() => handleStartNewDM(user.id)}
-                  className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-md transition-colors"
-                >
-                  {user.profile_image ? (
-                    <img 
-                      src={user.profile_image} 
-                      alt={user.name}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-red to-red-600 flex items-center justify-center">
-                      <span className="text-white text-xs font-medium">
-                        {user.name?.charAt(0)?.toUpperCase() || '?'}
-                      </span>
-                    </div>
-                  )}
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
-                  </div>
-                </button>
-              ))}
-              {filteredUsers.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">No users found</p>
-              )}
-            </div>
-
-            <button
-              onClick={() => {
-                setShowNewDM(false);
-                setSearchQuery('');
-              }}
-              className="mt-3 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
-            >
-              Cancel
-            </button>
-          </motion.div>
-        </div>
-      )}
+      {/* Modals */}
+      <AnimatePresence>
+        {showCreateChannel && (
+          <CreateChannelModal
+            onClose={() => setShowCreateChannel(false)}
+            onCreate={handleCreateChannel}
+          />
+        )}
+        {showNewDM && (
+          <NewDMModal
+            onClose={() => setShowNewDM(false)}
+            onSelectUser={handleStartDM}
+            currentUserId={currentUser?.id}
+            userStatus={userStatus}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
