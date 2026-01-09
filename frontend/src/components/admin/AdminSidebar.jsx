@@ -99,8 +99,19 @@ const AdminSidebar = () => {
           })}
         </div>
         
+        {/* Calendar Sync Link */}
+        <div className="mt-6 pt-4 border-t border-gray-100">
+          <Link
+            to="/profile?tab=calendar"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            <CalendarDays className="w-5 h-5" />
+            <span>Calendar Sync</span>
+          </Link>
+        </div>
+        
         {/* Admin Badge */}
-        <div className="mt-8 p-4 bg-purple-50 rounded-xl">
+        <div className="mt-6 p-4 bg-purple-50 rounded-xl">
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">Admin</span>
           </div>
