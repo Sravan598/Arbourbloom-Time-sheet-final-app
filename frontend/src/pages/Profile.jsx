@@ -80,6 +80,54 @@ const Profile = () => {
     fetchProfile();
   }, [fetchProfile]);
 
+  // Fetch calendar feeds when calendar tab is active
+  const fetchCalendarFeeds = useCallback(async () => {
+    setIsLoadingCalendar(true);
+    try {
+      const response = await axios.get(`${API}/calendar/token`);
+      setCalendarFeeds(response.data);
+    } catch (err) {
+      console.error('Failed to load calendar feeds:', err);
+    } finally {
+      setIsLoadingCalendar(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'calendar' && !calendarFeeds) {
+      fetchCalendarFeeds();
+    }
+  }, [activeTab, calendarFeeds, fetchCalendarFeeds]);
+
+  const copyToClipboard = async (text, feedType) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedFeed(feedType);
+      setTimeout(() => setCopiedFeed(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const regenerateToken = async (feedType) => {
+    try {
+      const response = await axios.post(`${API}/calendar/regenerate-token?feed_type=${feedType}`);
+      setCalendarFeeds(prev => ({
+        ...prev,
+        [feedType === 'personal' ? 'personal_feed' : 'team_feed']: {
+          ...prev?.[feedType === 'personal' ? 'personal_feed' : 'team_feed'],
+          token: response.data.token,
+          url: response.data.url
+        }
+      }));
+      setSuccess('Calendar URL regenerated successfully');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError('Failed to regenerate calendar URL');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
   const handleInputChange = (field, value) => {
     setProfile(prev => ({ ...prev, [field]: value }));
   };
