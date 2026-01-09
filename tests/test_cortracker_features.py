@@ -122,7 +122,7 @@ class TestPDFExportWithLogo:
         headers = {"Authorization": f"Bearer {admin_token}"}
         
         response = requests.get(
-            f"{BASE_URL}/api/admin/performance-insights/pdf",
+            f"{BASE_URL}/api/admin/performance/export-pdf",
             params={"period": "30"},
             headers=headers
         )
