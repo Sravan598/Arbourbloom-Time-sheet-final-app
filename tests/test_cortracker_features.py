@@ -89,14 +89,9 @@ class TestPDFExportWithLogo:
     
     def test_timesheet_pdf_export_returns_pdf(self, employee_headers):
         """Test that timesheet PDF export returns a valid PDF file"""
-        # Get current week dates
-        today = datetime.now()
-        week_start = (today - timedelta(days=today.weekday())).strftime("%Y-%m-%d")
-        week_end = (today + timedelta(days=6-today.weekday())).strftime("%Y-%m-%d")
-        
         response = requests.get(
-            f"{BASE_URL}/api/employee/timesheet-pdf",
-            params={"week_start": week_start, "week_end": week_end},
+            f"{BASE_URL}/api/export/timesheet/pdf",
+            params={"week_offset": 0},
             headers=employee_headers
         )
         
