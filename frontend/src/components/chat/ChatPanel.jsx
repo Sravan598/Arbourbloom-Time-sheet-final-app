@@ -211,17 +211,19 @@ const ChatPanel = ({ isOpen, onClose, currentUser, onMessageRead }) => {
   };
 
   // Send message handler
-  const handleSendMessage = async (content) => {
+  const handleSendMessage = async (content, attachment = null) => {
     if (sendingMessage) return;
     
     try {
       setSendingMessage(true);
       
       if (view === 'channel' && selectedChannel) {
-        const newMessage = await chatService.sendChannelMessage(selectedChannel.id, content);
+        const msgType = attachment?.is_image ? 'image' : (attachment ? 'file' : 'text');
+        const newMessage = await chatService.sendChannelMessage(selectedChannel.id, content, msgType, attachment);
         setMessages(prev => [...prev, newMessage]);
       } else if (view === 'dm' && selectedDMThread) {
-        const newMessage = await chatService.sendDMMessage(selectedDMThread.id, content);
+        const msgType = attachment?.is_image ? 'image' : (attachment ? 'file' : 'text');
+        const newMessage = await chatService.sendDMMessage(selectedDMThread.id, content, msgType, attachment);
         setMessages(prev => [...prev, newMessage]);
       }
     } catch (error) {
