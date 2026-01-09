@@ -5394,6 +5394,214 @@ async def mark_all_notifications_read(
     return {"message": "All notifications marked as read"}
 
 
+# ============== CALENDAR INTEGRATION ROUTES ==============
+
+def generate_calendar_token(user_id: str, feed_type: str = "personal") -> str:
+    """Generate a secure token for calendar feed access"""
+    payload = {
+        "user_id": user_id,
+        "feed_type": feed_type,
+        "purpose": "calendar_feed"
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+
+def verify_calendar_token(token: str) -> dict:
+    """Verify and decode a calendar feed token"""
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if payload.get("purpose") != "calendar_feed":
+            return None
+        return payload
+    except jwt.InvalidTokenError:
+        return None
+
+
+def format_datetime_ics(dt_str: str, all_day: bool = True) -> str:
+    """Format date string for ICS format"""
+    if all_day:
+        # For all-day events, use DATE format: YYYYMMDD
+        return dt_str.replace("-", "")
+    else:
+        # For timed events, use DATETIME format
+        return dt_str.replace("-", "").replace(":", "") + "Z"
+
+
+def generate_ics_content(events: list, calendar_name: str = "CORtracker Calendar") -> str:
+    """Generate ICS file content from events"""
+    lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//CORtracker//Calendar Feed//EN",
+        f"X-WR-CALNAME:{calendar_name}",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH"
+    ]
+    
+    for event in events:
+        uid = event.get("id", str(uuid.uuid4()))
+        summary = event.get("title", "Event")
+        description = event.get("description", "")
+        start_date = event.get("start_date", "")
+        end_date = event.get("end_date", "")
+        status = event.get("status", "CONFIRMED")
+        
+        # Convert status
+        ics_status = "CONFIRMED" if status.upper() == "APPROVED" else "TENTATIVE"
+        
+        lines.append("BEGIN:VEVENT")
+        lines.append(f"UID:{uid}@cortracker.com")
+        lines.append(f"DTSTAMP:{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}")
+        
+        # For leave requests, use all-day format
+        # End date in ICS is exclusive, so add 1 day
+        start_formatted = format_datetime_ics(start_date)
+        
+        # Parse end date and add 1 day for ICS (exclusive end)
+        end_dt = datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)
+        end_formatted = end_dt.strftime("%Y%m%d")
+        
+        lines.append(f"DTSTART;VALUE=DATE:{start_formatted}")
+        lines.append(f"DTEND;VALUE=DATE:{end_formatted}")
+        lines.append(f"SUMMARY:{summary}")
+        if description:
+            # Escape special characters in description
+            desc_escaped = description.replace("\\", "\\\\").replace("\n", "\\n").replace(",", "\\,")
+            lines.append(f"DESCRIPTION:{desc_escaped}")
+        lines.append(f"STATUS:{ics_status}")
+        lines.append("TRANSP:OPAQUE")
+        lines.append("END:VEVENT")
+    
+    lines.append("END:VCALENDAR")
+    return "\r\n".join(lines)
+
+
+@api_router.get("/calendar/token")
+async def get_calendar_token(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get or generate calendar feed tokens for the current user"""
+    user_id = current_user["id"]
+    is_admin = current_user.get("role") == "admin"
+    
+    # Generate personal token
+    personal_token = generate_calendar_token(user_id, "personal")
+    
+    result = {
+        "personal_feed": {
+            "token": personal_token,
+            "url": f"/api/calendar/feed/{personal_token}.ics",
+            "description": "Your personal leave and PTO events"
+        }
+    }
+    
+    # Admins also get a team feed
+    if is_admin:
+        team_token = generate_calendar_token(user_id, "team")
+        result["team_feed"] = {
+            "token": team_token,
+            "url": f"/api/calendar/feed/{team_token}.ics",
+            "description": "All team members' leave and PTO events"
+        }
+    
+    return result
+
+
+@api_router.get("/calendar/feed/{token}.ics")
+async def get_calendar_feed(token: str):
+    """
+    Public endpoint - Get ICS calendar feed
+    No authentication required - uses token for verification
+    """
+    # Verify token
+    payload = verify_calendar_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired calendar token")
+    
+    user_id = payload.get("user_id")
+    feed_type = payload.get("feed_type", "personal")
+    
+    # Get user info
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    is_admin = user.get("role") == "admin"
+    
+    # Build query based on feed type
+    if feed_type == "team" and is_admin:
+        # Team feed - get all approved leave requests
+        query = {"status": "APPROVED"}
+        calendar_name = "CORtracker - Team Leave Calendar"
+    else:
+        # Personal feed - only user's approved leave requests
+        query = {"user_id": user_id, "status": "APPROVED"}
+        calendar_name = f"CORtracker - {user.get('name', 'My')} Leave Calendar"
+    
+    # Fetch approved leave requests
+    leave_requests = await db.leave_requests.find(query, {"_id": 0}).to_list(500)
+    
+    # Convert leave requests to calendar events
+    events = []
+    for lr in leave_requests:
+        # Get leave type display name
+        leave_type = lr.get("leave_type", "Leave")
+        if lr.get("is_custom_type"):
+            leave_type = f"Custom: {leave_type}"
+        
+        # For team feed, include employee name
+        if feed_type == "team":
+            title = f"{lr.get('user_name', 'Employee')} - {leave_type}"
+        else:
+            title = f"{leave_type}"
+        
+        event = {
+            "id": lr.get("id"),
+            "title": title,
+            "description": lr.get("reason", ""),
+            "start_date": lr.get("start_date"),
+            "end_date": lr.get("end_date"),
+            "status": "APPROVED"
+        }
+        events.append(event)
+    
+    # Generate ICS content
+    ics_content = generate_ics_content(events, calendar_name)
+    
+    # Return as ICS file
+    return Response(
+        content=ics_content,
+        media_type="text/calendar",
+        headers={
+            "Content-Disposition": f"attachment; filename=cortracker-calendar.ics",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
+    )
+
+
+@api_router.post("/calendar/regenerate-token")
+async def regenerate_calendar_token(
+    feed_type: str = "personal",
+    current_user: dict = Depends(get_current_user)
+):
+    """Regenerate calendar feed token (invalidates old URLs)"""
+    user_id = current_user["id"]
+    is_admin = current_user.get("role") == "admin"
+    
+    if feed_type == "team" and not is_admin:
+        raise HTTPException(status_code=403, detail="Only admins can access team feed")
+    
+    new_token = generate_calendar_token(user_id, feed_type)
+    
+    return {
+        "token": new_token,
+        "url": f"/api/calendar/feed/{new_token}.ics",
+        "message": "Token regenerated. Old calendar URLs will no longer work."
+    }
+
+
 # ============== LEGACY ROUTES ==============
 class StatusCheck(BaseModel):
     model_config = ConfigDict(extra="ignore")
