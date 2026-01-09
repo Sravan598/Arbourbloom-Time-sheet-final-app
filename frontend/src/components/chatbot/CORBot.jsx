@@ -206,10 +206,9 @@ const CORBot = () => {
       />
 
       {/* Floating Button - Draggable */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {!isOpen && (
           <motion.button
-            key={`corbot-button-${positionKey}`}
             ref={buttonRef}
             data-testid="corbot-trigger-button"
             drag
@@ -218,13 +217,13 @@ const CORBot = () => {
             dragMomentum={false}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={handleDragEnd}
+            style={{ ...getPositionStyles(), x: dragX, y: dragY }}
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0 }}
             whileHover={{ scale: isDragging ? 1 : 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => !isDragging && setIsOpen(true)}
-            style={getPositionStyles()}
             className={`fixed z-50 w-14 h-14 rounded-full shadow-lg
                        bg-gradient-to-r from-brand-red to-red-600 hover:from-red-600 hover:to-red-700
                        flex items-center justify-center transition-colors group
@@ -240,10 +239,9 @@ const CORBot = () => {
       </AnimatePresence>
 
       {/* Chat Panel - Draggable via header */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {isOpen && (
           <motion.div
-            key={`corbot-panel-${positionKey}`}
             ref={panelRef}
             data-testid="corbot-chat-panel"
             drag
@@ -254,14 +252,14 @@ const CORBot = () => {
             dragListener={false}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={handleDragEnd}
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            style={{ ...getPositionStyles(), x: dragX, y: dragY }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ 
               opacity: 1, 
-              y: 0, 
               scale: isDragging ? 1.02 : 1,
               height: isMinimized ? 'auto' : 500
             }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             style={getPositionStyles()}
             className={`fixed w-[360px] bg-white rounded-2xl overflow-hidden border border-gray-200 z-50
