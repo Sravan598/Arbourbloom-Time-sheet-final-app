@@ -1,67 +1,75 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { MessageCircle, X, Wifi, WifiOff } from 'lucide-react';
 
-const ChatButton = ({ isOpen, onClick, unreadCount = 0 }) => {
+// CORtracker logo URL
+const CORTRACKER_LOGO = "https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png";
+
+const ChatButton = ({ isOpen, onClick, unreadCount = 0, isConnected = false }) => {
   return (
     <motion.button
       onClick={onClick}
-      className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center
-                 bg-gradient-to-r from-brand-red to-red-600 hover:from-red-600 hover:to-red-700
-                 transition-all duration-200 group"
+      className="fixed bottom-6 right-6 z-50"
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
-      initial={{ opacity: 0, scale: 0 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ type: 'spring', stiffness: 260, damping: 20 }}
     >
-      <AnimatePresence mode="wait">
+      <div className={`relative w-14 h-14 rounded-full shadow-lg 
+                      flex items-center justify-center transition-all
+                      ${isOpen 
+                        ? 'bg-gray-800 hover:bg-gray-700' 
+                        : 'bg-gradient-to-r from-brand-red to-red-600 hover:from-red-600 hover:to-red-700'
+                      }`}
+      >
         {isOpen ? (
-          <motion.div
-            key="close"
-            initial={{ rotate: -90, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            exit={{ rotate: 90, opacity: 0 }}
-            transition={{ duration: 0.15 }}
-          >
-            <X className="w-6 h-6 text-white" />
-          </motion.div>
+          <X className="w-6 h-6 text-white" />
         ) : (
-          <motion.div
-            key="chat"
-            initial={{ rotate: 90, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            exit={{ rotate: -90, opacity: 0 }}
-            transition={{ duration: 0.15 }}
-          >
-            <MessageCircle className="w-6 h-6 text-white" />
-          </motion.div>
+          <div className="relative">
+            <img 
+              src={CORTRACKER_LOGO} 
+              alt="CORChat" 
+              className="h-6 w-auto"
+            />
+          </div>
         )}
-      </AnimatePresence>
-      
-      {/* Unread badge */}
-      <AnimatePresence>
-        {unreadCount > 0 && !isOpen && (
+        
+        {/* Unread badge */}
+        {!isOpen && unreadCount > 0 && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
-            className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center
-                       text-xs font-bold text-gray-900 border-2 border-white"
+            className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full
+                       flex items-center justify-center text-xs font-bold text-white shadow-md"
           >
             {unreadCount > 9 ? '9+' : unreadCount}
           </motion.div>
         )}
-      </AnimatePresence>
+        
+        {/* Connection status indicator */}
+        {!isOpen && (
+          <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full 
+                          border-2 border-white flex items-center justify-center
+                          ${isConnected ? 'bg-green-500' : 'bg-gray-400'}`}
+               title={isConnected ? 'Connected' : 'Connecting...'}
+          >
+          </div>
+        )}
+        
+        {/* Pulse animation when not open */}
+        {!isOpen && (
+          <span className="absolute inset-0 rounded-full bg-brand-red animate-ping opacity-20" />
+        )}
+      </div>
       
-      {/* Ripple effect */}
-      {!isOpen && unreadCount > 0 && (
-        <motion.span
-          className="absolute inset-0 rounded-full bg-brand-red"
-          initial={{ scale: 1, opacity: 0.5 }}
-          animate={{ scale: 1.5, opacity: 0 }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        />
+      {/* Tooltip */}
+      {!isOpen && (
+        <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 
+                        bg-gray-800 text-white text-sm px-3 py-1.5 rounded-lg
+                        opacity-0 hover:opacity-100 pointer-events-none
+                        whitespace-nowrap shadow-lg transition-opacity">
+          CORChat - Team Chat
+          <div className="absolute left-full top-1/2 -translate-y-1/2 
+                          border-8 border-transparent border-l-gray-800" />
+        </div>
       )}
     </motion.button>
   );
