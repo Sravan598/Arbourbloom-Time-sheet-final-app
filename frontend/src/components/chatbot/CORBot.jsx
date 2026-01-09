@@ -86,7 +86,7 @@ const CORBot = () => {
     const element = isOpen ? panelRef.current : buttonRef.current;
     if (!element) return;
     
-    // Get the current bounding box after drag
+    // Get the current bounding box after drag (includes transform)
     const rect = element.getBoundingClientRect();
     const size = getElementSize(!isOpen);
     const padding = 10;
@@ -102,6 +102,9 @@ const CORBot = () => {
     const newPosition = { x: finalX, y: finalY };
     setPosition(newPosition);
     localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(newPosition));
+    
+    // Increment key to force re-mount and reset Framer Motion's internal transform state
+    setPositionKey(prev => prev + 1);
   };
 
   // Handle window resize - keep element in bounds
