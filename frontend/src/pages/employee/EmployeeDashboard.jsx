@@ -423,70 +423,6 @@ const EmployeeDashboard = () => {
               )}
             </div>
           </motion.div>
-
-          {/* Today's Punches */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-3xl shadow-lg p-8"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <Calendar className="w-6 h-6 text-brand-red" />
-              <h2 className="text-xl font-bold text-brand-dark">Today&apos;s Activity</h2>
-            </div>
-            
-            {todayPunches.length === 0 ? (
-              <div className="text-center py-8">
-                <Clock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No activity recorded today</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {todayPunches.map((punch, index) => (
-                  <div 
-                    key={punch.id || index}
-                    className="p-4 bg-gray-50 rounded-xl"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${punch.clock_out_at ? 'bg-gray-400' : 'bg-green-500'}`} />
-                          <span className="font-medium text-brand-dark">
-                            {punch.clock_out_at ? 'Completed Shift' : 'Active Shift'}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {new Date(punch.clock_in_at).toLocaleTimeString()} - {punch.clock_out_at ? new Date(punch.clock_out_at).toLocaleTimeString() : 'In Progress'}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-semibold text-brand-dark">
-                          {punch.total_minutes ? formatDuration(punch.total_minutes) : '-'}
-                        </span>
-                      </div>
-                    </div>
-                    {/* Display Notes */}
-                    {punch.notes && (
-                      <div className="mt-3 pt-3 border-t border-gray-200">
-                        <div className="flex items-start gap-2">
-                          <MessageSquare className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                          <p className="text-sm text-gray-600 italic">{punch.notes}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            <Link 
-              to="/employee/timesheet"
-              className="mt-6 block text-center text-brand-red hover:underline font-medium"
-            >
-              View Full Timesheet →
-            </Link>
-          </motion.div>
         </div>
 
         {/* Weekly Progress Section */}
@@ -499,10 +435,9 @@ const EmployeeDashboard = () => {
           <AnnouncementsSection />
         </div>
 
-        {/* Break Timer & Leave/PTO Sections */}
-        <div className="mt-8 grid lg:grid-cols-2 gap-8">
+        {/* Break Timer Section */}
+        <div className="mt-8">
           <BreakTimerSection isClockedIn={isClockedIn} />
-          <LeavePTOSection />
         </div>
         </main>
       </div>
