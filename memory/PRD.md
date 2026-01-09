@@ -75,10 +75,16 @@ CORtracker is a comprehensive time-tracking and workforce management application
 - WebSocket support for real-time features
 
 ### Key Files
-- `/app/backend/server.py` - Main backend file with Calendar API endpoints
+- `/app/backend/server.py` - Main backend file with Calendar API and Chat API endpoints
 - `/app/frontend/src/pages/Profile.jsx` - Profile page with Calendar tab
-- `/app/frontend/src/components/employee/EmployeeSidebar.jsx` - Employee sidebar with Calendar Sync
-- `/app/frontend/src/components/admin/AdminSidebar.jsx` - Admin sidebar with Calendar Sync
+- `/app/frontend/src/components/chat/` - CORChat components (11 files)
+  - `CORChat.jsx` - Main chat component with WebSocket integration
+  - `ChatPanel.jsx` - Chat panel with channels/DMs/search
+  - `MessageView.jsx` - Message display with reactions
+  - `SearchResults.jsx` - Search results component
+  - `EmojiPicker.jsx` - Emoji picker for messages/reactions
+  - `MessageReactions.jsx` - Reaction display component
+- `/app/frontend/src/services/chatService.js` - Chat API and WebSocket manager
 - `/app/frontend/src/components/chatbot/CORBot.jsx` - FAQ chatbot with drag persistence
 
 ### Calendar API Endpoints
