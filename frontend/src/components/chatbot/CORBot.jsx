@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls, useMotionValue } from 'framer-motion';
 import { Bot, X, Minus, Send } from 'lucide-react';
 import { findAnswer } from './faqData';
 
@@ -45,11 +45,13 @@ const CORBot = () => {
   });
 
   const [isDragging, setIsDragging] = useState(false);
-  // Key to force re-mount after position update (resets Framer Motion's internal state)
-  const [positionKey, setPositionKey] = useState(0);
   const dragControls = useDragControls();
   const panelRef = useRef(null);
   const buttonRef = useRef(null);
+  
+  // Motion values for external position control - initialized to 0 since CSS handles base position
+  const dragX = useMotionValue(0);
+  const dragY = useMotionValue(0);
 
   // Save position to localStorage whenever it changes (debounced)
   useEffect(() => {
