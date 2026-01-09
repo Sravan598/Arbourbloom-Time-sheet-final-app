@@ -161,15 +161,16 @@ const CORBot = () => {
             drag
             dragElastic={0.1}
             dragMomentum={false}
-            onDragStart={() => setIsDragging(true)}
+            onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0 }}
             whileHover={{ scale: isDragging ? 1 : 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: isDragging ? 1 : 0.95 }}
             onClick={() => {
-              if (!isDragging) setIsOpen(true);
+              // Use ref for immediate check to avoid stale closure
+              if (!isDraggingRef.current) setIsOpen(true);
             }}
             style={getBaseStyle()}
             className={`fixed z-50 w-14 h-14 rounded-full shadow-lg
