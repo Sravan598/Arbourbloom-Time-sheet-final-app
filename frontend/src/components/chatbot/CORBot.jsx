@@ -76,33 +76,25 @@ const CORBot = () => {
     return { width: 360, height: isMinimized ? 56 : 500 }; // Panel size
   };
 
-  // Handle drag end - save final position
-  const handleDragEnd = (event, info) => {
+  // Handle drag end - save final position using bounding box
+  const handleDragEnd = () => {
     setIsDragging(false);
     
-    // Calculate the final position from the drag offset
+    // Get the actual element that was dragged
+    const element = isOpen ? panelRef.current : buttonRef.current;
+    if (!element) return;
+    
+    // Get the current bounding box after drag
+    const rect = element.getBoundingClientRect();
     const size = getElementSize(!isOpen);
     const padding = 10;
-    
-    // Get current element position
-    let finalX, finalY;
-    
-    if (position.y === null) {
-      // Was at default bottom-left position, calculate new absolute position
-      finalX = 24 + info.offset.x;
-      finalY = window.innerHeight - 24 - size.height + info.offset.y;
-    } else {
-      // Already has absolute position, add offset
-      finalX = position.x + info.offset.x;
-      finalY = position.y + info.offset.y;
-    }
     
     // Clamp to viewport bounds
     const maxX = window.innerWidth - size.width - padding;
     const maxY = window.innerHeight - size.height - padding;
     
-    finalX = Math.max(padding, Math.min(finalX, maxX));
-    finalY = Math.max(padding, Math.min(finalY, maxY));
+    const finalX = Math.max(padding, Math.min(rect.left, maxX));
+    const finalY = Math.max(padding, Math.min(rect.top, maxY));
     
     // Save the new position
     const newPosition = { x: finalX, y: finalY };
