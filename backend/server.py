@@ -5526,7 +5526,7 @@ async def get_calendar_feed(token: str):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    is_admin = user.get("role") == "admin"
+    is_admin = user.get("role", "").upper() == "ADMIN"
     
     # Build query based on feed type
     if feed_type == "team" and is_admin:
