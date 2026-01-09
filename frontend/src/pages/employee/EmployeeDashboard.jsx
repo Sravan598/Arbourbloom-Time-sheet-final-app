@@ -409,6 +409,9 @@ const EmployeeDashboard = () => {
               )}
             </div>
           </motion.div>
+
+          {/* Break Timer Section - Side by side with Clock In */}
+          <BreakTimerSection isClockedIn={isClockedIn} />
         </div>
 
         {/* Weekly Progress Section */}
@@ -419,11 +422,6 @@ const EmployeeDashboard = () => {
         {/* Announcements Section */}
         <div className="mt-8">
           <AnnouncementsSection />
-        </div>
-
-        {/* Break Timer Section */}
-        <div className="mt-8">
-          <BreakTimerSection isClockedIn={isClockedIn} />
         </div>
         </main>
       </div>
