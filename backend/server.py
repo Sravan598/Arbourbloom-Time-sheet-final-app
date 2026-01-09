@@ -2088,15 +2088,6 @@ def generate_timesheet_pdf(user_data: dict, timesheets: list, breaks: list, week
     styles = getSampleStyleSheet()
     
     # Custom styles
-    title_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=24,
-        textColor=colors.HexColor('#1F2937'),
-        spaceAfter=20,
-        alignment=TA_CENTER
-    )
-    
     subtitle_style = ParagraphStyle(
         'CustomSubtitle',
         parent=styles['Normal'],
@@ -2115,9 +2106,8 @@ def generate_timesheet_pdf(user_data: dict, timesheets: list, breaks: list, week
         spaceAfter=10
     )
     
-    # Title
-    elements.append(Paragraph("CORtracker", title_style))
-    elements.append(Paragraph("Employee Timesheet Report", subtitle_style))
+    # Header with Logo
+    create_pdf_header_with_logo(elements, styles, "Employee Timesheet Report")
     
     # Employee Info
     elements.append(Paragraph("Employee Information", section_style))
