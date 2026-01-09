@@ -1,7 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, ArrowLeft, Hash, Lock, User, Smile } from 'lucide-react';
+import { Send, ArrowLeft, Hash, Lock, User, Smile, Paperclip } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
+import EmojiPicker from './EmojiPicker';
+import MessageReactions from './MessageReactions';
+import chatService from '../../services/chatService';
 
 const MessageView = ({
   type, // 'channel' or 'dm'
@@ -10,12 +13,17 @@ const MessageView = ({
   currentUserId,
   onSendMessage,
   onBack,
+  onTyping,
   loading,
-  sending
+  sending,
+  typingIndicator
 }) => {
   const [newMessage, setNewMessage] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [selectedMessageForReaction, setSelectedMessageForReaction] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -27,11 +35,49 @@ const MessageView = ({
     inputRef.current?.focus();
   }, [target]);
 
+  // Handle typing indicator
+  const handleInputChange = (e) => {
+    setNewMessage(e.target.value);
+    
+    // Debounce typing indicator
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    typingTimeoutRef.current = setTimeout(() => {
+      onTyping?.();
+    }, 500);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (newMessage.trim() && !sending) {
       onSendMessage(newMessage.trim());
       setNewMessage('');
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
+  // Add emoji to message
+  const handleEmojiSelect = (emoji) => {
+    setNewMessage(prev => prev + emoji);
+    setShowEmojiPicker(false);
+    inputRef.current?.focus();
+  };
+
+  // Add reaction to message
+  const handleAddReaction = async (messageId, emoji) => {
+    try {
+      await chatService.addReaction(messageId, emoji);
+      setSelectedMessageForReaction(null);
+    } catch (error) {
+      console.error('Error adding reaction:', error);
     }
   };
 
@@ -121,7 +167,14 @@ const MessageView = ({
                 </span>
               </div>
             )}
-            <h3 className="font-semibold text-gray-900">{target?.other_user_name}</h3>
+            <div>
+              <h3 className="font-semibold text-gray-900">{target?.other_user_name}</h3>
+              {target?.status && (
+                <p className={`text-xs ${target.status === 'online' ? 'text-green-500' : 'text-gray-400'}`}>
+                  {target.status === 'online' ? 'Online' : 'Offline'}
+                </p>
+              )}
+            </div>
           </>
         )}
       </div>
@@ -172,7 +225,7 @@ const MessageView = ({
                       key={msg.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className={`flex gap-2 ${isOwnMessage ? 'flex-row-reverse' : ''}`}
+                      className={`flex gap-2 ${isOwnMessage ? 'flex-row-reverse' : ''} group`}
                     >
                       {/* Avatar */}
                       <div className="w-8 flex-shrink-0">
@@ -200,17 +253,53 @@ const MessageView = ({
                             {msg.sender_name}
                           </span>
                         )}
-                        <div
-                          className={`px-3 py-2 rounded-2xl ${
-                            isOwnMessage
-                              ? 'bg-brand-red text-white rounded-tr-md'
-                              : 'bg-white text-gray-900 rounded-tl-md shadow-sm border border-gray-100'
-                          }`}
-                        >
-                          <p className="text-sm whitespace-pre-wrap break-words">
-                            {msg.content}
-                          </p>
+                        <div className="relative">
+                          <div
+                            className={`px-3 py-2 rounded-2xl ${
+                              isOwnMessage
+                                ? 'bg-brand-red text-white rounded-tr-md'
+                                : 'bg-white text-gray-900 rounded-tl-md shadow-sm border border-gray-100'
+                            }`}
+                          >
+                            <p className="text-sm whitespace-pre-wrap break-words">
+                              {msg.content}
+                            </p>
+                          </div>
+                          
+                          {/* Reaction button (appears on hover) */}
+                          <button
+                            onClick={() => setSelectedMessageForReaction(
+                              selectedMessageForReaction === msg.id ? null : msg.id
+                            )}
+                            className={`absolute -right-2 -bottom-2 p-1 bg-white rounded-full shadow-sm 
+                                       border border-gray-200 opacity-0 group-hover:opacity-100 
+                                       transition-opacity hover:bg-gray-50
+                                       ${isOwnMessage ? '-left-2 -right-auto' : ''}`}
+                          >
+                            <Smile className="w-3 h-3 text-gray-400" />
+                          </button>
+                          
+                          {/* Emoji picker for reactions */}
+                          {selectedMessageForReaction === msg.id && (
+                            <div className={`absolute z-10 ${isOwnMessage ? 'right-0' : 'left-0'} -bottom-12`}>
+                              <EmojiPicker 
+                                onSelect={(emoji) => handleAddReaction(msg.id, emoji)}
+                                onClose={() => setSelectedMessageForReaction(null)}
+                                compact
+                              />
+                            </div>
+                          )}
                         </div>
+                        
+                        {/* Reactions display */}
+                        {msg.reactions && msg.reactions.length > 0 && (
+                          <MessageReactions 
+                            reactions={msg.reactions}
+                            onReactionClick={(emoji) => handleAddReaction(msg.id, emoji)}
+                            currentUserId={currentUserId}
+                          />
+                        )}
+                        
                         <span className={`text-xs text-gray-400 mt-0.5 block ${
                           isOwnMessage ? 'text-right mr-1' : 'ml-1'
                         }`}>
@@ -224,17 +313,55 @@ const MessageView = ({
             </div>
           ))
         )}
+        
+        {/* Typing indicator */}
+        {typingIndicator && (
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 text-sm text-gray-500"
+          >
+            <div className="flex gap-1">
+              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+            <span>{typingIndicator.user_name} is typing...</span>
+          </motion.div>
+        )}
+        
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
       <form onSubmit={handleSubmit} className="p-3 border-t border-gray-200 bg-white">
         <div className="flex items-center gap-2">
+          {/* Emoji button */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <Smile className="w-5 h-5" />
+            </button>
+            
+            {showEmojiPicker && (
+              <div className="absolute bottom-12 left-0 z-10">
+                <EmojiPicker
+                  onSelect={handleEmojiSelect}
+                  onClose={() => setShowEmojiPicker(false)}
+                />
+              </div>
+            )}
+          </div>
+          
           <input
             ref={inputRef}
             type="text"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleInputChange}
+            onKeyPress={handleKeyPress}
             placeholder={type === 'channel' 
               ? `Message #${target?.name}` 
               : `Message ${target?.other_user_name}`
@@ -244,6 +371,7 @@ const MessageView = ({
                        transition-all"
             disabled={sending}
           />
+          
           <motion.button
             type="submit"
             disabled={!newMessage.trim() || sending}
