@@ -3438,15 +3438,6 @@ async def export_performance_pdf(
     styles = getSampleStyleSheet()
     
     # Custom styles
-    title_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=24,
-        alignment=TA_CENTER,
-        spaceAfter=10,
-        textColor=colors.HexColor('#1a1a2e')
-    )
-    
     subtitle_style = ParagraphStyle(
         'CustomSubtitle',
         parent=styles['Normal'],
@@ -3474,16 +3465,8 @@ async def export_performance_pdf(
     
     elements = []
     
-    # Header
-    elements.append(Paragraph("CORtracker", title_style))
-    elements.append(Paragraph("PERFORMANCE INSIGHTS REPORT", ParagraphStyle(
-        'ReportTitle',
-        parent=styles['Heading2'],
-        fontSize=16,
-        alignment=TA_CENTER,
-        spaceAfter=15,
-        textColor=colors.HexColor('#333333')
-    )))
+    # Header with Logo
+    create_pdf_header_with_logo(elements, styles, "PERFORMANCE INSIGHTS REPORT")
     
     period_text = f"Period: {start_date.strftime('%b %d, %Y')} - {now.strftime('%b %d, %Y')}"
     generated_text = f"Generated: {now.strftime('%B %d, %Y at %I:%M %p')}"
