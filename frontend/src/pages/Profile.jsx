@@ -39,10 +39,13 @@ const API = `${BACKEND_URL}/api`;
 
 const Profile = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, logout, updateUser } = useAuth();
   const fileInputRef = useRef(null);
   
-  const [activeTab, setActiveTab] = useState('personal');
+  // Check for tab parameter in URL
+  const initialTab = searchParams.get('tab') || 'personal';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState(null);
