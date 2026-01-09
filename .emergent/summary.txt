@@ -2,63 +2,66 @@
 The user's initial goal was to build a premium marketing website and a time-tracking application called CORtracker.
 
 During this session, the user's primary requests were:
-1.  **Implement a Secure Document Section:** For employees to upload/manage personal documents with PIN protection, and for admins to view them.
-2.  **Refactor Dashboard Layouts:** Move navigation from the header to a persistent left-side navigation bar for both Employee and Admin dashboards for a more modern, scalable UI.
-3.  **Create Dedicated Admin Pages:** Break out sections from the main Admin Dashboard (Projects, Employee Documents, Employees) into their own dedicated pages.
-4.  **Add Employee Management Features:** Implement the ability for admins to delete employees and view their profile pictures in lists.
-5.  **Build a Team Chat Feature (CORChat):** Integrate a real-time chat application (similar to Zoho Cliq) as a floating widget within CORtracker, featuring channels and direct messaging.
+1.  **Build a Team Chat Feature (CORChat):** Integrate a real-time chat application as a floating widget.
+2.  **Update CORChat UI:** Replace the default header icon with the company logo.
+3.  **Build a FAQ Chatbot (CORBot):** Create a separate, simple, draggable chatbot widget for answering pre-defined questions about the application.
+4.  **Implement a Leave/PTO Module:** Add a complete system for employees to request leave and for admins to approve/manage requests and leave types, including a notification system.
+5.  **Refine UI/UX:** Adjust button styles for consistency and clean up the Employee Dashboard layout.
+6.  **Improve CORBot Drag-and-Drop:** Enhance the chatbot's drag functionality to save its position.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application with a React frontend and a FastAPI backend. The application features role-based (Admin/Employee) dashboards. The UI has been significantly refactored to use a left-sidebar navigation model for both admin and employee sections, moving key navigation items out of the header. Many sections of the admin dashboard have been converted into their own dedicated pages. The backend now includes a complete Document Management system and an endpoint for deleting employees.
+A full-stack application with a React frontend and FastAPI backend, featuring role-based (Admin/Employee) dashboards. The application includes a secure document management system, employee management, project tracking, and several new features added in this session: a real-time team chat widget (CORChat), a draggable FAQ chatbot (CORBot), and a comprehensive Leave/PTO module with a site-wide notification system. The UI has been actively refined based on user feedback.
 
 **Last working item**:
-- **Last item agent was working**: The agent began **Phase 1 (Foundation)** of implementing the new CORChat feature. It has successfully added the required Pydantic models for the chat functionality and initial WebSocket support to the main backend file, . The next step is to create the REST API endpoints and the frontend components.
-- **Status**: IN PROGRESS
+- **Last item agent was working**: The user requested an enhancement to the CORBot FAQ chatbot's drag-and-drop functionality. The agent proposed a plan to use Framer Motion to persist the chatbot's position in , allowing it to remember its location across page reloads and stay exactly where the user drops it. The user approved this plan.
+- **Status**: NOT STARTED
 - **Agent Testing Done**: N
-- **Which testing method agent to use?**: Both. Backend testing will be needed for the new REST and WebSocket endpoints. Frontend testing will be required to verify the floating chat widget UI and real-time functionality.
+- **Which testing method agent to use?**: Frontend testing agent or screenshot tool to verify the drag-and-drop behavior and confirm that the position is saved in local storage and restored on page refresh.
 - **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
 - None.
 
 **In progress Task List**:
-- **Task 1: Implement CORChat Feature (P0)**
-    - **Where to resume**: Continue with **Phase 1: Foundation**. The models are in ; the next step is to create the REST API endpoints for chat (e.g., in a new  file) and the basic frontend components for the floating chat widget (, ).
-    - **What will be achieved with this?**: A real-time chat application will be integrated into CORtracker, improving team communication.
-    - **Status**: IN PROGRESS
-    - **Should Test frontend/backend/both after fix?**: Both
+- **Task 1: Improve CORBot Drag-and-Drop Functionality (P0)**
+    - **Where to resume**: Modify the  component to implement the approved Framer Motion drag-and-drop plan. This includes using  to save and restore the bot's position.
+    - **What will be achieved with this?**: The CORBot's position will be saved when a user moves it, providing a more personalized and consistent user experience across sessions.
+    - **Status**: NOT STARTED
+    - **Should Test frontend/backend/both after fix?**: Frontend
     - **Blocked on something**: No.
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-    - **P0: CORChat - Phase 2: Channels:** Implement the channel list, creation modal, and message view.
+    - **P0: CORChat - Phase 2: Channels:** Implement the channel creation modal and message view.
     - **P0: CORChat - Phase 3: Real-Time:** Integrate the WebSocket connection for real-time messaging and typing indicators.
     - **P0: CORChat - Phase 4: Direct Messages:** Implement DM threads and online/offline user status.
     - **P1: CORChat - Phase 5: Polish:** Add unread counts, search, file attachments, and reactions.
-    - **P1: User Verification for Completed Features:** The user needs to formally verify the Document Section, the new sidebar layouts, the dedicated admin pages (Projects, Employee Docs, Employees), and the employee management features (delete, profile pictures).
-- **Future Tasks** (from previous handoff):
+    - **P1: User Verification for Completed Features:** The user needs to formally verify the Document Section, new sidebar layouts, dedicated admin pages, CORChat (Phase 1), CORBot, and the Leave/PTO module.
+- **Future Tasks**:
     - **P1: Daily Summary Email:** Automatically send daily work hour summaries to employees.
     - **P1: Calendar Integration:** Sync shifts, leave, and meetings with Google/Outlook calendars.
     - **P2: Shift Scheduling:** Allow admins to create schedules and employees to view them.
     - **P2: Employee Correction Requests:** Allow employees to submit correction requests for their timesheets.
 
 **Completed work in this session**
-- **Document Section:** Fully implemented and tested. Includes PIN setup, file upload/download/delete for employees, and view/download access for admins.
-- **Employee Dashboard Sidebar Refactor:** Moved navigation links (Dashboard, Timesheet, Documents) from the header to a new, persistent left sidebar component () for a consistent layout across employee pages.
-- **Admin Dashboard Sidebar Refactor:** Created a dedicated left sidebar for all admin pages ().
-- **Dedicated Admin Pages:** The following sections were removed from the main admin dashboard and moved to their own dedicated pages with full functionality:
-    - 
-    - 
-    - 
-- **Employee Management Enhancements:**
-    - **Delete Employee:** Added a backend endpoint and frontend UI (with confirmation modal) for admins to delete employees.
-    - **Profile Pictures:** Updated the Admin Employees and Employee Docs pages to display user-uploaded profile pictures instead of initials.
+- **CORChat - Phase 1 (Foundation):** Implemented backend APIs and frontend components for the floating chat widget. Tested and verified functionality.
+- **CORChat Logo Update:** Replaced the default header icon with the CORtracker logo, styled within a white badge for visibility against the red header.
+- **CORBot (FAQ Chatbot):** Created a new, draggable FAQ chatbot widget with pre-defined questions and answers, positioned in the bottom-left.
+- **Leave/PTO Module (Full Implementation):**
+    - Backend: Added all necessary APIs and database models in  for managing leave types, requests, and notifications.
+    - Frontend: Created pages for employees to request leave () and for admins to manage requests () and settings ().
+    - Integrated a global bell-icon notification system.
+- **UI/UX Refinements:**
+    - Standardized filter tabs and buttons on the Leave/PTO pages to use a consistent pill shape ().
+    - Cleaned up the Employee Dashboard by removing the Todays Activity" and "Leave/PTO" summary sections.
+    - Reorganized the Employee Dashboard to place the "Break Timer" card next to the "Clock In" card.
+- **Major Backend Bug Fix:** Identified and removed a large, conflicting section of old code for a previous leave system from `/app/backend/server.py`, which was causing API validation errors and preventing the new Leave module from functioning correctly.
 
 **Earlier issues found/mentioned but not fixed**
 - **Issue 1: React Three Fiber Incompatibility**
-    - **Debug checklist**: Investigate potential conflicts with React versions or other libraries in .
+    - **Debug checklist**: Investigate potential conflicts with React versions or other libraries in `package.json`.
     - **Why to solve this issue and what will be achieved with this?**: To enable the use of 3D components, as originally intended for the logo.
     - **Should Test frontend/backend/both after fix**: Frontend.
     - **Is recurring issue?**: N
@@ -67,65 +70,85 @@ A full-stack application with a React frontend and a FastAPI backend. The applic
 - None.
 
 **Code Architecture**
-
+```
+/app
+├── backend/
+│   └── server.py              # Heavily modified: added CORChat, Leave/PTO modules; removed old code
+└── frontend/
+    └── src/
+        ├── App.js             # Modified for new routes and global widgets (CORChat, CORBot, NotificationBell)
+        ├── components/
+        │   ├── chat/          # (New) CORChat components
+        │   ├── chatbot/       # (New) CORBot components
+        │   └── notifications/ # (New) NotificationBell components
+        └── pages/
+            ├── admin/
+            │   ├── LeaveRequests.jsx   (New)
+            │   └── LeaveSettings.jsx   (New)
+            └── employee/
+                ├── EmployeeDashboard.jsx # Refactored layout
+                └── Leave.jsx           (New)
+```
 
 **Key Technical Concepts**
-- **Frontend**: React, TailwindCSS, Framer Motion, Axios.
-- **Backend**: FastAPI (Python), **WebSockets**.
+- **Frontend**: React, TailwindCSS, Framer Motion (for UI animations and drag-and-drop).
+- **Backend**: FastAPI (Python), WebSockets.
 - **Database**: MongoDB.
 - **Authentication**: JWT with role-based access control (RBAC).
 
 **key DB schema**
-- **users**: 
-- **documents**: 
-- **(New/Planned) chat_channels**: 
-- **(New/Planned) chat_messages**: 
-- **(New/Planned) chat_dm_threads**: 
-- **(New/Planned) chat_user_status**: 
-- **(New/Planned) chat_unread_counts**: 
+- **leave_types**: `{id, name, icon, is_active, created_at}`
+- **leave_requests**: `{id, user_id, user_name, leave_type, is_custom_type, start_date, end_date, status, ...}`
+- **notifications**: `{id, user_id, type, message, reference_id, is_read, created_at}`
+- **chat_channels**: `{id, name, description, members, created_at}`
+- **chat_messages**: `{id, channel_id, sender_id, content, created_at}`
 
 **changes in tech stack**
-- The use of **WebSockets** is being introduced for the new chat feature.
+- No new technologies were added, but the use of **Framer Motion** for drag-and-drop was solidified.
 
 **All files of reference**
-- : Core backend file. Updated with Document section APIs, employee deletion endpoint, and initial models/setup for the new Chat feature.
-- : New page for employees to manage their documents.
-- : New shared sidebar for all employee-facing pages.
-- : New shared sidebar for all admin-facing pages.
-- : New dedicated page for project management.
-- : New dedicated page for viewing employee documents.
-- : New dedicated page for employee management (view/add/delete).
-- : Updated to include routes for the new dedicated admin pages.
-- All dashboard files (, , , etc.) were refactored to use the new sidebar layout.
+- `/app/backend/server.py`: Core backend file. Heavily modified to add the full Leave/PTO and CORChat modules and to remove a large block of legacy code.
+- `/app/frontend/src/components/chatbot/CORBot.jsx`: The new draggable FAQ chatbot component; target for the next task.
+- `/app/frontend/src/pages/employee/Leave.jsx`: New page for employees to request leave.
+- `/app/frontend/src/pages/admin/LeaveRequests.jsx`: New page for admins to manage leave requests.
+- `/app/frontend/src/components/notifications/NotificationBell.jsx`: New global component for the notification system.
+- `/app/frontend/src/App.js`: Modified to include new routes and integrate the `CORChat`, `CORBot`, and `NotificationBell` components globally.
+- `/app/frontend/src/pages/employee/EmployeeDashboard.jsx`: Refactored to clean up the UI and reposition the break timer.
 
 **Areas that need refactoring**:
--  remains monolithic. However, the agent has planned to create modular files for the new chat feature (e.g., ), which is a good first step toward refactoring. This approach should be continued.
+- `/app/backend/server.py` remains a monolithic file containing logic for all features. It is a high-priority candidate for refactoring into a modular structure (e.g., `/app/backend/routes/`, `/app/backend/models/`) to improve maintainability.
 
 **key api endpoints**
-- ****: Set/verify document PIN.
-- ****: Upload a document.
-- ****: List user's documents.
-- ****: Delete a document.
-- ****: Delete an employee and all their associated data.
-- ****: Now returns  along with other user data.
-- **(Planned) WebSocket Endpoint**: 
-- **(Planned) Chat REST APIs**: , , etc.
+- **Chat:**
+    - `GET /api/chat/init`: Initializes chat data.
+    - `POST /api/chat/channels`: Creates a channel.
+    - `POST /api/chat/channels/{channel_id}/messages`: Sends a message.
+- **Leave & Notifications:**
+    - `POST /api/leave/requests`: (Employee) Submits a leave request.
+    - `GET /api/admin/leave/requests`: (Admin) Retrieves all leave requests.
+    - `PUT /api/admin/leave/requests/{request_id}`: (Admin) Approves/denies a request.
+    - `POST /api/admin/leave/types`: (Admin) Creates a new default leave type.
+    - `GET /api/notifications`: Retrieves notifications for the logged-in user.
 
 **Critical Info for New Agent**
-- The user strongly prefers a propose, then implement workflow. Always show a detailed plan for new features or significant changes and wait for approval before coding.
-- The user is very specific about UI/UX. The move to dedicated pages and sidebars was a key request.
-- The next major feature is **CORChat**. Stick to the detailed plan provided by the previous agent, starting with **Phase 1: Foundation**, which is already in progress.
-- Pay attention to the user's clarifications for CORChat: it should be part of CORtracker, accessible to both roles, all employees can create channels, and default channels should be created.
+- The agent successfully resolved critical backend API errors by identifying and removing a large, duplicated, and outdated leave system from `server.py`. Be aware of these significant modifications to the file.
+- The user is very engaged and provides specific UI/UX feedback. Always confirm implementation plans before coding.
+- The immediate next task is to implement the user-approved plan for enhancing the drag-and-drop functionality of the `CORBot` component.
 
 **documents and test reports created in this job**
-- : Updated and used for testing the Document Section and sidebar refactoring.
+- `/app/test_result.md`: Updated to reflect successful testing of the CORChat and Leave/PTO modules.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **thank you .do u know cliq from zoho...**: User initiated the request to build a chat application similar to Zoho Cliq.
-2.  **what is real time explain me**: User asked for an explanation of real-time messaging.
-3.  **make it a part of cortracker...**: User provided specific requirements for the chat app (CORChat): as a floating widget, with channels & DMs, real-time, no calls.
-4.  **1.yes add default channels 2. b, all employes 3. yes they can create. 4. yes both**: User answered the agent's clarifying questions about CORChat's implementation. The agent is now starting the implementation.
-5.  All previous user messages related to the sidebar and dedicated pages have been addressed and implemented.
+1.  **"yes"**: Confirmed the change to make filter tabs pill-shaped.
+2.  **"change for request leave also"**: Requested the "Request Leave" button also be made pill-shaped.
+3.  **"remove Todays Activity and Leave / PTO on dashboard**: Requested a cleanup of the employee dashboard.
+4.  **add break timer on the side of clock in**: Requested a layout change on the employee dashboard.
+5.  **thank you i want this chat bot to be dragged and dropped aqny where on the page , how will you make this happen let me know your inputs donot implement it .**: Initiated the request for an improved drag-and-drop feature for CORBot.
+6.  **1.a 2. a 3.b**: Provided final decisions on the drag-and-drop implementation: save position, allow free placement, and no visual grip icon. **This is the pending task.**
+7.  **in leave /pto the toggles All requeste pending approved and denied are not matching...**: Pointed out the UI inconsistency in the filter tabs.
+8.  **yes proceed**: Gave the final approval to start implementing the Leave/PTO module.
+9.  **1.add custom leave employee can add their own type of leave 2.yes 3.b**: Provided final requirements for the Leave/PTO module, including custom types and a bell notification.
+10. **1. custom types no need of leave balance 3 . yes 4.yes and remove from dashboard...**: Gave initial feedback on the Leave/PTO plan.
 
 **Project Health Check:**
 - **Broken**: None.
@@ -135,15 +158,15 @@ A full-stack application with a React frontend and a FastAPI backend. The applic
 - None.
 
 **Testing status**
-- **Testing agent used after significant changes**: YES (for Document Section and sidebar refactoring).
-- **Troubleshoot agent used after agent stuck in loop**: NO.
+- **Testing agent used after significant changes**: YES (for CORChat and Leave/PTO backend modules).
+- **Troubleshoot agent used after agent stuck in loop**: NO
 - **Test files created**: None.
 - **Known regressions**: None.
 
 **Credentials to test flow:**
 - **Admin User**:  / 
 - **Admin Signup Code**: 
-- **Employee User**: Can be created via signup (e.g.,  / ). At least one user  has a profile picture uploaded.
+- **Employee User**: Can be created via signup or use  / .
 
 **What agent forgot to execute**
-- The agent has not forgotten any direct requests. It is currently in the process of implementing the user's latest and largest feature request: the CORChat application. All previously completed work is pending final user verification.</analysis>
+- Nothing was forgotten. The agent is set to begin implementation of the user's most recent request regarding the CORBot's drag-and-drop functionality.</analysis>
