@@ -22,7 +22,6 @@ const CORBot = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-  const constraintsRef = useRef(null);
 
   // Load saved position from localStorage
   const [position, setPosition] = useState(() => {
