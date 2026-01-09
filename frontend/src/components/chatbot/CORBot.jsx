@@ -209,7 +209,7 @@ const CORBot = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            ref={elementRef}
+            ref={panelRef}
             data-testid="corbot-chat-panel"
             drag
             dragControls={dragControls}
