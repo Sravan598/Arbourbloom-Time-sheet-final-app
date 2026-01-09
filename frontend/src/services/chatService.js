@@ -137,6 +137,36 @@ export const getUserStatus = async () => {
   return response.data;
 };
 
+// File upload API
+export const uploadChatFile = async (file, onProgress = null) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const token = localStorage.getItem('cortracker_token');
+  
+  const response = await axios.post(`${API_URL}/api/chat/upload`, formData, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'multipart/form-data'
+    },
+    onUploadProgress: (progressEvent) => {
+      if (onProgress) {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        onProgress(percentCompleted);
+      }
+    }
+  });
+  
+  return response.data;
+};
+
+// Get full file URL
+export const getFileUrl = (fileUrl) => {
+  if (!fileUrl) return null;
+  if (fileUrl.startsWith('http')) return fileUrl;
+  return `${API_URL}${fileUrl}`;
+};
+
 // WebSocket Manager Class
 class WebSocketManager {
   constructor() {
