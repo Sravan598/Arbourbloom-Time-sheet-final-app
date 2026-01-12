@@ -50,11 +50,6 @@ const AdminSidebar = () => {
       path: '/admin/leave-requests', 
       label: 'Leave Requests', 
       icon: Calendar 
-    },
-    { 
-      path: '/admin/leave-settings', 
-      label: 'Leave Settings', 
-      icon: Settings 
     }
   ];
 
