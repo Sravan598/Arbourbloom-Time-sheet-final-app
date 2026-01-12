@@ -38,15 +38,9 @@ const ChatWidget = () => {
 
 // Notification bell wrapper
 const NotificationWidget = () => {
-  const { isAuthenticated } = useAuth();
-  
-  if (!isAuthenticated) return null;
-  
-  return (
-    <div className="fixed top-4 right-52 z-50">
-      <NotificationBell />
-    </div>
-  );
+  // Moved NotificationBell to individual dashboard headers
+  // Keeping this component disabled to avoid duplicate notifications
+  return null;
 };
 
 function App() {
