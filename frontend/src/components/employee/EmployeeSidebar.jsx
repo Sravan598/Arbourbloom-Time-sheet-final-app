@@ -24,6 +24,11 @@ const EmployeeSidebar = () => {
       icon: FileText 
     },
     { 
+      path: '/employee/projects', 
+      label: 'My Projects', 
+      icon: FolderKanban 
+    },
+    { 
       path: '/employee/documents', 
       label: 'Documents', 
       icon: Folder 
