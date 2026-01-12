@@ -1365,6 +1365,12 @@ async def get_admin_dashboard_stats(admin: dict = Depends(require_admin)):
     # Pending correction requests
     pending_corrections = await db.correction_requests.count_documents({"status": "PENDING"})
     
+    # Pending leave requests
+    pending_leave_requests = await db.leave_requests.count_documents({"status": "PENDING"})
+    
+    # Total pending requests (corrections + leave)
+    total_pending_requests = pending_corrections + pending_leave_requests
+    
     # Total employees
     total_employees = await db.users.count_documents({"role": "EMPLOYEE", "is_active": True})
     
@@ -1372,6 +1378,8 @@ async def get_admin_dashboard_stats(admin: dict = Depends(require_admin)):
         "total_hours_this_week": total_hours,
         "active_employees": active_count,
         "pending_corrections": pending_corrections,
+        "pending_leave_requests": pending_leave_requests,
+        "total_pending_requests": total_pending_requests,
         "total_employees": total_employees
     }
 
