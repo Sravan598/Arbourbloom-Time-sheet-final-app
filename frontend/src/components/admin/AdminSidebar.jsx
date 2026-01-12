@@ -52,6 +52,12 @@ const AdminSidebar = () => {
       path: '/admin/leave-requests', 
       label: 'Leave Requests', 
       icon: Calendar 
+    },
+    { 
+      path: 'https://workforcenow.adp.com', 
+      label: 'ADP Payroll', 
+      icon: DollarSign,
+      external: true
     }
   ];
 
