@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Settings, Search, Plus, X as CloseIcon } from 'lucide-react';
+import { X, Settings, Search, Plus, X as CloseIcon, MessageCircle } from 'lucide-react';
 import ChannelList from './ChannelList';
 import DMList from './DMList';
 import MessageView from './MessageView';
@@ -8,8 +8,6 @@ import CreateChannelModal from './CreateChannelModal';
 import NewDMModal from './NewDMModal';
 import SearchResults from './SearchResults';
 import chatService, { wsManager } from '../../services/chatService';
-
-const CORTRACKER_LOGO = "https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png";
 
 const ChatPanel = ({ isOpen, onClose, currentUser, onMessageRead }) => {
   // View state
