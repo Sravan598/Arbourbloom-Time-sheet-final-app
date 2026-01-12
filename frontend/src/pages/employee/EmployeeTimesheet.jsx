@@ -95,9 +95,20 @@ const EmployeeTimesheet = () => {
     }
   }, [startDate, endDate]);
 
+  // Fetch correction requests
+  const fetchCorrectionRequests = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/employee/correction-requests`);
+      setCorrectionRequests(response.data);
+    } catch (err) {
+      console.error('Failed to fetch correction requests:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchTimesheets();
-  }, [fetchTimesheets]);
+    fetchCorrectionRequests();
+  }, [fetchTimesheets, fetchCorrectionRequests]);
 
   const formatDateTime = (dateString) => {
     if (!dateString) return '-';
