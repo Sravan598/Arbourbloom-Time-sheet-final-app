@@ -24,7 +24,6 @@ import Projects from './pages/admin/Projects';
 import EmployeeDocs from './pages/admin/EmployeeDocs';
 import Employees from './pages/admin/Employees';
 import LeaveRequests from './pages/admin/LeaveRequests';
-import LeaveSettings from './pages/admin/LeaveSettings';
 
 import './App.css';
 
