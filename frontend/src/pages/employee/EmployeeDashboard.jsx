@@ -379,6 +379,10 @@ const EmployeeDashboard = () => {
                   )}
                 </AnimatePresence>
               </div>
+              
+              {/* Notification Bell */}
+              <NotificationBell />
+            </div>
             </div>
           </div>
         </header>
