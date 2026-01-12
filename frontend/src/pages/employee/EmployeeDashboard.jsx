@@ -98,16 +98,37 @@ const EmployeeDashboard = () => {
     }
   }, []);
 
+  // Fetch break data
+  const fetchBreakData = useCallback(async () => {
+    try {
+      const [statusRes, todayRes] = await Promise.all([
+        axios.get(`${API}/breaks/status`),
+        axios.get(`${API}/breaks/today`)
+      ]);
+      
+      setIsOnBreak(statusRes.data.is_on_break);
+      if (statusRes.data.is_on_break && statusRes.data.start_time) {
+        setCurrentBreakStart(new Date(statusRes.data.start_time));
+      } else {
+        setCurrentBreakStart(null);
+      }
+      
+      setBreakData(todayRes.data);
+    } catch (err) {
+      console.error('Failed to fetch break data:', err);
+    }
+  }, []);
+
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      await fetchCurrentShift();
+      await Promise.all([fetchCurrentShift(), fetchBreakData()]);
       setIsLoading(false);
     };
     loadData();
-  }, [fetchCurrentShift]);
+  }, [fetchCurrentShift, fetchBreakData]);
 
-  // Timer for elapsed time
+  // Timer for elapsed time (clock in)
   useEffect(() => {
     let interval;
     if (isClockedIn && currentShift?.clock_in_at) {
@@ -123,6 +144,28 @@ const EmployeeDashboard = () => {
     
     return () => clearInterval(interval);
   }, [isClockedIn, currentShift]);
+
+  // Timer for break elapsed time
+  useEffect(() => {
+    if (isOnBreak && currentBreakStart) {
+      breakTimerRef.current = setInterval(() => {
+        const now = new Date();
+        const diff = Math.floor((now - currentBreakStart) / 1000);
+        setBreakElapsedTime(diff);
+      }, 1000);
+    } else {
+      if (breakTimerRef.current) {
+        clearInterval(breakTimerRef.current);
+      }
+      setBreakElapsedTime(0);
+    }
+
+    return () => {
+      if (breakTimerRef.current) {
+        clearInterval(breakTimerRef.current);
+      }
+    };
+  }, [isOnBreak, currentBreakStart]);
 
   const formatTime = (seconds) => {
     const hrs = Math.floor(seconds / 3600);
