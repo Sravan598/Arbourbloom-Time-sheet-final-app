@@ -1,9 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MessageCircle, X, Wifi, WifiOff } from 'lucide-react';
-
-// CORtracker logo URL
-const CORTRACKER_LOGO = "https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png";
+import { MessageCircle, X } from 'lucide-react';
 
 const ChatButton = ({ isOpen, onClick, unreadCount = 0, isConnected = false }) => {
   return (
@@ -23,13 +20,7 @@ const ChatButton = ({ isOpen, onClick, unreadCount = 0, isConnected = false }) =
         {isOpen ? (
           <X className="w-6 h-6 text-white" />
         ) : (
-          <div className="relative">
-            <img 
-              src={CORTRACKER_LOGO} 
-              alt="CORChat" 
-              className="h-6 w-auto"
-            />
-          </div>
+          <MessageCircle className="w-6 h-6 text-white" />
         )}
         
         {/* Unread badge */}
@@ -66,7 +57,7 @@ const ChatButton = ({ isOpen, onClick, unreadCount = 0, isConnected = false }) =
                         bg-gray-800 text-white text-sm px-3 py-1.5 rounded-lg
                         opacity-0 hover:opacity-100 pointer-events-none
                         whitespace-nowrap shadow-lg transition-opacity">
-          CORChat - Team Chat
+          Team Chat
           <div className="absolute left-full top-1/2 -translate-y-1/2 
                           border-8 border-transparent border-l-gray-800" />
         </div>
