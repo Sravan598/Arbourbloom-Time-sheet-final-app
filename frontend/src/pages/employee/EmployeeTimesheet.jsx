@@ -47,6 +47,10 @@ const EmployeeTimesheet = () => {
     reason: ''
   });
   const [submittingCorrection, setSubmittingCorrection] = useState(false);
+  
+  // Correction history
+  const [correctionRequests, setCorrectionRequests] = useState([]);
+  const [showCorrectionHistory, setShowCorrectionHistory] = useState(false);
 
   // Fetch profile data
   useEffect(() => {
