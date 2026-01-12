@@ -39,6 +39,12 @@ const EmployeeSidebar = () => {
       path: '/employee/leave', 
       label: 'Leave / PTO', 
       icon: Calendar 
+    },
+    { 
+      path: 'https://workforcenow.adp.com', 
+      label: 'ADP Payroll', 
+      icon: DollarSign,
+      external: true
     }
   ];
 
