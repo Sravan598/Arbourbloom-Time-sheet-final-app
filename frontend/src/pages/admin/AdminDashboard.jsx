@@ -330,16 +330,45 @@ const AdminDashboard = () => {
                 </div>
               ) : (
                 pendingCorrections.map((req) => (
-                  <div key={req.id} className="p-4 bg-gray-50 rounded-xl">
+                  <div key={req.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <p className="font-medium text-brand-dark">{req.user_name}</p>
+                        <p className="font-semibold text-brand-dark">{req.user_name}</p>
                         <p className="text-sm text-gray-500">
-                          {new Date(req.created_at).toLocaleDateString()}
+                          Submitted {new Date(req.created_at).toLocaleDateString()}
                         </p>
                       </div>
+                      <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+                        Pending
+                      </span>
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">
+                    
+                    {/* Requested Changes */}
+                    {req.requested_change && (
+                      <div className="bg-white rounded-lg p-3 mb-3 text-sm">
+                        <p className="font-medium text-gray-700 mb-2">Requested Changes:</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {req.requested_change.clock_in_at && (
+                            <div>
+                              <span className="text-gray-500">New Clock In:</span>
+                              <p className="font-medium text-brand-dark">
+                                {new Date(req.requested_change.clock_in_at).toLocaleString()}
+                              </p>
+                            </div>
+                          )}
+                          {req.requested_change.clock_out_at && (
+                            <div>
+                              <span className="text-gray-500">New Clock Out:</span>
+                              <p className="font-medium text-brand-dark">
+                                {new Date(req.requested_change.clock_out_at).toLocaleString()}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <p className="text-sm text-gray-600 mb-3 bg-white rounded-lg p-3">
                       <strong>Reason:</strong> {req.reason}
                     </p>
                     <div className="flex gap-2">
