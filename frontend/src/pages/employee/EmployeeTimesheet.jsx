@@ -588,6 +588,125 @@ const EmployeeTimesheet = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Correction History Modal */}
+      <AnimatePresence>
+        {showCorrectionHistory && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowCorrectionHistory(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-brand-red/10 rounded-xl flex items-center justify-center">
+                    <FileEdit className="w-5 h-5 text-brand-red" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-brand-dark">My Correction Requests</h3>
+                    <p className="text-sm text-gray-500">Track the status of your timesheet corrections</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowCorrectionHistory(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto">
+                {correctionRequests.length === 0 ? (
+                  <div className="text-center py-12">
+                    <History className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg">No correction requests yet</p>
+                    <p className="text-gray-400 text-sm mt-2">
+                      When you request a timesheet correction, it will appear here
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {correctionRequests.map((req) => (
+                      <div 
+                        key={req.id} 
+                        className={`p-4 rounded-xl border ${
+                          req.status === 'PENDING' 
+                            ? 'bg-yellow-50 border-yellow-200' 
+                            : req.status === 'APPROVED' 
+                              ? 'bg-green-50 border-green-200' 
+                              : 'bg-red-50 border-red-200'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <p className="text-sm text-gray-500">
+                              Submitted {new Date(req.created_at).toLocaleDateString()} at {new Date(req.created_at).toLocaleTimeString()}
+                            </p>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            req.status === 'PENDING' 
+                              ? 'bg-yellow-100 text-yellow-700' 
+                              : req.status === 'APPROVED' 
+                                ? 'bg-green-100 text-green-700' 
+                                : 'bg-red-100 text-red-700'
+                          }`}>
+                            {req.status === 'PENDING' && <Clock className="w-3 h-3 inline mr-1" />}
+                            {req.status === 'APPROVED' && <CheckCircle className="w-3 h-3 inline mr-1" />}
+                            {req.status === 'REJECTED' && <X className="w-3 h-3 inline mr-1" />}
+                            {req.status}
+                          </span>
+                        </div>
+                        
+                        {/* Requested Changes */}
+                        <div className="bg-white/60 rounded-lg p-3 mb-3">
+                          <p className="text-sm font-medium text-gray-700 mb-2">Requested Changes:</p>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            {req.requested_change?.clock_in_at && (
+                              <div>
+                                <span className="text-gray-500">New Clock In:</span>
+                                <p className="font-medium">{new Date(req.requested_change.clock_in_at).toLocaleString()}</p>
+                              </div>
+                            )}
+                            {req.requested_change?.clock_out_at && (
+                              <div>
+                                <span className="text-gray-500">New Clock Out:</span>
+                                <p className="font-medium">{new Date(req.requested_change.clock_out_at).toLocaleString()}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Reason */}
+                        <div className="mb-3">
+                          <p className="text-sm text-gray-500">Reason:</p>
+                          <p className="text-sm text-gray-700">{req.reason}</p>
+                        </div>
+                        
+                        {/* Admin Notes (if any) */}
+                        {req.admin_notes && (
+                          <div className="bg-white/60 rounded-lg p-3 border-l-4 border-blue-400">
+                            <p className="text-sm text-gray-500">Admin Response:</p>
+                            <p className="text-sm text-gray-700">{req.admin_notes}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
