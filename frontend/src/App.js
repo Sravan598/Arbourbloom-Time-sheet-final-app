@@ -43,7 +43,7 @@ const NotificationWidget = () => {
   if (!isAuthenticated) return null;
   
   return (
-    <div className="fixed top-4 right-4 z-50">
+    <div className="fixed top-4 right-52 z-50">
       <NotificationBell />
     </div>
   );
