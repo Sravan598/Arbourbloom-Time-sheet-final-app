@@ -70,6 +70,16 @@ CORtracker is a comprehensive time-tracking and workforce management application
 - **Professional Header**: CORtracker logo with tagline centered at top
 - Logo stored at `/app/backend/assets/cortracker_logo.png`
 
+### 10. Employee Projects ✅ NEW (January 12, 2025)
+- **My Projects Page** (`/employee/projects`): View all assigned projects
+- Features:
+  - List of active and completed projects
+  - Project details (description, created date, estimated hours)
+  - Progress tracking with visual progress bar
+  - Time tracking per project (start/stop)
+  - Weekly and daily time summaries
+- Accessible from Employee Sidebar → "My Projects"
+
 ## Technical Architecture
 
 ### Frontend
