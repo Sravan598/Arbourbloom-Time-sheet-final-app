@@ -14,6 +14,7 @@ import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import EmployeeDashboard from './pages/employee/EmployeeDashboard';
 import EmployeeTimesheet from './pages/employee/EmployeeTimesheet';
+import EmployeeProjects from './pages/employee/EmployeeProjects';
 import Documents from './pages/employee/Documents';
 import Leave from './pages/employee/Leave';
 import AdminDashboard from './pages/admin/AdminDashboard';
