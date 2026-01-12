@@ -408,45 +408,46 @@ const EmployeeDashboard = () => {
         )}
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Clock In/Out Card */}
+          {/* Clock In/Out Card with Integrated Break Timer */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-3xl shadow-lg p-8"
           >
-            <div className="text-center">
-              <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-6 ${
+            {/* Clock Section */}
+            <div className="text-center mb-6">
+              <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${
                 isClockedIn ? 'bg-green-100' : 'bg-gray-100'
               }`}>
-                <Clock className={`w-10 h-10 ${isClockedIn ? 'text-green-600' : 'text-gray-400'}`} />
+                <Clock className={`w-8 h-8 ${isClockedIn ? 'text-green-600' : 'text-gray-400'}`} />
               </div>
               
-              <h2 className="text-2xl font-bold text-brand-dark mb-2">
+              <h2 className="text-xl font-bold text-brand-dark mb-1">
                 {isClockedIn ? 'Currently Working' : 'Not Clocked In'}
               </h2>
               
               {isClockedIn ? (
-                <div className="mb-6">
-                  <div className="flex items-center justify-center gap-2 text-gray-500 mb-4">
-                    <Timer className="w-5 h-5" />
-                    <span>Shift started at {formatDateTime(currentShift?.clock_in_at)}</span>
+                <div className="mb-4">
+                  <div className="flex items-center justify-center gap-2 text-gray-500 text-sm mb-2">
+                    <Timer className="w-4 h-4" />
+                    <span>Started at {new Date(currentShift?.clock_in_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span>
                   </div>
-                  <div className="text-5xl font-mono font-bold text-brand-red" data-testid="elapsed-time">
+                  <div className="text-4xl font-mono font-bold text-brand-red" data-testid="elapsed-time">
                     {formatTime(elapsedTime)}
                   </div>
                 </div>
               ) : (
-                <p className="text-gray-500 mb-6">Click the button below to start your shift</p>
+                <p className="text-gray-500 mb-4 text-sm">Click below to start your shift</p>
               )}
               
               {/* Quick Notes Toggle */}
-              <div className="mb-4">
+              <div className="mb-3">
                 <button
                   onClick={() => setShowNoteInput(!showNoteInput)}
                   className="flex items-center gap-2 text-sm text-gray-500 hover:text-brand-red transition-colors mx-auto"
                 >
                   <MessageSquare className="w-4 h-4" />
-                  {showNoteInput ? 'Hide note' : 'Add a quick note (optional)'}
+                  {showNoteInput ? 'Hide note' : 'Add note (optional)'}
                 </button>
               </div>
 
@@ -461,15 +462,12 @@ const EmployeeDashboard = () => {
                   <textarea
                     value={isClockedIn ? clockOutNote : clockInNote}
                     onChange={(e) => isClockedIn ? setClockOutNote(e.target.value) : setClockInNote(e.target.value)}
-                    placeholder={isClockedIn ? "Note for clocking out (e.g., 'Finished quarterly report')" : "Note for clocking in (e.g., 'Starting on project X')"}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent resize-none text-sm"
+                    placeholder={isClockedIn ? "Note for clocking out..." : "Note for clocking in..."}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent resize-none text-sm"
                     rows={2}
                     maxLength={200}
                     data-testid="clock-note-input"
                   />
-                  <p className="text-xs text-gray-400 mt-1 text-right">
-                    {(isClockedIn ? clockOutNote : clockInNote).length}/200
-                  </p>
                 </motion.div>
               )}
 
@@ -477,16 +475,16 @@ const EmployeeDashboard = () => {
                 <Button
                   onClick={handleClockOut}
                   variant="secondary"
-                  size="lg"
+                  size="md"
                   className="w-full max-w-xs"
-                  disabled={actionLoading}
+                  disabled={actionLoading || isOnBreak}
                   data-testid="clock-out-btn"
                 >
                   {actionLoading ? (
                     <div className="w-5 h-5 border-2 border-brand-dark border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
-                      <Square className="w-5 h-5 mr-2" />
+                      <Square className="w-4 h-4 mr-2" />
                       Clock Out
                     </>
                   )}
@@ -495,7 +493,7 @@ const EmployeeDashboard = () => {
                 <Button
                   onClick={handleClockIn}
                   variant="primary"
-                  size="lg"
+                  size="md"
                   className="w-full max-w-xs"
                   disabled={actionLoading}
                   data-testid="clock-in-btn"
@@ -504,27 +502,141 @@ const EmployeeDashboard = () => {
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
-                      <Play className="w-5 h-5 mr-2" />
+                      <Play className="w-4 h-4 mr-2" />
                       Clock In
                     </>
                   )}
                 </Button>
               )}
             </div>
+
+            {/* Integrated Break Timer Section */}
+            <div className="border-t border-gray-100 pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Coffee className="w-5 h-5 text-brand-red" />
+                  <h3 className="font-semibold text-brand-dark">Break Timer</h3>
+                </div>
+                {breakData && (
+                  <span className="text-sm text-gray-500">
+                    Today: <strong className="text-brand-dark">{formatMinutes(breakData.total_break_minutes)}</strong>
+                  </span>
+                )}
+              </div>
+
+              {/* Not Clocked In Warning */}
+              {!isClockedIn && !isOnBreak && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4">
+                  <p className="text-yellow-700 text-sm text-center">
+                    Clock in first to take a break
+                  </p>
+                </div>
+              )}
+
+              <AnimatePresence mode="wait">
+                {isOnBreak ? (
+                  <motion.div
+                    key="on-break"
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-4 border border-orange-200"
+                  >
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <motion.div
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ repeat: Infinity, duration: 2 }}
+                        className="w-2 h-2 bg-orange-500 rounded-full"
+                      />
+                      <span className="text-orange-600 font-medium text-sm">On Break</span>
+                    </div>
+                    <div className="text-3xl font-bold text-orange-600 font-mono text-center mb-3">
+                      {formatBreakTime(breakElapsedTime)}
+                    </div>
+                    
+                    <Button
+                      onClick={handleEndBreak}
+                      variant="primary"
+                      size="sm"
+                      className="w-full bg-orange-500 hover:bg-orange-600"
+                      disabled={breakProcessing}
+                      data-testid="end-break-btn"
+                    >
+                      {breakProcessing ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Square className="w-4 h-4 mr-2" />
+                          End Break
+                        </>
+                      )}
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="not-on-break"
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                  >
+                    {/* Break Type Selection */}
+                    <div className="flex justify-center gap-2 mb-3">
+                      {breakTypes.map((type) => {
+                        const Icon = type.icon;
+                        return (
+                          <button
+                            key={type.id}
+                            onClick={() => setSelectedBreakType(type.id)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all text-sm ${
+                              selectedBreakType === type.id
+                                ? 'border-brand-red bg-brand-red/10 text-brand-red'
+                                : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                            }`}
+                            disabled={!isClockedIn}
+                          >
+                            <Icon className="w-4 h-4" />
+                            <span className="font-medium">{type.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <Button
+                      onClick={handleStartBreak}
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      disabled={!isClockedIn || breakProcessing}
+                      data-testid="start-break-btn"
+                    >
+                      {breakProcessing ? (
+                        <div className="w-4 h-4 border-2 border-brand-red border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Play className="w-4 h-4 mr-2" />
+                          Start Break
+                        </>
+                      )}
+                    </Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </motion.div>
 
-          {/* Break Timer Section - Side by side with Clock In */}
-          <BreakTimerSection isClockedIn={isClockedIn} />
+          {/* Announcements Section - Now next to Clock Widget */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <AnnouncementsSection />
+          </motion.div>
         </div>
 
         {/* Weekly Progress Section */}
         <div className="mt-8">
           <WeeklyProgressSection />
-        </div>
-
-        {/* Announcements Section */}
-        <div className="mt-8">
-          <AnnouncementsSection />
         </div>
         </main>
       </div>
