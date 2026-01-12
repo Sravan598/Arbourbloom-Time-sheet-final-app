@@ -128,87 +128,93 @@ const AdminDashboard = () => {
                 <p className="text-sm text-gray-500">Welcome back, {profileData?.name || user?.name}</p>
               </div>
               
-              {/* Profile Dropdown */}
-              <div className="relative" ref={profileDropdownRef}>
-                <button
-                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="flex items-center gap-2 hover:bg-gray-100 rounded-full py-1 pl-1 pr-3 transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 border-2 border-purple-200">
-                    {profileData?.profile_image ? (
-                      <img 
-                        src={profileData.profile_image} 
-                        alt={profileData?.name || user?.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-700">
-                        <span className="text-sm font-bold text-white">
-                          {(profileData?.name || user?.name)?.charAt(0)?.toUpperCase() || 'A'}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <span className="hidden sm:inline font-medium text-brand-dark text-sm">
-                    {profileData?.name || user?.name}
-                  </span>
-                  <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showProfileDropdown ? 'rotate-180' : ''}`} />
-                </button>
-                
-                <AnimatePresence>
-                  {showProfileDropdown && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50"
-                    >
-                      {/* Profile Header */}
-                      <div className="px-4 py-3 border-b border-gray-100">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">Admin</span>
+              {/* Profile Dropdown and Notification */}
+              <div className="flex items-center gap-4">
+                {/* Profile Dropdown */}
+                <div className="relative" ref={profileDropdownRef}>
+                  <button
+                    onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                    className="flex items-center gap-2 hover:bg-gray-100 rounded-full py-1 pl-1 pr-3 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 border-2 border-purple-200">
+                      {profileData?.profile_image ? (
+                        <img 
+                          src={profileData.profile_image} 
+                          alt={profileData?.name || user?.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-700">
+                          <span className="text-sm font-bold text-white">
+                            {(profileData?.name || user?.name)?.charAt(0)?.toUpperCase() || 'A'}
+                          </span>
                         </div>
-                        <p className="font-semibold text-brand-dark mt-1">{profileData?.name || user?.name}</p>
-                        <p className="text-sm text-gray-500 truncate">{profileData?.email || user?.email}</p>
-                      </div>
-                      
-                      {/* Menu Items */}
-                      <div className="py-1">
-                        <Link
-                          to="/profile"
-                          onClick={() => setShowProfileDropdown(false)}
-                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          <User className="w-4 h-4" />
-                          <span>My Profile</span>
-                        </Link>
-                        <Link
-                          to="/profile"
-                          onClick={() => setShowProfileDropdown(false)}
-                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          <Settings className="w-4 h-4" />
-                          <span>Settings</span>
-                        </Link>
-                      </div>
-                      
-                      {/* Logout */}
-                      <div className="border-t border-gray-100 pt-1">
-                        <button
-                          onClick={() => {
-                            setShowProfileDropdown(false);
-                            handleLogout();
-                          }}
-                          className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full"
-                        >
-                          <LogOut className="w-4 h-4" />
-                          <span>Logout</span>
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      )}
+                    </div>
+                    <span className="hidden sm:inline font-medium text-brand-dark text-sm">
+                      {profileData?.name || user?.name}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showProfileDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  <AnimatePresence>
+                    {showProfileDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50"
+                      >
+                        {/* Profile Header */}
+                        <div className="px-4 py-3 border-b border-gray-100">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">Admin</span>
+                          </div>
+                          <p className="font-semibold text-brand-dark mt-1">{profileData?.name || user?.name}</p>
+                          <p className="text-sm text-gray-500 truncate">{profileData?.email || user?.email}</p>
+                        </div>
+                        
+                        {/* Menu Items */}
+                        <div className="py-1">
+                          <Link
+                            to="/profile"
+                            onClick={() => setShowProfileDropdown(false)}
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <User className="w-4 h-4" />
+                            <span>My Profile</span>
+                          </Link>
+                          <Link
+                            to="/profile"
+                            onClick={() => setShowProfileDropdown(false)}
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <Settings className="w-4 h-4" />
+                            <span>Settings</span>
+                          </Link>
+                        </div>
+                        
+                        {/* Logout */}
+                        <div className="border-t border-gray-100 pt-1">
+                          <button
+                            onClick={() => {
+                              setShowProfileDropdown(false);
+                              handleLogout();
+                            }}
+                            className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            <span>Logout</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                
+                {/* Notification Bell */}
+                <NotificationBell />
               </div>
             </div>
           </div>
