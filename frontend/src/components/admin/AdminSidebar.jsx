@@ -105,6 +105,20 @@ const AdminSidebar = () => {
             <CalendarDays className="w-5 h-5" />
             <span>Calendar Sync</span>
           </Link>
+          
+          {/* ADP Payroll Link */}
+          <a
+            href="https://workforcenow.adp.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-green-50 hover:text-green-700 transition-colors mt-1"
+          >
+            <div className="flex items-center gap-3">
+              <DollarSign className="w-5 h-5" />
+              <span>ADP Payroll</span>
+            </div>
+            <ExternalLink className="w-4 h-4 opacity-50" />
+          </a>
         </div>
         
         {/* Admin Badge */}
