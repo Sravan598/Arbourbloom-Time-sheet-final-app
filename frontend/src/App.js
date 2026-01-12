@@ -101,6 +101,14 @@ function App() {
               } 
             />
             <Route 
+              path="/employee/projects" 
+              element={
+                <ProtectedRoute requiredRole="EMPLOYEE">
+                  <EmployeeProjects />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/employee/documents" 
               element={
                 <ProtectedRoute requiredRole="EMPLOYEE">
