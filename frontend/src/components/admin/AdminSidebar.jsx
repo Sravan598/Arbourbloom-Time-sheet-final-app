@@ -9,7 +9,9 @@ import {
   Users,
   Calendar,
   Settings,
-  CalendarDays
+  CalendarDays,
+  ExternalLink,
+  DollarSign
 } from 'lucide-react';
 
 const AdminSidebar = () => {
