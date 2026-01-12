@@ -5,7 +5,8 @@ import {
   FileText, 
   Folder,
   Calendar,
-  CalendarDays
+  CalendarDays,
+  FolderKanban
 } from 'lucide-react';
 
 const EmployeeSidebar = () => {
