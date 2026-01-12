@@ -135,9 +135,12 @@ CORtracker is a comprehensive time-tracking and workforce management application
 ### P1 - Medium Priority
 1. Calendar Integration Phase 2 (Two-Way OAuth Sync)
 
-### P2 - Future
-1. Shift Scheduling module
-2. Employee Correction Requests for timesheets
+### P2 - Medium Priority
+1. Calendar Integration Phase 2 (Two-Way OAuth Sync) - ON HOLD
+2. Shift Scheduling module
+
+### P3 - Future
+1. Refactor `server.py` into modular structure
 
 ## Test Credentials
 - **Admin**: `admin@company.com` / `password123`
@@ -156,6 +159,13 @@ CORtracker is a comprehensive time-tracking and workforce management application
 - ✅ Fixed Admin Dashboard "Pending Requests" stat to include both corrections + leave requests
 - ✅ Added "My Projects" page for employees (`/employee/projects`)
 - ✅ Added "My Projects" link to Employee Sidebar
+- ✅ Removed CORtracker logo from CORChat (replaced with MessageCircle icon)
+- ✅ Merged Leave Settings into Leave Requests page as "Settings" tab
+- ✅ Enhanced Employee Correction Requests feature:
+  - Added "My Corrections" button with pending count badge
+  - Added Correction History modal showing all requests with status
+  - Improved Admin Dashboard to show requested time changes
+  - Full test coverage (12 tests passing)
 
 ### January 9, 2025
 - ✅ Fixed CORBot drag-and-drop with improved state handling
