@@ -295,32 +295,34 @@ const EmployeeDashboard = () => {
                 <p className="text-sm text-gray-500">Welcome back, {profileData?.name || user?.name}</p>
               </div>
               
-              {/* Profile Dropdown */}
-              <div className="relative" ref={profileDropdownRef}>
-                <button
-                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="flex items-center gap-2 hover:bg-gray-100 rounded-full py-1 pl-1 pr-3 transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
-                    {profileData?.profile_image ? (
-                      <img 
-                        src={profileData.profile_image} 
-                        alt={profileData?.name || user?.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-red to-brand-red-dark">
-                        <span className="text-sm font-bold text-white">
-                          {(profileData?.name || user?.name)?.charAt(0)?.toUpperCase() || 'U'}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <span className="hidden sm:inline font-medium text-brand-dark text-sm">
-                    {profileData?.name || user?.name}
-                  </span>
-                  <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showProfileDropdown ? 'rotate-180' : ''}`} />
-                </button>
+              {/* Profile Dropdown and Notification */}
+              <div className="flex items-center gap-4">
+                {/* Profile Dropdown */}
+                <div className="relative" ref={profileDropdownRef}>
+                  <button
+                    onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                    className="flex items-center gap-2 hover:bg-gray-100 rounded-full py-1 pl-1 pr-3 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
+                      {profileData?.profile_image ? (
+                        <img 
+                          src={profileData.profile_image} 
+                          alt={profileData?.name || user?.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-red to-brand-red-dark">
+                          <span className="text-sm font-bold text-white">
+                            {(profileData?.name || user?.name)?.charAt(0)?.toUpperCase() || 'U'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="hidden sm:inline font-medium text-brand-dark text-sm">
+                      {profileData?.name || user?.name}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showProfileDropdown ? 'rotate-180' : ''}`} />
+                  </button>
                 
                 <AnimatePresence>
                   {showProfileDropdown && (
