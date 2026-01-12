@@ -283,7 +283,7 @@ const AdminDashboard = () => {
                 <AlertCircle className="w-6 h-6 text-yellow-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-brand-dark">{stats?.pending_corrections || 0}</p>
+                <p className="text-2xl font-bold text-brand-dark">{stats?.total_pending_requests || 0}</p>
                 <p className="text-sm text-gray-500">Pending Requests</p>
               </div>
             </div>
