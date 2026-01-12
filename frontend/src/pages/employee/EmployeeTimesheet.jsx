@@ -14,7 +14,9 @@ import {
   MessageSquare,
   User,
   ChevronDown,
-  Settings
+  Settings,
+  History,
+  FileEdit
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
