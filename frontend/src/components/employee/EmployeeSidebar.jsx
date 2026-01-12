@@ -42,7 +42,7 @@ const EmployeeSidebar = () => {
     },
     { 
       path: 'https://workforcenow.adp.com', 
-      label: 'ADP Payroll', 
+      label: 'Payroll', 
       icon: DollarSign,
       external: true
     }
