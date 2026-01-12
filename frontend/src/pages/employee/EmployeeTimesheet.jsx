@@ -169,6 +169,7 @@ const EmployeeTimesheet = () => {
       setSuccess('Correction request submitted successfully!');
       setShowCorrectionModal(false);
       setSelectedTimesheet(null);
+      fetchCorrectionRequests(); // Refresh correction history
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to submit correction request');
     } finally {
