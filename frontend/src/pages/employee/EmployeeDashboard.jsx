@@ -12,15 +12,27 @@ import {
   User,
   ChevronDown,
   Settings,
-  MessageSquare
+  MessageSquare,
+  Coffee,
+  UtensilsCrossed,
+  Pause
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
-import BreakTimerSection from '../../components/employee/BreakTimerSection';
 import WeeklyProgressSection from '../../components/employee/WeeklyProgressSection';
 import AnnouncementsSection from '../../components/employee/AnnouncementsSection';
 import EmployeeSidebar from '../../components/employee/EmployeeSidebar';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
+// Break types for the integrated break timer
+const breakTypes = [
+  { id: 'GENERAL', label: 'General', icon: Pause },
+  { id: 'LUNCH', label: 'Lunch', icon: UtensilsCrossed },
+  { id: 'COFFEE', label: 'Coffee', icon: Coffee },
+];
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
