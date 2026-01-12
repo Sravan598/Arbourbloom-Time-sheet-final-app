@@ -343,11 +343,11 @@ const ChatPanel = ({ isOpen, onClose, currentUser, onMessageRead }) => {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-brand-red to-red-600">
         <div className="flex items-center gap-3">
-          <div className="bg-white/95 rounded px-1.5 py-0.5">
-            <img src={CORTRACKER_LOGO} alt="CORtracker" className="h-4 w-auto" />
+          <div className="bg-white/20 rounded-lg p-2">
+            <MessageCircle className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="font-semibold text-white text-lg">CORChat</h2>
+            <h2 className="font-semibold text-white text-lg">Chat</h2>
             <p className="text-xs text-white/70">Team Communication</p>
           </div>
         </div>
