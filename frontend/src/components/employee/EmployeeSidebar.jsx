@@ -6,7 +6,9 @@ import {
   Folder,
   Calendar,
   CalendarDays,
-  FolderKanban
+  FolderKanban,
+  DollarSign,
+  ExternalLink
 } from 'lucide-react';
 
 const EmployeeSidebar = () => {
