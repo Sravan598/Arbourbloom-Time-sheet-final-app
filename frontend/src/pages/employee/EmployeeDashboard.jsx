@@ -174,6 +174,20 @@ const EmployeeDashboard = () => {
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const formatBreakTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatMinutes = (minutes) => {
+    if (!minutes) return '0m';
+    if (minutes < 60) return `${minutes}m`;
+    const hrs = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}h`;
+  };
+
   const formatDateTime = (dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleString();
@@ -184,6 +198,31 @@ const EmployeeDashboard = () => {
     const hrs = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hrs}h ${mins}m`;
+  };
+
+  // Break handlers
+  const handleStartBreak = async () => {
+    setBreakProcessing(true);
+    try {
+      await axios.post(`${API}/breaks/start`, { break_type: selectedBreakType });
+      await fetchBreakData();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to start break');
+    } finally {
+      setBreakProcessing(false);
+    }
+  };
+
+  const handleEndBreak = async () => {
+    setBreakProcessing(true);
+    try {
+      await axios.post(`${API}/breaks/end`);
+      await fetchBreakData();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to end break');
+    } finally {
+      setBreakProcessing(false);
+    }
   };
 
   const handleClockIn = async () => {
