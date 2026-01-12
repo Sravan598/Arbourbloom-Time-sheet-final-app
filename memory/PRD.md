@@ -151,6 +151,12 @@ CORtracker is a comprehensive time-tracking and workforce management application
 
 ## Change Log
 
+### January 12, 2025
+- ✅ Removed "Pending Leave Requests" section from Admin Dashboard (centralized in Leave Requests page)
+- ✅ Fixed Admin Dashboard "Pending Requests" stat to include both corrections + leave requests
+- ✅ Added "My Projects" page for employees (`/employee/projects`)
+- ✅ Added "My Projects" link to Employee Sidebar
+
 ### January 9, 2025
 - ✅ Fixed CORBot drag-and-drop with improved state handling
 - ✅ Added CORtracker logo to PDF reports (centered header with tagline)
