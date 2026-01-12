@@ -19,6 +19,7 @@ import { Button } from '../../components/ui/Button';
 import AdminTeamProgressSection from '../../components/admin/AdminTeamProgressSection';
 import AdminAnnouncementsSection from '../../components/admin/AdminAnnouncementsSection';
 import AdminSidebar from '../../components/admin/AdminSidebar';
+import { NotificationBell } from '../../components/notifications';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
