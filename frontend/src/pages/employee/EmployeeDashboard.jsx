@@ -54,6 +54,15 @@ const EmployeeDashboard = () => {
   const [showNoteInput, setShowNoteInput] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [profileData, setProfileData] = useState(null);
+  
+  // Break timer state
+  const [breakData, setBreakData] = useState(null);
+  const [isOnBreak, setIsOnBreak] = useState(false);
+  const [currentBreakStart, setCurrentBreakStart] = useState(null);
+  const [breakElapsedTime, setBreakElapsedTime] = useState(0);
+  const [selectedBreakType, setSelectedBreakType] = useState('GENERAL');
+  const [breakProcessing, setBreakProcessing] = useState(false);
+  const breakTimerRef = useRef(null);
 
   // Fetch profile data
   useEffect(() => {
