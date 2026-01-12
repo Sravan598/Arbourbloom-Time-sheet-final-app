@@ -182,14 +182,6 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-            <Route 
-              path="/admin/leave-settings" 
-              element={
-                <ProtectedRoute requiredRole="ADMIN">
-                  <LeaveSettings />
-                </ProtectedRoute>
-              } 
-            />
             
             {/* Catch all - redirect to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
