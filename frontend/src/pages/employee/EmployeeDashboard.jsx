@@ -34,9 +34,6 @@ const breakTypes = [
   { id: 'COFFEE', label: 'Coffee', icon: Coffee },
 ];
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
