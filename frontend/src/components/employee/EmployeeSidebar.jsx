@@ -8,7 +8,8 @@ import {
   CalendarDays,
   FolderKanban,
   DollarSign,
-  ExternalLink
+  ExternalLink,
+  Ticket
 } from 'lucide-react';
 
 const EmployeeSidebar = () => {
@@ -39,6 +40,11 @@ const EmployeeSidebar = () => {
       path: '/employee/leave', 
       label: 'Leave / PTO', 
       icon: Calendar 
+    },
+    { 
+      path: '/employee/tickets', 
+      label: 'Support Tickets', 
+      icon: Ticket 
     },
     { 
       path: 'https://workforcenow.adp.com', 
