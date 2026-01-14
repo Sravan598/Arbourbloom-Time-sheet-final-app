@@ -47,18 +47,15 @@ const EmployeeSidebar = () => {
       icon: Ticket 
     },
     { 
+      path: '/employee/calendar', 
+      label: 'Calendar', 
+      icon: CalendarDays 
+    },
+    { 
       path: 'https://workforcenow.adp.com', 
       label: 'Payroll', 
       icon: DollarSign,
       external: true
-    }
-  ];
-
-  const settingsItems = [
-    {
-      path: '/profile?tab=calendar',
-      label: 'Calendar Sync',
-      icon: CalendarDays
     }
   ];
 
