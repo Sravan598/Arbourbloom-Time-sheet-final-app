@@ -6586,6 +6586,196 @@ async def add_ticket_comment(
     return comment_doc
 
 
+@api_router.post("/tickets/{ticket_id}/comments/{comment_id}/attachments")
+async def add_comment_attachment(
+    ticket_id: str,
+    comment_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload an attachment to a ticket comment"""
+    ticket = await db.tickets.find_one({"id": ticket_id}, {"_id": 0})
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    # Check access
+    is_admin = current_user.get("role") == "ADMIN"
+    if not is_admin and ticket["created_by"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Verify comment exists and belongs to user
+    comment = await db.ticket_comments.find_one({"id": comment_id, "ticket_id": ticket_id}, {"_id": 0})
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    if comment["user_id"] != current_user["id"] and not is_admin:
+        raise HTTPException(status_code=403, detail="Can only add attachments to your own comments")
+    
+    # Validate file
+    if not file.content_type:
+        raise HTTPException(status_code=400, detail="Invalid file type")
+    
+    if file.content_type not in ALLOWED_FILE_TYPES:
+        raise HTTPException(status_code=400, detail=f"File type not allowed. Allowed: images, PDF, Word, Excel, text, video files")
+    
+    # Read file content
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail=f"File too large. Max size: {MAX_FILE_SIZE // (1024*1024)}MB")
+    
+    # Check total attachments size for this comment
+    existing_attachments = comment.get("attachments", [])
+    total_size = sum(att.get("file_size", 0) for att in existing_attachments) + len(content)
+    if total_size > MAX_COMMENT_UPLOAD_SIZE:
+        raise HTTPException(status_code=400, detail=f"Total attachments exceed {MAX_COMMENT_UPLOAD_SIZE // (1024*1024)}MB limit")
+    
+    # Generate unique filename
+    file_ext = Path(file.filename).suffix if file.filename else ""
+    unique_filename = f"comment_{comment_id}_{uuid.uuid4().hex[:8]}{file_ext}"
+    file_path = TICKET_UPLOAD_DIR / unique_filename
+    
+    # Save file
+    async with aiofiles.open(file_path, 'wb') as f:
+        await f.write(content)
+    
+    # Create attachment record
+    attachment = {
+        "id": str(uuid.uuid4()),
+        "filename": unique_filename,
+        "original_filename": file.filename or "attachment",
+        "file_type": file.content_type,
+        "file_size": len(content),
+        "uploaded_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Add to comment
+    await db.ticket_comments.update_one(
+        {"id": comment_id},
+        {"$push": {"attachments": attachment}}
+    )
+    
+    # Update ticket timestamp
+    await db.tickets.update_one(
+        {"id": ticket_id},
+        {"$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {
+        "message": "File uploaded successfully",
+        "attachment": attachment
+    }
+
+
+@api_router.post("/tickets/{ticket_id}/comments-with-attachments")
+async def add_comment_with_attachments(
+    ticket_id: str,
+    content: str = Form(...),
+    is_internal: bool = Form(False),
+    files: List[UploadFile] = File(default=[]),
+    current_user: dict = Depends(get_current_user)
+):
+    """Add a comment with attachments to a ticket (single request)"""
+    ticket = await db.tickets.find_one({"id": ticket_id}, {"_id": 0})
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    is_admin = current_user.get("role") == "ADMIN"
+    is_creator = ticket["created_by"] == current_user["id"]
+    
+    if not is_admin and not is_creator:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Only admins can add internal notes
+    is_internal_note = is_internal and is_admin
+    
+    # Process attachments
+    attachments = []
+    total_size = 0
+    
+    for file in files:
+        if not file.content_type:
+            continue
+            
+        if file.content_type not in ALLOWED_FILE_TYPES:
+            raise HTTPException(status_code=400, detail=f"File type {file.content_type} not allowed")
+        
+        file_content = await file.read()
+        
+        if len(file_content) > MAX_FILE_SIZE:
+            raise HTTPException(status_code=400, detail=f"File {file.filename} exceeds {MAX_FILE_SIZE // (1024*1024)}MB limit")
+        
+        total_size += len(file_content)
+        if total_size > MAX_COMMENT_UPLOAD_SIZE:
+            raise HTTPException(status_code=400, detail=f"Total attachments exceed {MAX_COMMENT_UPLOAD_SIZE // (1024*1024)}MB limit")
+        
+        # Save file
+        file_ext = Path(file.filename).suffix if file.filename else ""
+        unique_filename = f"ticket_{ticket_id}_{uuid.uuid4().hex[:8]}{file_ext}"
+        file_path = TICKET_UPLOAD_DIR / unique_filename
+        
+        async with aiofiles.open(file_path, 'wb') as f:
+            await f.write(file_content)
+        
+        attachments.append({
+            "id": str(uuid.uuid4()),
+            "filename": unique_filename,
+            "original_filename": file.filename or "attachment",
+            "file_type": file.content_type,
+            "file_size": len(file_content),
+            "uploaded_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    # Create comment
+    comment = TicketComment(
+        ticket_id=ticket_id,
+        user_id=current_user["id"],
+        user_name=current_user.get("name", "Unknown"),
+        user_image=current_user.get("profile_image"),
+        user_role=current_user.get("role", "EMPLOYEE"),
+        content=content,
+        is_internal=is_internal_note,
+        attachments=attachments
+    )
+    
+    comment_doc = comment.model_dump()
+    comment_doc["created_at"] = comment_doc["created_at"].isoformat()
+    
+    await db.ticket_comments.insert_one(comment_doc)
+    
+    # Update ticket timestamp and track first response
+    update_fields = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    
+    if is_admin and not ticket.get("first_response_at"):
+        update_fields["first_response_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.tickets.update_one({"id": ticket_id}, {"$set": update_fields})
+    
+    # Send notification (non-internal comments only)
+    if not is_internal_note:
+        if is_admin:
+            await create_notification(
+                user_id=ticket["created_by"],
+                notif_type=NotificationType.TICKET_COMMENT,
+                title="New Comment on Your Ticket",
+                message=f"[{ticket['ticket_number']}] {current_user.get('name', 'Admin')} added a comment",
+                reference_id=ticket_id
+            )
+        else:
+            for admin_id in ticket.get("assigned_to", []):
+                await create_notification(
+                    user_id=admin_id,
+                    notif_type=NotificationType.TICKET_COMMENT,
+                    title="New Comment on Ticket",
+                    message=f"[{ticket['ticket_number']}] {current_user.get('name', 'User')} added a comment",
+                    reference_id=ticket_id
+                )
+    
+    comment_doc.pop("_id", None)
+    return comment_doc
+
+
 # Ticket File Attachments
 @api_router.post("/tickets/{ticket_id}/attachments")
 async def upload_ticket_attachment(
