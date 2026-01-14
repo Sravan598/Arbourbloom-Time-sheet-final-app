@@ -11,7 +11,8 @@ import {
   Settings,
   CalendarDays,
   ExternalLink,
-  DollarSign
+  DollarSign,
+  Ticket
 } from 'lucide-react';
 
 const AdminSidebar = () => {
@@ -52,6 +53,11 @@ const AdminSidebar = () => {
       path: '/admin/leave-requests', 
       label: 'Leave Requests', 
       icon: Calendar 
+    },
+    { 
+      path: '/admin/tickets', 
+      label: 'Support Tickets', 
+      icon: Ticket 
     },
     { 
       path: 'https://workforcenow.adp.com', 
