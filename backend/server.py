@@ -54,8 +54,10 @@ UPLOAD_DIR = Path("/app/uploads/chat")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 TICKET_UPLOAD_DIR = Path("/app/uploads/tickets")
 TICKET_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+MAX_FILE_SIZE = 25 * 1024 * 1024  # 25MB per file
+MAX_COMMENT_UPLOAD_SIZE = 50 * 1024 * 1024  # 50MB total per comment
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+ALLOWED_VIDEO_TYPES = {"video/mp4", "video/quicktime", "video/webm"}
 
 # PDF Logo configuration
 LOGO_PATH = ROOT_DIR / "assets" / "cortracker_logo.png"
@@ -64,7 +66,7 @@ ALLOWED_DOC_TYPES = {"application/pdf", "application/msword",
                      "application/vnd.ms-excel",
                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                      "text/plain", "text/csv"}
-ALLOWED_FILE_TYPES = ALLOWED_IMAGE_TYPES | ALLOWED_DOC_TYPES
+ALLOWED_FILE_TYPES = ALLOWED_IMAGE_TYPES | ALLOWED_DOC_TYPES | ALLOWED_VIDEO_TYPES
 
 # Configure logging
 logging.basicConfig(
