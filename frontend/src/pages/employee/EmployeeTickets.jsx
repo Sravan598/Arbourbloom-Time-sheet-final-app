@@ -488,19 +488,19 @@ const EmployeeTickets = () => {
               ) : selectedTicket && (
                 /* Ticket Detail View */
                 <>
-                  <div className="p-4 border-b border-gray-100 flex-shrink-0">
+                  <div className="p-4 border-b border-gray-100 flex-shrink-0 bg-gray-50">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-mono text-gray-500">{selectedTicket.ticket_number}</span>
-                      <button onClick={() => setSelectedTicket(null)} className="p-1 hover:bg-gray-100 rounded">
+                      <span className="text-sm font-mono text-brand-red font-medium">{selectedTicket.ticket_number}</span>
+                      <button onClick={() => setSelectedTicket(null)} className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
-                    <h2 className="font-semibold text-gray-900">{selectedTicket.subject}</h2>
+                    <h2 className="font-semibold text-gray-900 text-lg">{selectedTicket.subject}</h2>
                     <div className="flex items-center gap-2 mt-2">
                       <span className={`text-xs px-2 py-1 rounded-full ${STATUS_COLORS[selectedTicket.status]}`}>
                         {STATUS_LABELS[selectedTicket.status]}
                       </span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${getPriorityInfo(selectedTicket.priority).color}`}>
+                      <span className={`text-xs px-2 py-1 rounded-full ${getPriorityInfo(selectedTicket.priority).color}`}>
                         {getPriorityInfo(selectedTicket.priority).label}
                       </span>
                     </div>
@@ -514,7 +514,7 @@ const EmployeeTickets = () => {
                       <span>•</span>
                       <span>Created {formatDate(selectedTicket.created_at)}</span>
                     </div>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedTicket.description}</p>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{selectedTicket.description}</p>
                     
                     {/* Attachments */}
                     {selectedTicket.attachments?.length > 0 && (
@@ -525,12 +525,12 @@ const EmployeeTickets = () => {
                             href={`${API_URL}/api/tickets/attachments/${att.filename}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600 hover:bg-gray-200"
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-xs text-gray-600 hover:bg-gray-200 transition-colors"
                           >
                             {att.file_type?.startsWith('image') ? (
-                              <ImageIcon className="w-3 h-3" />
+                              <ImageIcon className="w-3.5 h-3.5" />
                             ) : (
-                              <FileText className="w-3 h-3" />
+                              <FileText className="w-3.5 h-3.5" />
                             )}
                             {att.original_filename}
                           </a>
@@ -540,59 +540,82 @@ const EmployeeTickets = () => {
                     
                     {/* Assigned To */}
                     {selectedTicket.assigned_names?.length > 0 && (
-                      <div className="mt-3 text-sm text-gray-500">
-                        <span className="font-medium">Assigned to:</span> {selectedTicket.assigned_names.join(', ')}
+                      <div className="mt-3 flex items-center gap-2 text-sm">
+                        <span className="text-gray-500">Handled by:</span>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedTicket.assigned_names.map((name, idx) => (
+                            <span key={idx} className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">
+                              {name}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Comments */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  {/* Comments Section */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <MessageSquare className="w-4 h-4 text-gray-400" />
+                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Conversation</span>
+                      <span className="text-xs text-gray-400">({comments.length})</span>
+                    </div>
+                    
                     {comments.length === 0 ? (
-                      <p className="text-center text-gray-400 text-sm py-4">No comments yet</p>
+                      <p className="text-center text-gray-400 text-sm py-6">No responses yet. Our team will get back to you soon.</p>
                     ) : (
                       comments.map(comment => (
                         <div 
                           key={comment.id} 
-                          className={`p-3 rounded-lg ${
-                            comment.user_role === 'ADMIN' ? 'bg-purple-50' : 'bg-gray-50'
+                          className={`p-3 rounded-xl shadow-sm ${
+                            comment.user_role === 'ADMIN' 
+                              ? 'bg-purple-50 border border-purple-100 ml-4' 
+                              : 'bg-white border border-gray-200 mr-4'
                           }`}
                         >
                           <div className="flex items-center gap-2 mb-2">
-                            <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                              <User className="w-3 h-3 text-gray-500" />
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                              comment.user_role === 'ADMIN' ? 'bg-purple-200' : 'bg-blue-200'
+                            }`}>
+                              <User className={`w-3.5 h-3.5 ${
+                                comment.user_role === 'ADMIN' ? 'text-purple-700' : 'text-blue-700'
+                              }`} />
                             </div>
-                            <span className="text-sm font-medium">{comment.user_name}</span>
+                            <span className="text-sm font-medium text-gray-900">{comment.user_name}</span>
                             {comment.user_role === 'ADMIN' && (
-                              <span className="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded">Support</span>
+                              <span className="text-xs px-1.5 py-0.5 bg-purple-200 text-purple-800 rounded font-medium">Support Team</span>
+                            )}
+                            {comment.user_role !== 'ADMIN' && (
+                              <span className="text-xs px-1.5 py-0.5 bg-blue-200 text-blue-800 rounded font-medium">You</span>
                             )}
                             <span className="text-xs text-gray-400 ml-auto">{formatDate(comment.created_at)}</span>
                           </div>
-                          <p className="text-sm text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+                          <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed pl-9">{comment.content}</p>
                         </div>
                       ))
                     )}
                   </div>
 
-                  {/* Add Comment */}
+                  {/* Add Comment Section - Clear separation */}
                   {!['CLOSED'].includes(selectedTicket.status) && (
-                    <div className="p-4 border-t border-gray-100 flex-shrink-0">
-                      <div className="flex gap-2">
+                    <div className="p-4 border-t-2 border-gray-200 flex-shrink-0 bg-white">
+                      <div className="flex gap-3">
                         <textarea
                           value={newComment}
                           onChange={(e) => setNewComment(e.target.value)}
-                          placeholder="Add a reply..."
-                          rows={2}
-                          className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none"
+                          placeholder="Type your reply..."
+                          rows={3}
+                          className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl text-sm resize-none focus:border-brand-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-colors"
                           data-testid="employee-ticket-comment-input"
                         />
                         <button
                           onClick={handleAddComment}
                           disabled={!newComment.trim()}
-                          className="px-4 py-2 bg-brand-red text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-5 py-3 bg-brand-red text-white rounded-xl hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors flex items-center gap-2"
                           data-testid="employee-send-comment-btn"
                         >
                           <Send className="w-4 h-4" />
+                          <span className="hidden sm:inline">Send</span>
                         </button>
                       </div>
                     </div>
