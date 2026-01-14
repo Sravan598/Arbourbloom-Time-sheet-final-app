@@ -2,7 +2,6 @@
 Test suite for ticket comment attachments feature
 Tests both admin and employee ability to add comments with file attachments
 """
-import pytest
 import requests
 import os
 import tempfile
@@ -20,8 +19,7 @@ EMPLOYEE_PASSWORD = "password123"
 class TestTicketCommentAttachments:
     """Test ticket comment attachments for both admin and employee"""
     
-    @pytest.fixture(autouse=True)
-    def setup(self):
+    def __init__(self):
         """Setup test fixtures"""
         self.session = requests.Session()
         self.admin_token = None
@@ -355,8 +353,11 @@ class TestTicketCommentAttachments:
         
         try:
             files_to_upload = []
+            file_handles = []
             for i, path in enumerate(test_files):
-                files_to_upload.append(("files", (f"file_{i+1}.txt", open(path, 'rb'), "text/plain")))
+                fh = open(path, 'rb')
+                file_handles.append(fh)
+                files_to_upload.append(("files", (f"file_{i+1}.txt", fh, "text/plain")))
             
             response = self.session.post(
                 f"{BASE_URL}/api/tickets/{ticket_id}/comments-with-attachments",
@@ -369,8 +370,8 @@ class TestTicketCommentAttachments:
             )
             
             # Close file handles
-            for _, (_, f, _) in files_to_upload:
-                f.close()
+            for fh in file_handles:
+                fh.close()
             
             assert response.status_code == 200, f"Failed to add comment with multiple attachments: {response.text}"
             comment = response.json()
@@ -424,10 +425,9 @@ class TestTicketCommentAttachments:
         print("✓ Attachment download endpoint exists")
 
 
-def test_run_all():
+def run_all_tests():
     """Run all tests"""
     test_instance = TestTicketCommentAttachments()
-    test_instance.setup()
     
     print("\n" + "="*60)
     print("TICKET COMMENT ATTACHMENTS TEST SUITE")
@@ -463,4 +463,4 @@ def test_run_all():
 
 
 if __name__ == "__main__":
-    test_run_all()
+    run_all_tests()
