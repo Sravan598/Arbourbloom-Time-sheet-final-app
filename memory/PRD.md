@@ -161,14 +161,18 @@ CORtracker is a comprehensive time-tracking and workforce management application
 1. **Daily Summary Email**: Automated work hour summaries (ON HOLD per user request)
 
 ### P1 - Medium Priority
-1. Calendar Integration Phase 2 (Two-Way OAuth Sync)
+1. In-App Calendar (ON HOLD per user request)
+2. Calendar Integration Phase 2 (Two-Way OAuth Sync) - ON HOLD
 
 ### P2 - Medium Priority
-1. Calendar Integration Phase 2 (Two-Way OAuth Sync) - ON HOLD
-2. Shift Scheduling module
+1. Shift Scheduling module
+2. Advanced Payroll Export (CSV/Excel for ADP)
 
 ### P3 - Future
 1. Refactor `server.py` into modular structure
+2. AI Integration (HR Chatbot using Emergent LLM Key)
+3. White-Labeling support (env-based branding)
+4. Email Notifications for Ticketing System (SendGrid/Resend)
 
 ## Test Credentials
 - **Admin**: `admin@company.com` / `password123`
