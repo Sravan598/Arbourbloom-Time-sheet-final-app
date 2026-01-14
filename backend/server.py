@@ -2318,29 +2318,35 @@ def generate_timesheet_pdf(user_data: dict, timesheets: list, breaks: list, week
     
     for ts in timesheets:
         clock_in = ts.get("clock_in_at")
+        clock_out = ts.get("clock_out_at")
+        
+        # Skip incomplete timesheets (no clock_out) for time display
+        # But still count their minutes if they have any
         if isinstance(clock_in, str):
             clock_in = datetime.fromisoformat(clock_in.replace("Z", "+00:00"))
         
         date_str = clock_in.strftime("%Y-%m-%d")
         
         if date_str in daily_data:
+            # Add total minutes if available
             if ts.get("total_minutes"):
                 daily_data[date_str]["minutes"] += ts["total_minutes"]
             
-            # Track earliest clock_in time
-            clock_in_time = clock_in.strftime("%I:%M %p")
-            if not daily_data[date_str]["clock_in"]:
-                daily_data[date_str]["clock_in"] = clock_in_time
-                daily_data[date_str]["clock_in_dt"] = clock_in
-            elif clock_in < daily_data[date_str].get("clock_in_dt", clock_in):
-                daily_data[date_str]["clock_in"] = clock_in_time
-                daily_data[date_str]["clock_in_dt"] = clock_in
-            
-            # Track latest clock_out time
-            clock_out = ts.get("clock_out_at")
+            # Only use clock times from COMPLETE timesheets (has both clock_in and clock_out)
             if clock_out:
                 if isinstance(clock_out, str):
                     clock_out = datetime.fromisoformat(clock_out.replace("Z", "+00:00"))
+                
+                # Track earliest clock_in time from complete entries
+                clock_in_time = clock_in.strftime("%I:%M %p")
+                if not daily_data[date_str]["clock_in"]:
+                    daily_data[date_str]["clock_in"] = clock_in_time
+                    daily_data[date_str]["clock_in_dt"] = clock_in
+                elif clock_in < daily_data[date_str].get("clock_in_dt", clock_in):
+                    daily_data[date_str]["clock_in"] = clock_in_time
+                    daily_data[date_str]["clock_in_dt"] = clock_in
+                
+                # Track latest clock_out time
                 clock_out_time = clock_out.strftime("%I:%M %p")
                 if not daily_data[date_str]["clock_out"]:
                     daily_data[date_str]["clock_out"] = clock_out_time
