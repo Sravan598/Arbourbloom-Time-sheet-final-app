@@ -60,6 +60,11 @@ const AdminSidebar = () => {
       icon: Ticket 
     },
     { 
+      path: '/admin/calendar', 
+      label: 'Calendar', 
+      icon: CalendarDays 
+    },
+    { 
       path: 'https://workforcenow.adp.com', 
       label: 'Payroll', 
       icon: DollarSign,
