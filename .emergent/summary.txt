@@ -1,14 +1,15 @@
 <analysis>**original_problem_statement:**
 The user's initial goal was to build a premium marketing website and time-tracking application called CORtracker.
 
-Throughout the session, the user guided the development with a series of feature requests, enhancements, and UI tweaks, including:
-- Fixing a recurring bug with the CORBot's drag-and-drop functionality.
-- Adding the company logo to all downloadable PDF reports.
-- Refactoring the Admin and Employee dashboards for better usability (fixing stats, moving/merging components).
-- Implementing a dedicated My Projects page for employees.
-- Enhancing the Employee Timesheet Correction feature with history and a better admin review process.
-- Adding external Payroll links to sidebars.
-- Discussing and planning several major future features, including a full ticketing system, in-app calendar, and ADP payroll integration.
+Throughout the sessions, the user has guided development with a series of feature requests, enhancements, and UI tweaks, including:
+-   Implementing a comprehensive **Ticketing System** for HR and IT support.
+-   Adding a visual, **In-App Calendar** to display leaves, holidays, and other events.
+-   Fixing several critical bugs in the **PDF Export** functionality related to incorrect data, distorted logos, and improper timezone handling.
+-   Refactoring the Admin and Employee dashboards for better usability.
+-   Implementing a dedicated My Projects page for employees.
+-   Enhancing the Employee Timesheet Correction feature.
+-   Adding external Payroll links to sidebars.
+-   Discussing and planning several major future features.
 
 **User's preferred language**: English
 
@@ -17,67 +18,76 @@ The project is a mature full-stack HRMS application with a React frontend and a 
 
 Key features include:
 -   **Dashboards:** Separate, feature-rich dashboards for Admins and Employees.
--   **Time & Attendance:** A merged clock-in/out and break timer widget, timesheet management, and a complete timesheet correction request system.
--   **Leave Management:** A unified page for admins to manage leave requests (pending, approved, denied) and configure leave types. Employees can request and track leave.
--   **Project Management:** Admins can create projects and assign employees. Employees have a dedicated My Projects page to view assignments and track time.
--   **Employee Management:** Admins can manage employee records.
--   **Communication:** A real-time team chat (CORChat), a system-wide announcements feature, and a notification bell.
--   **Reporting:** PDF exports for timesheets and performance reports, now with a proper logo header.
--   **Integrations:** An ICS feed for calendar subscriptions and external links to a payroll provider (ADP).
+-   **Time & Attendance:** A clock-in/out widget, timesheet management, and a complete timesheet correction request system.
+-   **Leave Management:** A unified page for admins to manage leave requests and for employees to request/track leave.
+-   **Project Management:** Admins can create projects and assign employees.
+-   **Communication:** A real-time team chat (CORChat) and system-wide announcements.
+-   **Ticketing System (New):** A full-featured support ticket system for employees to submit requests and for admins to manage them. Features include categories, priorities, SLA tracking, comments, and attachments.
+-   **In-App Calendar (New):** A visual calendar for admins and employees to view company holidays, leave requests, birthdays, and project deadlines.
+-   **Reporting:** PDF exports for timesheets and performance reports.
+-   **Integrations:** An ICS feed for one-way calendar subscriptions and external links to a payroll provider (ADP).
 
 **Last working item**:
--   **Last item agent was working**: The agent created a detailed, multi-phase implementation plan for a comprehensive ticketing system, based on the user's specific requirements (all categories, multi-admin assignment, SLA tracking, and email notifications). The agent presented this plan and asked for final confirmation on implementation details before starting.
--   **Status**: BLOCKED
+-   **Last item agent was working**: The agent was implementing the ability for both Admins and Employees to add file attachments to existing ticket comments, a feature requested by the user. The backend was updated to support a 25MB file size limit and a new endpoint for comment attachments was created. The frontend for the employee view was updated. The agent was in the middle of updating the admin ticket view.
+-   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: both. This is a large feature requiring new backend endpoints, database collections, and extensive frontend UI for both admin and employee roles.
+-   **Which testing method agent to use?**: both. This feature requires backend API testing (file upload, storage, retrieval) and frontend UI testing to ensure the upload controls work and attachments are displayed correctly for both roles. A full end-to-end test by the  is recommended upon completion.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: CORBot disappearing during drag (P1)**
-    -   **Description:** A recurring issue where the user reported the chatbot disappearing during drag. The agent in this session made robustness improvements and confirmed it worked in automated tests. However, given its history, it remains a potential point of failure.
+-   **Issue 1: PDF Timesheet Report Data and Timezone (P0)**
+    -   **Description:** The user reported that the downloaded weekly timesheet PDF showed incorrect clock-in/out entries after an admin approved a correction, and that dates/times were not reflecting their CST timezone. The agent implemented fixes for the data logic (by ignoring incomplete timesheets) and converted all date/time calculations and displays in the PDF to CST.
     -   **Status:** USER VERIFICATION PENDING
-    -   **Next debug checklist:** If the user reports the issue again, perform manual, slow drag tests on both the button and the panel. Check the browser console for any Framer Motion or React state errors in .
+    -   **Why fix this issue and what will be achieved with the fix?** To ensure the accuracy and reliability of critical business documents (timesheet reports).
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Backend (PDF generation logic).
+
+-   **Issue 2: CORBot disappearing during drag (P1)**
+    -   **Description:** A recurring UI bug from a previous session where the chatbot widget disappears during drag-and-drop. Previous fixes were made, but final user confirmation is still pending.
+    -   **Status:** USER VERIFICATION PENDING
     -   **Why fix this issue and what will be achieved with the fix?** To resolve a persistent, user-facing bug and ensure a smooth UX.
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** Frontend
 
 **In progress Task List**:
--   None.
+-   **Task 1: Finish Implementing File Attachments in Ticket Comments (P0)**
+    -   **Where to resume:** The agent needs to modify . The  function must be updated to handle file uploads, and the JSX for the ticket detail panel must be modified to include a file input button, display selected files before sending, and render attachments within each comment. The employee-side implementation can be used as a reference.
+    -   **What will be achieved with this?** Both admins and employees will be able to attach files (screenshots, documents) to ticket replies, providing better context for resolving issues. The feature will support a 25MB per-file limit.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** Both.
+    -   **Blocked on something:** No.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   **P0: Implement Ticketing System:** Start the implementation based on the user-approved plan. The first step is to get user confirmation on the final two questions from the plan (Email Provider and File Attachments) and then begin Phase 1 (Backend & Database).
+    -   **P1: Finalize and Test In-App Calendar:** The core feature was implemented but interrupted by higher-priority bug fixes. It requires a thorough end-to-end test using the  to verify all event types appear correctly for both admin and employee roles and that holiday management works as expected.
 
 -   **Future Tasks**:
-    -   **P1: In-App Calendar:** Implement a visual, in-app calendar using  to show leaves, holidays, and schedules. (User put this on hold).
-    -   **P1: Daily Summary Email:** Implement the automated daily email for work hour summaries. (User put this on hold).
+    -   **P1: Ticketing System Enhancements:** Implement high-impact features suggested to the user, such as **Email Notifications**, **Canned Responses** for admins, and **Satisfaction Ratings**.
+    -   **P1: Daily Summary Email:** Implement the automated daily email for work hour summaries.
     -   **P2: Shift Scheduling:** Allow admins to create shifts and employees to view their schedules.
-    -   **P2: Advanced Payroll Export:** Implement the full Payroll page (Option 2) with pay period selection and data export in CSV/Excel format for ADP.
-    -   **P2: Refactor :** Break down the monolithic  file into a modular structure (e.g., , , ) to improve maintainability.
+    -   **P2: Advanced Payroll Export:** Implement the full Payroll page with pay period selection and data export in CSV/Excel format for ADP.
+    -   **P2: Refactor :** Break down the monolithic  file into a modular structure (e.g., , , ) to improve maintainability. This is becoming critical as the file now exceeds 7000 lines.
     -   **P3: AI Integration:** Implement an AI feature like an HR Chatbot or Anomaly Detection using the Emergent LLM Key.
-    -   **P3: White-Labeling:** Refactor the app to pull branding (name, logo, colors) from environment variables to easily create differently branded versions of the application.
+    -   **P3: White-Labeling:** Refactor the app to pull branding (name, logo, colors) from environment variables.
 
 **Completed work in this session**
--   **PDF Report Headers:** Replaced the text header in all PDF reports with a centered company logo.
--   **Leave Management Consolidation:** Merged the Leave Settings page into a new Settings tab within the Leave Requests page, and removed the redundant Pending Leave Requests section from the Admin Dashboard.
--   **Admin Dashboard Stats:** Fixed the Pending Requests card to accurately show the combined count of pending leave and timesheet corrections.
--   **Employee My Projects Page:** Created a new page for employees to view their assigned projects and track time, utilizing a previously unused component.
--   **Employee Correction Request Feature:** Fully implemented the feature, adding a correction history view for employees and enhancing the admin's review interface.
--   **Employee Dashboard UI Refactor:** Merged the Break Timer directly into the Clock In/Out widget and moved the Announcements section into the vacated space for better visibility.
--   **Header UI Fixes:** Rearranged the header to place the notification bell to the right of the profile name with appropriate spacing on both Admin and Employee dashboards.
--   **Payroll Link:** Added a Payroll link (pointing to ADP) to both Admin and Employee sidebars.
--   **CORChat UI Simplification:** Replaced the CORtracker logo in the chat component with a generic chat icon.
--   **Feature Verification:** Thoroughly tested the Announcements and Leave Approval functionalities.
+-   **Support Ticketing System (Phase 1)**: A full-featured ticketing system was implemented from scratch, including backend APIs and frontend pages for both Admin and Employee roles. The initial implementation passed 29/29 tests from the testing agent.
+-   **Ticket Detail Panel UI Overhaul**: The ticket detail panel was completely redesigned to fix UI/UX issues reported by the user. This included fixing a z-index bug, widening the panel, changing the Assign to control to a multi-select dropdown, and improving the layout and visual distinction of comments.
+-   **In-App Calendar Implementation**: A new visual, in-app calendar feature was built using . This included backend endpoints for managing holidays and fetching events, and separate frontend pages for admins (full view, holiday management) and employees (personal/team view).
+-   **PDF Export Bug Fixes**:
+    -   **Data Accuracy**: Fixed a critical bug where approved timesheet corrections were not reflected in the PDF export due to interference from other incomplete timesheet entries on the same day.
+    -   **Logo Aspect Ratio**: Fixed a bug that caused the company logo to appear stretched in all generated PDFs by implementing a dynamic aspect ratio calculation.
+    -   **Timezone Correction**: Corrected the PDF generation logic to use the user's CST timezone for all date calculations and display, ensuring the report matches the user's local time.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1: React Three Fiber Incompatibility**
-    -   **Debug checklist**: This was noted in the previous handoff but not prioritized. The original intent was for a 3D logo, but a 2D image was used instead, making this a low-priority issue.
-    -   **Why to solve this issue and what will be achieved with this?**: Would enable the use of 3D components in the future.
+    -   **Debug checklist**: Noted in a previous handoff. A 2D logo was used as a workaround for a planned 3D logo, making this a low-priority issue.
+    -   **Why to solve this issue and what will be achieved with this?**: Would enable the use of 3D components in the future if desired.
     -   **Should Test frontend/backend/both after fix**: Frontend.
     -   **Is recurring issue?**: N
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork**: The CORBot disappearing during drag issue was present in the last fork and reported again by the user in this session before the latest fixes were applied.
+-   **Issue recurrence in previous fork**: The CORBot disappearing during drag issue was present in a previous fork.
 -   **Recurrence count**: 1
 -   **Status**: USER VERIFICATION PENDING
 
@@ -85,79 +95,77 @@ Key features include:
 
 
 **Key Technical Concepts**
--   **Frontend**: React, TailwindCSS, , Framer Motion.
--   **Backend**: FastAPI, Pydantic, ReportLab for PDF generation.
+-   **Frontend**: React, TailwindCSS, , Framer Motion, .
+-   **Backend**: FastAPI, Pydantic, ReportLab for PDF generation,  for file uploads.
 -   **Database**: MongoDB.
 
 **key DB schema**
--   No new collections were added.
--   The following collections were planned for the upcoming **Ticketing System**: , .
+-   **tickets**: 
+-   **ticket_comments**: 
+-   **holidays**: 
 
 **changes in tech stack**
--   None.
+-   Added  and its dependencies for the in-app calendar feature.
+-   Added  for handling file uploads in the backend.
 
 **All files of reference**
--   : Modified for PDF generation, dashboard stats, and correction requests. It is now a monolithic file that needs refactoring.
--   : Underwent a significant UI refactor to merge the clock-in/out and break widgets.
--   : Refactored to absorb the functionality of the now-deleted .
--   : A new page created to display an employee's assigned projects.
--   : Updated to include a correction request history modal.
--   : Header notification logic and routing were modified.
--   : Updated with completed tasks and the new backlog.
+-   : Heavily modified to add all backend logic for the Ticketing System, In-App Calendar, and to fix all PDF export bugs.
+-   : New file for admin ticket management. Underwent significant UI refactoring.
+-   : New file for employee ticket submission and tracking.
+-   : New file for the admin calendar view.
+-   : New file for the employee calendar view.
+-   : Modified to add routes for the new Tickets and Calendar pages.
+-   : Updated to replace Calendar Sync with the new Calendar link.
+-   : Updated to add Support Tickets and Calendar links.
 
 **Areas that need refactoring**
--    is over 5,500 lines long and contains logic for almost every feature. It is a high-priority candidate for refactoring into a modular structure (e.g., , , ). This was discussed with the user and added to the backlog.
+-    is now over 7,000 lines and urgently needs to be refactored into a modular structure (e.g., separate files for routes, models, and services/logic for each feature like tickets, calendar, auth, etc.). This will improve maintainability and reduce the risk of introducing new bugs.
 
 **key api endpoints**
--   : Updated to include  and a combined .
--   : New endpoint to fetch an employee's timesheet correction history.
--   : Updated to render a logo in the header.
--   : Updated to render a logo in the header.
+-   **Tickets:** , , , , 
+-   **Ticket Comments:** , 
+-   **Ticket Attachments:**  (New)
+-   **Calendar:** 
+-   **Holidays:** , , , 
+-   **PDF Exports:** , 
 
 **Critical Info for New Agent**
--   Your immediate task is to implement the **Ticketing System**. The user has approved the high-level plan. You must first get confirmation on the final implementation details (Email Provider, File Attachments) presented at the end of the last session before writing any code.
--   The user has explicitly put several major features on hold (**In-App Calendar**, **Daily Summary Email**, **OAuth Calendar Sync**). Do not start these without new instructions.
--   The monolithic  file is a significant source of technical debt. Be mindful of this when adding new backend logic. Propose the refactoring task again after completing the ticketing system.
+-   Your immediate task is to complete the implementation of file attachments in ticket comments. Resume work on .
+-   After completing the attachment feature, you must ask the user to verify the fixes for the PDF export issues (data accuracy and timezone). This is a high-priority user-facing issue.
+-   The In-App Calendar feature is functionally complete but has not been formally tested. This should be the next task after the above items are cleared.
+-   The  monolith is a significant source of technical debt. Propose the refactoring task to the user after completing the current feature set, as it will make future development much safer and faster.
 
 **documents and test reports created in this job**
 -   
--   
--   
--   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **i want a ticekting system... give me your inputs.**: User requested to add a ticketing system. (Completed)
-2.  **go with option 4...**: User provided specific requirements for the ticketing system (all categories, multi-admin, SLA, email notifications). (Completed)
-3.  **implement Option 1 - Just add ADP link to sidebar**: User requested to add the payroll link. (Completed)
-4.  **place adp payroll link below leave request and add this feature in employee login as well .**: User requested a specific location for the payroll link in both sidebars. (Completed)
-5.  **for ADP payroll just give name as payroll**: User requested to rename the link. (Completed)
-6.  **include break timer in clock in /out widget...donot implement it .**: User requested a UI redesign for the employee dashboard. (Completed)
-7.  **yes proceed**: User approved the plan for the employee dashboard redesign. (Completed)
-8.  **please check announcements is it working perfectly for both employee and admin**: User requested verification of the announcements feature. (Completed)
-9.  **needed little gap between notification and profile name...donot implement it**: User requested a UI tweak for the header. (Completed)
-10. **yes proceed**: User approved the header UI tweak. (Completed)
-
-**Pending User Confirmation:** The last action from the agent was presenting a detailed plan for the **Ticketing System**, which ended with the following questions for the user. The next agent must get answers before proceeding.
-1.  **Email Provider**: For notifications, should the agent use Emergent integration (simple), SendGrid, or another provider?
-2.  **File Attachments**: Should file uploads (images, PDFs, docs) be allowed in tickets?
+1.  **let me check**: User response after agent fixed the  issue with the ticket comment button. (Considered resolved by subsequent working perfectly message).
+2.  **thank you its working pefectly**: User confirms the ticket UI improvements are working well. (Completed)
+3.  **lets go for our backlogs calender integration give me your inputs donot implement it**: User requested to start work on the calendar feature. (Completed)
+4.  **go with phase1...**: User confirmed the specific requirements for the in-app calendar. (Completed)
+5.  **1.yes 2.they are provided... 3.skip it... 4 exactly same...**: User answered clarifying questions about the calendar implementation. (Completed)
+6.  **after downloading the weekly progress in the downloaded pdf i can see clock in and out entries are printed wrong...**: User reported a bug with the timesheet PDF export. (In Progress - Fix applied, pending user verification).
+7.  **in pdfs the compnay logo looks like expanded please fix to perfection...**: User reported a bug with the logo in PDF reports. (In Progress - Fix applied, pending user verification).
+8.  **go with option A**: User approved the proposed fix for the PDF logo. (Completed)
+9.  **after updating the time sheet by admin and got approved in employee login export pdf is not changing...**: User reported another bug with PDF exports not reflecting approved corrections. (In Progress - Fix applied, pending user verification).
+10. **follow the CST time zone...**: User reported that PDF exports were not using their local timezone. (In Progress - Fix applied, pending user verification).
+11. **in support tickets previously i have seen employee can upload supported documents...**: User asked about the file attachment functionality in the ticketing system, leading to the current task. (Current Task)
+12. **go with option C...**: User confirmed requirements for the ticket attachment feature. (Current Task)
+13. **yes proceed**: User gives final approval to start implementing the ticket attachment feature with a 25MB file size limit. (Current Task)
 
 **Project Health Check:**
 -   **Broken**: None.
 -   **Mocked**: None.
 
 **3rd Party Integrations**
--   No new integrations were fully implemented.
--   **ADP:** A simple external link was added. A file-export-based integration was discussed for the future.
--   **Google Calendar API:** Discussed for two-way sync but put on hold due to OAuth scope complexities with the simple managed auth.
--   **Emergent LLM Key:** Discussed as a potential way to integrate AI features (like an HR chatbot) in the future.
+-   **react-big-calendar**: Used for the in-app calendar feature.
+-   **ADP:** A simple external link was added. A file-export-based integration is in the backlog.
+-   **python-multipart**: Used for backend file uploads.
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (for PDF exports, employee projects, and correction requests).
+-   **Testing agent used after significant changes**: YES (for the initial ticketing system implementation).
 -   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**:
-    -   
-    -   
-    -   
+-   **Test files created**: , 
 -   **Known regressions**: None.
 
 **Credentials to test flow:**
