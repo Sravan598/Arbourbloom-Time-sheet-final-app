@@ -6128,6 +6128,611 @@ async def regenerate_calendar_token(
     }
 
 
+# ============== TICKETING SYSTEM ROUTES ==============
+
+# SLA Configuration (hours until due based on priority)
+SLA_HOURS = {
+    "URGENT": 4,
+    "HIGH": 8,
+    "MEDIUM": 24,
+    "LOW": 72
+}
+
+# Category display names
+CATEGORY_NAMES = {
+    "IT_SUPPORT": "IT Support",
+    "HR": "Human Resources",
+    "PAYROLL": "Payroll",
+    "FACILITIES": "Facilities",
+    "TIME_ATTENDANCE": "Time & Attendance",
+    "BENEFITS": "Benefits",
+    "OTHER": "Other"
+}
+
+
+async def generate_ticket_number() -> str:
+    """Generate a unique ticket number: TKT-YYYYMMDD-XXXX"""
+    today = datetime.now(timezone.utc).strftime("%Y%m%d")
+    
+    # Count tickets created today
+    start_of_day = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    count = await db.tickets.count_documents({
+        "created_at": {"$gte": start_of_day.isoformat()}
+    })
+    
+    sequence = str(count + 1).zfill(4)
+    return f"TKT-{today}-{sequence}"
+
+
+def calculate_sla_due(priority: str) -> datetime:
+    """Calculate SLA due datetime based on priority"""
+    hours = SLA_HOURS.get(priority, 24)
+    return datetime.now(timezone.utc) + timedelta(hours=hours)
+
+
+@api_router.post("/tickets", response_model=TicketResponse)
+async def create_ticket(
+    ticket_data: TicketCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create a new support ticket (any authenticated user)"""
+    ticket_number = await generate_ticket_number()
+    sla_due = calculate_sla_due(ticket_data.priority.value)
+    
+    ticket = Ticket(
+        ticket_number=ticket_number,
+        subject=ticket_data.subject,
+        description=ticket_data.description,
+        category=ticket_data.category,
+        priority=ticket_data.priority,
+        created_by=current_user["id"],
+        creator_name=current_user.get("name", "Unknown"),
+        creator_email=current_user.get("email", ""),
+        creator_image=current_user.get("profile_image"),
+        sla_due_at=sla_due
+    )
+    
+    ticket_doc = ticket.model_dump()
+    ticket_doc["created_at"] = ticket_doc["created_at"].isoformat()
+    ticket_doc["updated_at"] = ticket_doc["updated_at"].isoformat()
+    ticket_doc["sla_due_at"] = ticket_doc["sla_due_at"].isoformat() if ticket_doc["sla_due_at"] else None
+    ticket_doc["category"] = ticket_doc["category"].value
+    ticket_doc["priority"] = ticket_doc["priority"].value
+    ticket_doc["status"] = ticket_doc["status"].value
+    
+    await db.tickets.insert_one(ticket_doc)
+    
+    # Notify all admins about new ticket
+    admins = await db.users.find({"role": "ADMIN", "is_active": True}, {"_id": 0, "id": 1}).to_list(100)
+    for admin in admins:
+        await create_notification(
+            user_id=admin["id"],
+            notif_type=NotificationType.TICKET_CREATED,
+            title="New Support Ticket",
+            message=f"[{ticket_number}] {ticket_data.subject} - {CATEGORY_NAMES.get(ticket_data.category.value, ticket_data.category.value)}",
+            reference_id=ticket.id
+        )
+    
+    return TicketResponse(
+        id=ticket.id,
+        ticket_number=ticket.ticket_number,
+        subject=ticket.subject,
+        description=ticket.description,
+        category=ticket.category.value,
+        priority=ticket.priority.value,
+        status=ticket.status.value,
+        created_by=ticket.created_by,
+        creator_name=ticket.creator_name,
+        creator_email=ticket.creator_email,
+        creator_image=ticket.creator_image,
+        assigned_to=ticket.assigned_to,
+        assigned_names=ticket.assigned_names,
+        sla_due_at=ticket.sla_due_at,
+        sla_breached=ticket.sla_breached,
+        first_response_at=ticket.first_response_at,
+        resolved_at=ticket.resolved_at,
+        attachments=ticket.attachments,
+        comment_count=0,
+        created_at=ticket.created_at,
+        updated_at=ticket.updated_at
+    )
+
+
+@api_router.get("/tickets")
+async def get_tickets(
+    status: Optional[str] = None,
+    category: Optional[str] = None,
+    priority: Optional[str] = None,
+    assigned_to_me: bool = False,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get tickets - Employees see their own, Admins see all"""
+    query = {}
+    
+    # Role-based filtering
+    if current_user.get("role") != "ADMIN":
+        # Employees can only see their own tickets
+        query["created_by"] = current_user["id"]
+    elif assigned_to_me:
+        # Admin filtering by assigned to self
+        query["assigned_to"] = current_user["id"]
+    
+    # Apply filters
+    if status:
+        query["status"] = status.upper()
+    if category:
+        query["category"] = category.upper()
+    if priority:
+        query["priority"] = priority.upper()
+    
+    tickets = await db.tickets.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    
+    # Get comment counts for each ticket
+    result = []
+    for ticket in tickets:
+        comment_count = await db.ticket_comments.count_documents({
+            "ticket_id": ticket["id"],
+            "is_internal": False if current_user.get("role") != "ADMIN" else {"$exists": True}
+        })
+        
+        # Parse dates
+        for date_field in ["created_at", "updated_at", "sla_due_at", "first_response_at", "resolved_at"]:
+            if ticket.get(date_field) and isinstance(ticket[date_field], str):
+                try:
+                    ticket[date_field] = datetime.fromisoformat(ticket[date_field].replace("Z", "+00:00"))
+                except:
+                    pass
+        
+        # Check SLA breach
+        if ticket.get("sla_due_at") and ticket.get("status") not in ["RESOLVED", "CLOSED"]:
+            sla_due = ticket["sla_due_at"]
+            if isinstance(sla_due, str):
+                sla_due = datetime.fromisoformat(sla_due.replace("Z", "+00:00"))
+            if datetime.now(timezone.utc) > sla_due:
+                ticket["sla_breached"] = True
+                # Update in DB
+                await db.tickets.update_one({"id": ticket["id"]}, {"$set": {"sla_breached": True}})
+        
+        ticket["comment_count"] = comment_count
+        result.append(ticket)
+    
+    return result
+
+
+@api_router.get("/tickets/{ticket_id}")
+async def get_ticket(
+    ticket_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get a specific ticket by ID"""
+    ticket = await db.tickets.find_one({"id": ticket_id}, {"_id": 0})
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    # Check access - employees can only see their own tickets
+    if current_user.get("role") != "ADMIN" and ticket["created_by"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Get comment count
+    comment_count = await db.ticket_comments.count_documents({
+        "ticket_id": ticket_id,
+        "is_internal": False if current_user.get("role") != "ADMIN" else {"$exists": True}
+    })
+    
+    ticket["comment_count"] = comment_count
+    
+    # Parse dates
+    for date_field in ["created_at", "updated_at", "sla_due_at", "first_response_at", "resolved_at"]:
+        if ticket.get(date_field) and isinstance(ticket[date_field], str):
+            try:
+                ticket[date_field] = datetime.fromisoformat(ticket[date_field].replace("Z", "+00:00"))
+            except:
+                pass
+    
+    return ticket
+
+
+@api_router.put("/tickets/{ticket_id}")
+async def update_ticket(
+    ticket_id: str,
+    update_data: TicketUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a ticket (Admin only for most fields)"""
+    ticket = await db.tickets.find_one({"id": ticket_id}, {"_id": 0})
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    is_admin = current_user.get("role") == "ADMIN"
+    is_creator = ticket["created_by"] == current_user["id"]
+    
+    if not is_admin and not is_creator:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    update_fields = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    
+    # Admin-only updates
+    if is_admin:
+        if update_data.status is not None:
+            update_fields["status"] = update_data.status.value
+            
+            # Track resolution time
+            if update_data.status == TicketStatus.RESOLVED and not ticket.get("resolved_at"):
+                update_fields["resolved_at"] = datetime.now(timezone.utc).isoformat()
+                
+                # Notify ticket creator
+                await create_notification(
+                    user_id=ticket["created_by"],
+                    notif_type=NotificationType.TICKET_RESOLVED,
+                    title="Ticket Resolved",
+                    message=f"Your ticket [{ticket['ticket_number']}] has been resolved",
+                    reference_id=ticket_id
+                )
+        
+        if update_data.priority is not None:
+            update_fields["priority"] = update_data.priority.value
+            # Recalculate SLA if priority changed
+            update_fields["sla_due_at"] = calculate_sla_due(update_data.priority.value).isoformat()
+        
+        if update_data.assigned_to is not None:
+            # Get names of assigned admins
+            assigned_names = []
+            for admin_id in update_data.assigned_to:
+                admin = await db.users.find_one({"id": admin_id}, {"_id": 0, "name": 1})
+                if admin:
+                    assigned_names.append(admin.get("name", "Unknown"))
+                    
+                    # Notify newly assigned admin
+                    if admin_id not in ticket.get("assigned_to", []):
+                        await create_notification(
+                            user_id=admin_id,
+                            notif_type=NotificationType.TICKET_ASSIGNED,
+                            title="Ticket Assigned",
+                            message=f"You've been assigned to [{ticket['ticket_number']}] {ticket['subject']}",
+                            reference_id=ticket_id
+                        )
+            
+            update_fields["assigned_to"] = update_data.assigned_to
+            update_fields["assigned_names"] = assigned_names
+        
+        if update_data.category is not None:
+            update_fields["category"] = update_data.category.value
+    
+    await db.tickets.update_one({"id": ticket_id}, {"$set": update_fields})
+    
+    # Return updated ticket
+    updated = await db.tickets.find_one({"id": ticket_id}, {"_id": 0})
+    return updated
+
+
+@api_router.delete("/tickets/{ticket_id}")
+async def delete_ticket(
+    ticket_id: str,
+    admin: dict = Depends(require_admin)
+):
+    """Delete a ticket (Admin only)"""
+    ticket = await db.tickets.find_one({"id": ticket_id}, {"_id": 0})
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    # Delete ticket and all comments
+    await db.tickets.delete_one({"id": ticket_id})
+    await db.ticket_comments.delete_many({"ticket_id": ticket_id})
+    
+    # Delete attachments from filesystem
+    for attachment in ticket.get("attachments", []):
+        try:
+            file_path = TICKET_UPLOAD_DIR / attachment.get("filename", "")
+            if file_path.exists():
+                file_path.unlink()
+        except:
+            pass
+    
+    return {"message": "Ticket deleted successfully"}
+
+
+# Ticket Comments
+@api_router.get("/tickets/{ticket_id}/comments")
+async def get_ticket_comments(
+    ticket_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get comments for a ticket"""
+    ticket = await db.tickets.find_one({"id": ticket_id}, {"_id": 0})
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    # Check access
+    is_admin = current_user.get("role") == "ADMIN"
+    if not is_admin and ticket["created_by"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Filter internal comments for non-admins
+    query = {"ticket_id": ticket_id}
+    if not is_admin:
+        query["is_internal"] = False
+    
+    comments = await db.ticket_comments.find(query, {"_id": 0}).sort("created_at", 1).to_list(500)
+    
+    # Parse dates
+    for comment in comments:
+        if isinstance(comment.get("created_at"), str):
+            comment["created_at"] = datetime.fromisoformat(comment["created_at"].replace("Z", "+00:00"))
+    
+    return comments
+
+
+@api_router.post("/tickets/{ticket_id}/comments")
+async def add_ticket_comment(
+    ticket_id: str,
+    comment_data: TicketCommentCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Add a comment to a ticket"""
+    ticket = await db.tickets.find_one({"id": ticket_id}, {"_id": 0})
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    is_admin = current_user.get("role") == "ADMIN"
+    is_creator = ticket["created_by"] == current_user["id"]
+    
+    if not is_admin and not is_creator:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Only admins can add internal notes
+    is_internal = comment_data.is_internal and is_admin
+    
+    comment = TicketComment(
+        ticket_id=ticket_id,
+        user_id=current_user["id"],
+        user_name=current_user.get("name", "Unknown"),
+        user_image=current_user.get("profile_image"),
+        user_role=current_user.get("role", "EMPLOYEE"),
+        content=comment_data.content,
+        is_internal=is_internal
+    )
+    
+    comment_doc = comment.model_dump()
+    comment_doc["created_at"] = comment_doc["created_at"].isoformat()
+    
+    await db.ticket_comments.insert_one(comment_doc)
+    
+    # Update ticket timestamp and track first response
+    update_fields = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    
+    if is_admin and not ticket.get("first_response_at"):
+        update_fields["first_response_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.tickets.update_one({"id": ticket_id}, {"$set": update_fields})
+    
+    # Send notification (non-internal comments only)
+    if not is_internal:
+        if is_admin:
+            # Notify ticket creator
+            await create_notification(
+                user_id=ticket["created_by"],
+                notif_type=NotificationType.TICKET_COMMENT,
+                title="New Comment on Your Ticket",
+                message=f"[{ticket['ticket_number']}] {current_user.get('name', 'Admin')} added a comment",
+                reference_id=ticket_id
+            )
+        else:
+            # Notify assigned admins
+            for admin_id in ticket.get("assigned_to", []):
+                await create_notification(
+                    user_id=admin_id,
+                    notif_type=NotificationType.TICKET_COMMENT,
+                    title="New Comment on Ticket",
+                    message=f"[{ticket['ticket_number']}] {current_user.get('name', 'User')} added a comment",
+                    reference_id=ticket_id
+                )
+    
+    return comment_doc
+
+
+# Ticket File Attachments
+@api_router.post("/tickets/{ticket_id}/attachments")
+async def upload_ticket_attachment(
+    ticket_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload an attachment to a ticket"""
+    ticket = await db.tickets.find_one({"id": ticket_id}, {"_id": 0})
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    # Check access
+    is_admin = current_user.get("role") == "ADMIN"
+    if not is_admin and ticket["created_by"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Validate file
+    if not file.content_type:
+        raise HTTPException(status_code=400, detail="Invalid file type")
+    
+    if file.content_type not in ALLOWED_FILE_TYPES:
+        raise HTTPException(status_code=400, detail=f"File type not allowed. Allowed: images, PDF, Word, Excel, text files")
+    
+    # Read file content
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail=f"File too large. Max size: {MAX_FILE_SIZE // (1024*1024)}MB")
+    
+    # Generate unique filename
+    file_ext = Path(file.filename).suffix if file.filename else ""
+    unique_filename = f"{ticket_id}_{uuid.uuid4().hex[:8]}{file_ext}"
+    file_path = TICKET_UPLOAD_DIR / unique_filename
+    
+    # Save file
+    async with aiofiles.open(file_path, 'wb') as f:
+        await f.write(content)
+    
+    # Create attachment record
+    attachment = {
+        "id": str(uuid.uuid4()),
+        "filename": unique_filename,
+        "original_filename": file.filename or "attachment",
+        "file_type": file.content_type,
+        "file_size": len(content),
+        "uploaded_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Add to ticket
+    await db.tickets.update_one(
+        {"id": ticket_id},
+        {
+            "$push": {"attachments": attachment},
+            "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
+        }
+    )
+    
+    return {
+        "message": "File uploaded successfully",
+        "attachment": attachment
+    }
+
+
+@api_router.get("/tickets/attachments/{filename}")
+async def get_ticket_attachment(
+    filename: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Download a ticket attachment"""
+    file_path = TICKET_UPLOAD_DIR / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Get ticket to check access
+    ticket = await db.tickets.find_one(
+        {"attachments.filename": filename},
+        {"_id": 0, "created_by": 1}
+    )
+    
+    if ticket:
+        is_admin = current_user.get("role") == "ADMIN"
+        if not is_admin and ticket["created_by"] != current_user["id"]:
+            raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Determine content type
+    content_type, _ = mimetypes.guess_type(str(file_path))
+    if not content_type:
+        content_type = "application/octet-stream"
+    
+    return FileResponse(
+        file_path,
+        media_type=content_type,
+        filename=filename
+    )
+
+
+@api_router.delete("/tickets/{ticket_id}/attachments/{attachment_id}")
+async def delete_ticket_attachment(
+    ticket_id: str,
+    attachment_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete an attachment from a ticket"""
+    ticket = await db.tickets.find_one({"id": ticket_id}, {"_id": 0})
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    is_admin = current_user.get("role") == "ADMIN"
+    if not is_admin and ticket["created_by"] != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Find attachment
+    attachment = None
+    for att in ticket.get("attachments", []):
+        if att.get("id") == attachment_id:
+            attachment = att
+            break
+    
+    if not attachment:
+        raise HTTPException(status_code=404, detail="Attachment not found")
+    
+    # Delete file
+    try:
+        file_path = TICKET_UPLOAD_DIR / attachment.get("filename", "")
+        if file_path.exists():
+            file_path.unlink()
+    except:
+        pass
+    
+    # Remove from ticket
+    await db.tickets.update_one(
+        {"id": ticket_id},
+        {
+            "$pull": {"attachments": {"id": attachment_id}},
+            "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
+        }
+    )
+    
+    return {"message": "Attachment deleted successfully"}
+
+
+# Admin ticket statistics
+@api_router.get("/admin/tickets/stats")
+async def get_ticket_stats(admin: dict = Depends(require_admin)):
+    """Get ticket statistics for admin dashboard"""
+    # Count by status
+    open_count = await db.tickets.count_documents({"status": "OPEN"})
+    in_progress_count = await db.tickets.count_documents({"status": "IN_PROGRESS"})
+    waiting_count = await db.tickets.count_documents({"status": "WAITING_ON_USER"})
+    resolved_count = await db.tickets.count_documents({"status": "RESOLVED"})
+    closed_count = await db.tickets.count_documents({"status": "CLOSED"})
+    
+    # Count breached SLA
+    breached_count = await db.tickets.count_documents({
+        "sla_breached": True,
+        "status": {"$nin": ["RESOLVED", "CLOSED"]}
+    })
+    
+    # Count by category
+    category_counts = {}
+    for cat in TicketCategory:
+        count = await db.tickets.count_documents({"category": cat.value})
+        category_counts[cat.value] = count
+    
+    # Count by priority
+    priority_counts = {}
+    for pri in TicketPriority:
+        count = await db.tickets.count_documents({
+            "priority": pri.value,
+            "status": {"$nin": ["RESOLVED", "CLOSED"]}
+        })
+        priority_counts[pri.value] = count
+    
+    # Unassigned tickets
+    unassigned_count = await db.tickets.count_documents({
+        "assigned_to": {"$size": 0},
+        "status": {"$nin": ["RESOLVED", "CLOSED"]}
+    })
+    
+    return {
+        "by_status": {
+            "open": open_count,
+            "in_progress": in_progress_count,
+            "waiting_on_user": waiting_count,
+            "resolved": resolved_count,
+            "closed": closed_count
+        },
+        "active_total": open_count + in_progress_count + waiting_count,
+        "sla_breached": breached_count,
+        "unassigned": unassigned_count,
+        "by_category": category_counts,
+        "by_priority": priority_counts
+    }
+
+
 # ============== LEGACY ROUTES ==============
 class StatusCheck(BaseModel):
     model_config = ConfigDict(extra="ignore")
