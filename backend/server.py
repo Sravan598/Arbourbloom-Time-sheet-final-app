@@ -2207,10 +2207,20 @@ def create_pdf_header_with_logo(elements: list, styles, subtitle_text: str = "")
     """Create a centered PDF header with the CORtracker logo and optional subtitle"""
     # Add logo centered
     if LOGO_PATH.exists():
-        logo = Image(str(LOGO_PATH), width=2.5*inch, height=0.8*inch)
+        # Get original image dimensions to preserve aspect ratio
+        from PIL import Image as PILImage
+        with PILImage.open(str(LOGO_PATH)) as img:
+            orig_width, orig_height = img.size
+            aspect_ratio = orig_width / orig_height
+        
+        # Set desired width and calculate height to maintain aspect ratio
+        desired_width = 2.0 * inch
+        calculated_height = desired_width / aspect_ratio
+        
+        logo = Image(str(LOGO_PATH), width=desired_width, height=calculated_height)
         logo.hAlign = 'CENTER'
         elements.append(logo)
-        elements.append(Spacer(1, 10))
+        elements.append(Spacer(1, 15))
     else:
         # Fallback to text if logo not found
         title_style = ParagraphStyle(
