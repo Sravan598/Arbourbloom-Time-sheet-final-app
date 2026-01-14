@@ -54,6 +54,7 @@ const EmployeeTickets = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const fileInputRef = useRef(null);
+  const commentFileInputRef = useRef(null);
   
   // New ticket form
   const [newTicket, setNewTicket] = useState({
@@ -63,6 +64,7 @@ const EmployeeTickets = () => {
     priority: 'MEDIUM'
   });
   const [attachments, setAttachments] = useState([]);
+  const [commentAttachments, setCommentAttachments] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
   const fetchTickets = useCallback(async () => {
