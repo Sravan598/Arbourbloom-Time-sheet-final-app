@@ -5,7 +5,7 @@ import { NotificationBell } from '../../components/notifications';
 import { 
   Ticket, Search, Clock, AlertTriangle, CheckCircle, 
   MessageSquare, User, Users, ChevronDown, X,
-  RefreshCw, Send, FileText, Image as ImageIcon
+  RefreshCw, Send, FileText, Image as ImageIcon, Paperclip
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
@@ -46,7 +46,9 @@ const AdminTickets = () => {
   const [isInternalNote, setIsInternalNote] = useState(false);
   const [admins, setAdmins] = useState([]);
   const [showAssignDropdown, setShowAssignDropdown] = useState(false);
+  const [commentAttachments, setCommentAttachments] = useState([]);
   const assignDropdownRef = useRef(null);
+  const commentFileInputRef = useRef(null);
   
   // Filters
   const [statusFilter, setStatusFilter] = useState('');
