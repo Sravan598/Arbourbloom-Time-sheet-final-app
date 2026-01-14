@@ -2330,7 +2330,9 @@ def generate_timesheet_pdf(user_data: dict, timesheets: list, breaks: list, week
         if isinstance(clock_in, str):
             clock_in = datetime.fromisoformat(clock_in.replace("Z", "+00:00"))
         
-        date_str = clock_in.strftime("%Y-%m-%d")
+        # Convert clock_in to CST for date grouping
+        clock_in_cst = clock_in.astimezone(cst_tz)
+        date_str = clock_in_cst.strftime("%Y-%m-%d")
         
         if date_str in daily_data:
             # Add total minutes if available
@@ -2342,23 +2344,27 @@ def generate_timesheet_pdf(user_data: dict, timesheets: list, breaks: list, week
                 if isinstance(clock_out, str):
                     clock_out = datetime.fromisoformat(clock_out.replace("Z", "+00:00"))
                 
-                # Track earliest clock_in time from complete entries
-                clock_in_time = clock_in.strftime("%I:%M %p")
+                # Convert to CST for display
+                clock_in_cst = clock_in.astimezone(cst_tz)
+                clock_out_cst = clock_out.astimezone(cst_tz)
+                
+                # Track earliest clock_in time from complete entries (in CST)
+                clock_in_time = clock_in_cst.strftime("%I:%M %p")
                 if not daily_data[date_str]["clock_in"]:
                     daily_data[date_str]["clock_in"] = clock_in_time
-                    daily_data[date_str]["clock_in_dt"] = clock_in
-                elif clock_in < daily_data[date_str].get("clock_in_dt", clock_in):
+                    daily_data[date_str]["clock_in_dt"] = clock_in_cst
+                elif clock_in_cst < daily_data[date_str].get("clock_in_dt", clock_in_cst):
                     daily_data[date_str]["clock_in"] = clock_in_time
-                    daily_data[date_str]["clock_in_dt"] = clock_in
+                    daily_data[date_str]["clock_in_dt"] = clock_in_cst
                 
-                # Track latest clock_out time
-                clock_out_time = clock_out.strftime("%I:%M %p")
+                # Track latest clock_out time (in CST)
+                clock_out_time = clock_out_cst.strftime("%I:%M %p")
                 if not daily_data[date_str]["clock_out"]:
                     daily_data[date_str]["clock_out"] = clock_out_time
-                    daily_data[date_str]["clock_out_dt"] = clock_out
-                elif clock_out > daily_data[date_str].get("clock_out_dt", clock_out):
+                    daily_data[date_str]["clock_out_dt"] = clock_out_cst
+                elif clock_out_cst > daily_data[date_str].get("clock_out_dt", clock_out_cst):
                     daily_data[date_str]["clock_out"] = clock_out_time
-                    daily_data[date_str]["clock_out_dt"] = clock_out
+                    daily_data[date_str]["clock_out_dt"] = clock_out_cst
     
     # Create daily table
     table_data = [["Day", "Date", "Clock In", "Clock Out", "Hours Worked"]]
