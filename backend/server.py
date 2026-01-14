@@ -799,6 +799,11 @@ class NotificationType(str, Enum):
     LEAVE_APPROVED = "LEAVE_APPROVED"
     LEAVE_DENIED = "LEAVE_DENIED"
     LEAVE_REQUEST = "LEAVE_REQUEST"  # For admins
+    TICKET_CREATED = "TICKET_CREATED"  # For admins
+    TICKET_ASSIGNED = "TICKET_ASSIGNED"  # For assigned admins
+    TICKET_UPDATED = "TICKET_UPDATED"  # For ticket creator
+    TICKET_RESOLVED = "TICKET_RESOLVED"  # For ticket creator
+    TICKET_COMMENT = "TICKET_COMMENT"  # For ticket participants
 
 
 class Notification(BaseModel):
@@ -809,9 +814,150 @@ class Notification(BaseModel):
     type: NotificationType
     title: str
     message: str
-    reference_id: Optional[str] = None  # Leave request ID
+    reference_id: Optional[str] = None  # Leave request ID or Ticket ID
     is_read: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+# ============== TICKETING SYSTEM MODELS ==============
+class TicketCategory(str, Enum):
+    IT_SUPPORT = "IT_SUPPORT"
+    HR = "HR"
+    PAYROLL = "PAYROLL"
+    FACILITIES = "FACILITIES"
+    TIME_ATTENDANCE = "TIME_ATTENDANCE"
+    BENEFITS = "BENEFITS"
+    OTHER = "OTHER"
+
+
+class TicketPriority(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    URGENT = "URGENT"
+
+
+class TicketStatus(str, Enum):
+    OPEN = "OPEN"
+    IN_PROGRESS = "IN_PROGRESS"
+    WAITING_ON_USER = "WAITING_ON_USER"
+    RESOLVED = "RESOLVED"
+    CLOSED = "CLOSED"
+
+
+class TicketAttachment(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    filename: str
+    original_filename: str
+    file_type: str
+    file_size: int
+    uploaded_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class Ticket(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    ticket_number: str = ""  # Auto-generated: TKT-YYYYMMDD-XXXX
+    subject: str
+    description: str
+    category: TicketCategory
+    priority: TicketPriority = TicketPriority.MEDIUM
+    status: TicketStatus = TicketStatus.OPEN
+    
+    # Creator info
+    created_by: str  # User ID
+    creator_name: str
+    creator_email: str
+    creator_image: Optional[str] = None
+    
+    # Assignment (can be multiple admins)
+    assigned_to: List[str] = []  # List of admin user IDs
+    assigned_names: List[str] = []  # List of admin names
+    
+    # SLA tracking
+    sla_due_at: Optional[datetime] = None  # Calculated based on priority
+    sla_breached: bool = False
+    first_response_at: Optional[datetime] = None
+    resolved_at: Optional[datetime] = None
+    
+    # File attachments
+    attachments: List[dict] = []  # List of TicketAttachment dicts
+    
+    # Timestamps
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class TicketComment(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    ticket_id: str
+    user_id: str
+    user_name: str
+    user_image: Optional[str] = None
+    user_role: str  # ADMIN or EMPLOYEE
+    content: str
+    is_internal: bool = False  # Internal notes only visible to admins
+    attachments: List[dict] = []  # List of attachment dicts
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class TicketCreate(BaseModel):
+    subject: str = Field(..., min_length=5, max_length=200)
+    description: str = Field(..., min_length=10, max_length=5000)
+    category: TicketCategory
+    priority: TicketPriority = TicketPriority.MEDIUM
+
+
+class TicketUpdate(BaseModel):
+    status: Optional[TicketStatus] = None
+    priority: Optional[TicketPriority] = None
+    assigned_to: Optional[List[str]] = None
+    category: Optional[TicketCategory] = None
+
+
+class TicketCommentCreate(BaseModel):
+    content: str = Field(..., min_length=1, max_length=5000)
+    is_internal: bool = False
+
+
+class TicketResponse(BaseModel):
+    id: str
+    ticket_number: str
+    subject: str
+    description: str
+    category: str
+    priority: str
+    status: str
+    created_by: str
+    creator_name: str
+    creator_email: str
+    creator_image: Optional[str]
+    assigned_to: List[str]
+    assigned_names: List[str]
+    sla_due_at: Optional[datetime]
+    sla_breached: bool
+    first_response_at: Optional[datetime]
+    resolved_at: Optional[datetime]
+    attachments: List[dict]
+    comment_count: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+
+class TicketCommentResponse(BaseModel):
+    id: str
+    ticket_id: str
+    user_id: str
+    user_name: str
+    user_image: Optional[str]
+    user_role: str
+    content: str
+    is_internal: bool
+    attachments: List[dict]
+    created_at: datetime
 
 
 # ============== HELPER FUNCTIONS ==============
