@@ -119,6 +119,14 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/employee/tickets" 
+              element={
+                <ProtectedRoute requiredRole="EMPLOYEE">
+                  <EmployeeTickets />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Admin Routes */}
             <Route 
@@ -174,6 +182,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="ADMIN">
                   <LeaveRequests />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/tickets" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <AdminTickets />
                 </ProtectedRoute>
               } 
             />
