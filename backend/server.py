@@ -6532,6 +6532,8 @@ async def add_ticket_comment(
                     reference_id=ticket_id
                 )
     
+    # Remove MongoDB _id before returning
+    comment_doc.pop("_id", None)
     return comment_doc
 
 
