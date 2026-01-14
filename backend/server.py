@@ -2494,19 +2494,26 @@ async def export_timesheet_pdf(
     week_offset: int = 0,
     current_user: dict = Depends(get_current_user)
 ):
-    """Export timesheet as PDF for current or previous weeks"""
-    # Calculate week range
-    today = datetime.now(timezone.utc)
-    week_start = today - timedelta(days=today.weekday()) - timedelta(weeks=week_offset)
+    """Export timesheet as PDF for current or previous weeks (CST timezone)"""
+    # CST timezone (UTC-6)
+    cst_tz = timezone(timedelta(hours=-6))
+    
+    # Calculate week range in CST
+    today_cst = datetime.now(timezone.utc).astimezone(cst_tz)
+    week_start = today_cst - timedelta(days=today_cst.weekday()) - timedelta(weeks=week_offset)
     week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
     week_end = week_start + timedelta(days=6, hours=23, minutes=59, seconds=59)
+    
+    # Convert to UTC for database query
+    week_start_utc = week_start.astimezone(timezone.utc)
+    week_end_utc = week_end.astimezone(timezone.utc)
     
     # Get timesheets for the week
     timesheets = await db.timesheets.find({
         "user_id": current_user["id"],
         "clock_in_at": {
-            "$gte": week_start.isoformat(),
-            "$lte": week_end.isoformat()
+            "$gte": week_start_utc.isoformat(),
+            "$lte": week_end_utc.isoformat()
         }
     }, {"_id": 0}).to_list(100)
     
