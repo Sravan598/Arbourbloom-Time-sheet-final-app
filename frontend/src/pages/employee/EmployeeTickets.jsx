@@ -154,17 +154,37 @@ const EmployeeTickets = () => {
     if (!newComment.trim() || !selectedTicket) return;
     
     try {
-      const response = await fetch(`${API_URL}/api/tickets/${selectedTicket.id}/comments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ content: newComment })
-      });
+      let response;
+      
+      if (commentAttachments.length > 0) {
+        // Use multipart form for comments with attachments
+        const formData = new FormData();
+        formData.append('content', newComment);
+        formData.append('is_internal', 'false');
+        commentAttachments.forEach(file => {
+          formData.append('files', file);
+        });
+        
+        response = await fetch(`${API_URL}/api/tickets/${selectedTicket.id}/comments-with-attachments`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        });
+      } else {
+        // Use JSON for text-only comments
+        response = await fetch(`${API_URL}/api/tickets/${selectedTicket.id}/comments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ content: newComment })
+        });
+      }
       
       if (response.ok) {
         setNewComment('');
+        setCommentAttachments([]);
         await fetchComments(selectedTicket.id);
         await fetchTickets();
       }
@@ -176,6 +196,23 @@ const EmployeeTickets = () => {
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
     setAttachments(prev => [...prev, ...files]);
+  };
+
+  const handleCommentFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    const maxSize = 25 * 1024 * 1024; // 25MB
+    const validFiles = files.filter(file => {
+      if (file.size > maxSize) {
+        alert(`File ${file.name} exceeds 25MB limit`);
+        return false;
+      }
+      return true;
+    });
+    setCommentAttachments(prev => [...prev, ...validFiles]);
+  };
+
+  const removeCommentAttachment = (index) => {
+    setCommentAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   const removeAttachment = (index) => {
