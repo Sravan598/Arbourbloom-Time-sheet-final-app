@@ -80,6 +80,34 @@ CORtracker is a comprehensive time-tracking and workforce management application
   - Weekly and daily time summaries
 - Accessible from Employee Sidebar → "My Projects"
 
+### 11. Support Ticketing System ✅ NEW (January 14, 2025)
+- **Full-featured support ticket system** for HR, IT, and general inquiries
+- **Categories**: IT Support, HR, Payroll, Facilities, Time & Attendance, Benefits, Other
+- **Priority Levels**: Low, Medium, High, Urgent
+- **SLA Tracking**: Auto-calculated due dates (Urgent=4h, High=8h, Medium=24h, Low=72h)
+- **Multi-Admin Assignment**: Tickets can be assigned to multiple admins
+- **File Attachments**: Upload images, PDFs, Word docs, Excel files
+- **Internal Notes**: Admins can add notes visible only to other admins
+- **Admin Features**:
+  - Dashboard with stats (Active, Unassigned, SLA Breached, Urgent/High, Resolved)
+  - Filter by status, category, priority, assigned to me
+  - Update ticket status, priority, assignment
+  - Add comments and internal notes
+- **Employee Features**:
+  - Create new tickets with category selection
+  - View own tickets with status updates
+  - Add comments/replies to tickets
+- **Routes**: `/admin/tickets`, `/employee/tickets`
+- **API Endpoints**:
+  - `POST /api/tickets` - Create ticket
+  - `GET /api/tickets` - List tickets (role-based)
+  - `GET /api/tickets/{id}` - Get ticket details
+  - `PUT /api/tickets/{id}` - Update ticket (admin)
+  - `POST /api/tickets/{id}/comments` - Add comment
+  - `GET /api/tickets/{id}/comments` - Get comments
+  - `POST /api/tickets/{id}/attachments` - Upload attachment
+  - `GET /api/admin/tickets/stats` - Admin statistics
+
 ## Technical Architecture
 
 ### Frontend
