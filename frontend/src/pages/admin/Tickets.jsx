@@ -720,6 +720,16 @@ const AdminTickets = () => {
 
               {/* Add Comment Section - Clear separation */}
               <div className="p-4 border-t-2 border-gray-200 flex-shrink-0 bg-white">
+                {/* Hidden file input for comment attachments */}
+                <input
+                  type="file"
+                  ref={commentFileInputRef}
+                  onChange={handleCommentFileSelect}
+                  multiple
+                  className="hidden"
+                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.mp4,.mov,.webm"
+                />
+                
                 <div className="flex items-center gap-3 mb-3">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -733,23 +743,49 @@ const AdminTickets = () => {
                     </span>
                   </label>
                 </div>
+                
+                {/* Comment attachment previews */}
+                {commentAttachments.length > 0 && (
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    {commentAttachments.map((file, idx) => (
+                      <div key={idx} className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs">
+                        <Paperclip className="w-3 h-3 text-gray-500" />
+                        <span className="truncate max-w-[120px]">{file.name}</span>
+                        <button onClick={() => removeCommentAttachment(idx)} className="p-0.5 hover:bg-gray-200 rounded">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
                 <div className="flex gap-3">
-                  <textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder={isInternalNote ? "Add internal note for admins..." : "Type your reply to the employee..."}
-                    rows={3}
-                    className={`flex-1 px-4 py-3 border-2 rounded-xl text-sm resize-none transition-colors ${
-                      isInternalNote 
-                        ? 'border-amber-300 bg-amber-50 focus:border-amber-400 focus:ring-amber-200' 
-                        : 'border-gray-200 focus:border-purple-400 focus:ring-purple-200'
-                    } focus:ring-2 focus:outline-none`}
-                    data-testid="ticket-comment-input"
-                  />
+                  <div className="flex-1 flex flex-col gap-2">
+                    <textarea
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder={isInternalNote ? "Add internal note for admins..." : "Type your reply to the employee..."}
+                      rows={3}
+                      className={`w-full px-4 py-3 border-2 rounded-xl text-sm resize-none transition-colors ${
+                        isInternalNote 
+                          ? 'border-amber-300 bg-amber-50 focus:border-amber-400 focus:ring-amber-200' 
+                          : 'border-gray-200 focus:border-purple-400 focus:ring-purple-200'
+                      } focus:ring-2 focus:outline-none`}
+                      data-testid="ticket-comment-input"
+                    />
+                    <button
+                      onClick={() => commentFileInputRef.current?.click()}
+                      className="self-start flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                      data-testid="ticket-attach-file-btn"
+                    >
+                      <Paperclip className="w-3.5 h-3.5" />
+                      Attach files (max 25MB each)
+                    </button>
+                  </div>
                   <button
                     onClick={handleAddComment}
                     disabled={!newComment.trim()}
-                    className={`px-5 py-3 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
+                    className={`px-5 py-3 h-fit rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
                       isInternalNote
                         ? 'bg-amber-500 hover:bg-amber-600 text-white'
                         : 'bg-purple-600 hover:bg-purple-700 text-white'
