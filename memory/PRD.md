@@ -186,6 +186,19 @@ CORtracker is a comprehensive time-tracking and workforce management application
 
 ## Change Log
 
+### January 14, 2025
+- ✅ **NEW FEATURE: Support Ticketing System** - Full implementation
+  - 7 ticket categories (IT Support, HR, Payroll, Facilities, Time & Attendance, Benefits, Other)
+  - 4 priority levels with SLA tracking (Low=72h, Medium=24h, High=8h, Urgent=4h)
+  - Multi-admin assignment capability
+  - File attachments support (images, PDFs, docs)
+  - Internal notes for admin-only comments
+  - Admin dashboard with ticket statistics
+  - Employee ticket creation and tracking
+  - 29 backend tests passing (100% coverage)
+- ✅ Added "Support Tickets" to Admin and Employee sidebars
+- ✅ Fixed MongoDB ObjectId serialization in ticket comments
+
 ### January 12, 2025
 - ✅ Removed "Pending Leave Requests" section from Admin Dashboard (centralized in Leave Requests page)
 - ✅ Fixed Admin Dashboard "Pending Requests" stat to include both corrections + leave requests
