@@ -417,7 +417,7 @@ const AdminTickets = () => {
 
           {/* Ticket Detail Panel */}
           {selectedTicket && (
-            <div className="w-[450px] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col max-h-[calc(100vh-220px)]">
+            <div className="w-[450px] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col max-h-[calc(100vh-220px)] relative z-50">
               {/* Header */}
               <div className="p-4 border-b border-gray-100 flex-shrink-0">
                 <div className="flex items-center justify-between mb-2">
