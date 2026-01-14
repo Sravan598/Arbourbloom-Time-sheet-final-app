@@ -176,27 +176,64 @@ const AdminTickets = () => {
     if (!newComment.trim() || !selectedTicket) return;
     
     try {
-      const response = await fetch(`${API_URL}/api/tickets/${selectedTicket.id}/comments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          content: newComment,
-          is_internal: isInternalNote
-        })
-      });
+      let response;
+      
+      if (commentAttachments.length > 0) {
+        // Use multipart form for comments with attachments
+        const formData = new FormData();
+        formData.append('content', newComment);
+        formData.append('is_internal', isInternalNote.toString());
+        commentAttachments.forEach(file => {
+          formData.append('files', file);
+        });
+        
+        response = await fetch(`${API_URL}/api/tickets/${selectedTicket.id}/comments-with-attachments`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        });
+      } else {
+        // Use JSON for text-only comments
+        response = await fetch(`${API_URL}/api/tickets/${selectedTicket.id}/comments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            content: newComment,
+            is_internal: isInternalNote
+          })
+        });
+      }
       
       if (response.ok) {
         setNewComment('');
         setIsInternalNote(false);
+        setCommentAttachments([]);
         await fetchComments(selectedTicket.id);
         await fetchTickets();
       }
     } catch (error) {
       console.error('Error adding comment:', error);
     }
+  };
+
+  const handleCommentFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    const maxSize = 25 * 1024 * 1024; // 25MB
+    const validFiles = files.filter(file => {
+      if (file.size > maxSize) {
+        alert(`File ${file.name} exceeds 25MB limit`);
+        return false;
+      }
+      return true;
+    });
+    setCommentAttachments(prev => [...prev, ...validFiles]);
+  };
+
+  const removeCommentAttachment = (index) => {
+    setCommentAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   const formatDate = (dateStr) => {
