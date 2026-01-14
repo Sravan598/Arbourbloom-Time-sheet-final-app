@@ -6735,6 +6735,277 @@ async def get_ticket_stats(admin: dict = Depends(require_admin)):
     }
 
 
+# ============== CALENDAR & HOLIDAYS ==============
+
+class Holiday(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    date: str  # YYYY-MM-DD format
+    description: Optional[str] = None
+    is_recurring: bool = False  # Recurs every year
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class HolidayCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    date: str  # YYYY-MM-DD
+    description: Optional[str] = None
+    is_recurring: bool = False
+
+
+class HolidayUpdate(BaseModel):
+    name: Optional[str] = None
+    date: Optional[str] = None
+    description: Optional[str] = None
+    is_recurring: Optional[bool] = None
+
+
+# Holiday CRUD
+@api_router.post("/admin/holidays")
+async def create_holiday(
+    holiday_data: HolidayCreate,
+    admin: dict = Depends(require_admin)
+):
+    """Create a new company holiday (Admin only)"""
+    holiday = Holiday(
+        name=holiday_data.name,
+        date=holiday_data.date,
+        description=holiday_data.description,
+        is_recurring=holiday_data.is_recurring,
+        created_by=admin["id"]
+    )
+    
+    holiday_doc = holiday.model_dump()
+    holiday_doc["created_at"] = holiday_doc["created_at"].isoformat()
+    
+    await db.holidays.insert_one(holiday_doc)
+    
+    return {
+        "id": holiday.id,
+        "name": holiday.name,
+        "date": holiday.date,
+        "description": holiday.description,
+        "is_recurring": holiday.is_recurring,
+        "created_at": holiday.created_at.isoformat()
+    }
+
+
+@api_router.get("/holidays")
+async def get_holidays(
+    year: Optional[int] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all holidays, optionally filtered by year"""
+    query = {}
+    
+    if year:
+        # Match holidays for the given year or recurring holidays
+        query["$or"] = [
+            {"date": {"$regex": f"^{year}"}},
+            {"is_recurring": True}
+        ]
+    
+    holidays = await db.holidays.find(query, {"_id": 0}).sort("date", 1).to_list(500)
+    
+    # For recurring holidays, adjust the year to the requested year
+    result = []
+    for h in holidays:
+        if h.get("is_recurring") and year:
+            # Update the year for display
+            original_date = h["date"]
+            h["date"] = f"{year}{original_date[4:]}"
+        result.append(h)
+    
+    return result
+
+
+@api_router.put("/admin/holidays/{holiday_id}")
+async def update_holiday(
+    holiday_id: str,
+    update_data: HolidayUpdate,
+    admin: dict = Depends(require_admin)
+):
+    """Update a holiday (Admin only)"""
+    holiday = await db.holidays.find_one({"id": holiday_id}, {"_id": 0})
+    
+    if not holiday:
+        raise HTTPException(status_code=404, detail="Holiday not found")
+    
+    update_fields = {}
+    if update_data.name is not None:
+        update_fields["name"] = update_data.name
+    if update_data.date is not None:
+        update_fields["date"] = update_data.date
+    if update_data.description is not None:
+        update_fields["description"] = update_data.description
+    if update_data.is_recurring is not None:
+        update_fields["is_recurring"] = update_data.is_recurring
+    
+    if update_fields:
+        await db.holidays.update_one({"id": holiday_id}, {"$set": update_fields})
+    
+    updated = await db.holidays.find_one({"id": holiday_id}, {"_id": 0})
+    return updated
+
+
+@api_router.delete("/admin/holidays/{holiday_id}")
+async def delete_holiday(
+    holiday_id: str,
+    admin: dict = Depends(require_admin)
+):
+    """Delete a holiday (Admin only)"""
+    result = await db.holidays.delete_one({"id": holiday_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Holiday not found")
+    
+    return {"message": "Holiday deleted successfully"}
+
+
+# Calendar Events Aggregation
+@api_router.get("/calendar/events")
+async def get_calendar_events(
+    start_date: str,  # YYYY-MM-DD
+    end_date: str,    # YYYY-MM-DD
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get all calendar events for a date range.
+    Returns: holidays, leaves, project deadlines, birthdays, work anniversaries
+    """
+    is_admin = current_user.get("role") == "ADMIN"
+    user_id = current_user["id"]
+    
+    events = []
+    
+    # Parse year from start_date for recurring events
+    year = int(start_date[:4])
+    
+    # 1. Get Holidays
+    holidays = await db.holidays.find({}, {"_id": 0}).to_list(500)
+    for h in holidays:
+        holiday_date = h["date"]
+        # Handle recurring holidays
+        if h.get("is_recurring"):
+            holiday_date = f"{year}{holiday_date[4:]}"
+        
+        if start_date <= holiday_date <= end_date:
+            events.append({
+                "id": h["id"],
+                "title": h["name"],
+                "start": holiday_date,
+                "end": holiday_date,
+                "type": "holiday",
+                "color": "#EF4444",  # Red
+                "description": h.get("description", "Company Holiday"),
+                "allDay": True
+            })
+    
+    # 2. Get Approved/Pending Leaves
+    leave_query = {
+        "status": {"$in": ["APPROVED", "PENDING"]},
+        "$or": [
+            {"start_date": {"$lte": end_date, "$gte": start_date}},
+            {"end_date": {"$lte": end_date, "$gte": start_date}},
+            {"start_date": {"$lte": start_date}, "end_date": {"$gte": end_date}}
+        ]
+    }
+    
+    # Non-admins only see their own leaves
+    if not is_admin:
+        leave_query["user_id"] = user_id
+    
+    leaves = await db.leave_requests.find(leave_query, {"_id": 0}).to_list(500)
+    for leave in leaves:
+        is_own = leave["user_id"] == user_id
+        events.append({
+            "id": leave["id"],
+            "title": f"{leave.get('user_name', 'Employee')} - {leave.get('leave_type', 'Leave')}" if is_admin else f"{leave.get('leave_type', 'Leave')}",
+            "start": leave["start_date"],
+            "end": leave["end_date"],
+            "type": "leave",
+            "status": leave["status"],
+            "color": "#22C55E" if leave["status"] == "APPROVED" else "#EAB308",  # Green or Yellow
+            "description": leave.get("reason", ""),
+            "allDay": True,
+            "is_own": is_own
+        })
+    
+    # 3. Get Project Deadlines
+    project_query = {"estimated_end_date": {"$gte": start_date, "$lte": end_date}}
+    
+    if not is_admin:
+        # Get projects where user is assigned
+        project_query["assigned_employees"] = user_id
+    
+    projects = await db.projects.find(project_query, {"_id": 0}).to_list(500)
+    for proj in projects:
+        if proj.get("estimated_end_date"):
+            events.append({
+                "id": proj["id"],
+                "title": f"📅 {proj['name']} Deadline",
+                "start": proj["estimated_end_date"],
+                "end": proj["estimated_end_date"],
+                "type": "project_deadline",
+                "color": "#3B82F6",  # Blue
+                "description": proj.get("description", ""),
+                "allDay": True
+            })
+    
+    # 4. Get Birthdays & Work Anniversaries (only for employees visible to user)
+    employee_query = {"is_active": True}
+    if not is_admin:
+        # For employees, show their own + could show team if we had team structure
+        # For now, show all active employees' birthdays (common in companies)
+        pass
+    
+    employees = await db.users.find(employee_query, {
+        "_id": 0, "id": 1, "name": 1, "date_of_birth": 1, "join_date": 1
+    }).to_list(500)
+    
+    for emp in employees:
+        # Birthday
+        if emp.get("date_of_birth"):
+            dob = emp["date_of_birth"]
+            # Convert to current year
+            if len(dob) >= 10:
+                birthday_this_year = f"{year}{dob[4:10]}"
+                if start_date <= birthday_this_year <= end_date:
+                    events.append({
+                        "id": f"bday-{emp['id']}",
+                        "title": f"🎂 {emp['name']}'s Birthday",
+                        "start": birthday_this_year,
+                        "end": birthday_this_year,
+                        "type": "birthday",
+                        "color": "#A855F7",  # Purple
+                        "allDay": True
+                    })
+        
+        # Work Anniversary
+        if emp.get("join_date"):
+            join = emp["join_date"]
+            if len(join) >= 10:
+                anniversary_this_year = f"{year}{join[4:10]}"
+                join_year = int(join[:4])
+                years_of_service = year - join_year
+                
+                if years_of_service > 0 and start_date <= anniversary_this_year <= end_date:
+                    events.append({
+                        "id": f"anniv-{emp['id']}",
+                        "title": f"🎉 {emp['name']} - {years_of_service} Year{'s' if years_of_service > 1 else ''} Anniversary",
+                        "start": anniversary_this_year,
+                        "end": anniversary_this_year,
+                        "type": "anniversary",
+                        "color": "#F97316",  # Orange
+                        "allDay": True
+                    })
+    
+    return events
+
+
 # ============== LEGACY ROUTES ==============
 class StatusCheck(BaseModel):
     model_config = ConfigDict(extra="ignore")
