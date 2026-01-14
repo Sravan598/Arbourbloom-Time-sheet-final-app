@@ -359,7 +359,7 @@ const EmployeeTickets = () => {
 
           {/* Detail/Create Panel */}
           {(selectedTicket || showNewTicket) && (
-            <div className="w-[450px] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col max-h-[calc(100vh-220px)] relative z-50">
+            <div className="w-[550px] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col max-h-[calc(100vh-200px)] relative z-50">
               {showNewTicket ? (
                 /* New Ticket Form */
                 <>
