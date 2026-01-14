@@ -16,6 +16,7 @@ import EmployeeDashboard from './pages/employee/EmployeeDashboard';
 import EmployeeTimesheet from './pages/employee/EmployeeTimesheet';
 import EmployeeProjects from './pages/employee/EmployeeProjects';
 import EmployeeTickets from './pages/employee/EmployeeTickets';
+import EmployeeCalendar from './pages/employee/EmployeeCalendar';
 import Documents from './pages/employee/Documents';
 import Leave from './pages/employee/Leave';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -26,6 +27,7 @@ import EmployeeDocs from './pages/admin/EmployeeDocs';
 import Employees from './pages/admin/Employees';
 import LeaveRequests from './pages/admin/LeaveRequests';
 import AdminTickets from './pages/admin/Tickets';
+import AdminCalendar from './pages/admin/Calendar';
 
 import './App.css';
 
