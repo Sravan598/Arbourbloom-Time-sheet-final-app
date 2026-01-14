@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import { NotificationBell } from '../../components/notifications';
 import { 
-  Ticket, Search, Filter, Clock, AlertTriangle, CheckCircle, 
-  MessageSquare, Paperclip, User, Users, ChevronDown, X,
-  ArrowUpRight, RefreshCw, Send, FileText, Image as ImageIcon, Plus
+  Ticket, Search, Clock, AlertTriangle, CheckCircle, 
+  MessageSquare, User, Users, ChevronDown, X,
+  RefreshCw, Send, FileText, Image as ImageIcon
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
@@ -44,8 +44,9 @@ const AdminTickets = () => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [isInternalNote, setIsInternalNote] = useState(false);
-  const [employees, setEmployees] = useState([]);
   const [admins, setAdmins] = useState([]);
+  const [showAssignDropdown, setShowAssignDropdown] = useState(false);
+  const assignDropdownRef = useRef(null);
   
   // Filters
   const [statusFilter, setStatusFilter] = useState('');
@@ -53,6 +54,17 @@ const AdminTickets = () => {
   const [priorityFilter, setPriorityFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showAssignedToMe, setShowAssignedToMe] = useState(false);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (assignDropdownRef.current && !assignDropdownRef.current.contains(event.target)) {
+        setShowAssignDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const fetchTickets = useCallback(async () => {
     try {
@@ -91,7 +103,6 @@ const AdminTickets = () => {
       });
       const data = await response.json();
       setAdmins(data.filter(u => u.role === 'ADMIN'));
-      setEmployees(data.filter(u => u.role === 'EMPLOYEE'));
     } catch (error) {
       console.error('Error fetching users:', error);
     }
@@ -120,6 +131,7 @@ const AdminTickets = () => {
 
   const handleSelectTicket = async (ticket) => {
     setSelectedTicket(ticket);
+    setShowAssignDropdown(false);
     await fetchComments(ticket.id);
   };
 
@@ -145,6 +157,17 @@ const AdminTickets = () => {
     } catch (error) {
       console.error('Error updating ticket:', error);
     }
+  };
+
+  const handleToggleAssign = (adminId) => {
+    const currentAssigned = selectedTicket.assigned_to || [];
+    let newAssigned;
+    if (currentAssigned.includes(adminId)) {
+      newAssigned = currentAssigned.filter(id => id !== adminId);
+    } else {
+      newAssigned = [...currentAssigned, adminId];
+    }
+    handleUpdateTicket(selectedTicket.id, { assigned_to: newAssigned });
   };
 
   const handleAddComment = async () => {
@@ -415,103 +438,154 @@ const AdminTickets = () => {
             </div>
           </div>
 
-          {/* Ticket Detail Panel */}
+          {/* Ticket Detail Panel - Wider and improved layout */}
           {selectedTicket && (
-            <div className="w-[450px] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col max-h-[calc(100vh-220px)] relative z-50">
+            <div className="w-[550px] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col max-h-[calc(100vh-200px)] relative z-50">
               {/* Header */}
-              <div className="p-4 border-b border-gray-100 flex-shrink-0">
+              <div className="p-4 border-b border-gray-100 flex-shrink-0 bg-gray-50">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-mono text-gray-500">{selectedTicket.ticket_number}</span>
+                  <span className="text-sm font-mono text-purple-600 font-medium">{selectedTicket.ticket_number}</span>
                   <button
                     onClick={() => setSelectedTicket(null)}
-                    className="p-1 hover:bg-gray-100 rounded"
+                    className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <h2 className="font-semibold text-gray-900">{selectedTicket.subject}</h2>
-                <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
-                  <span>{getCategoryInfo(selectedTicket.category).icon}</span>
-                  <span>{getCategoryInfo(selectedTicket.category).label}</span>
+                <h2 className="font-semibold text-gray-900 text-lg">{selectedTicket.subject}</h2>
+                <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
+                  <span className="flex items-center gap-1">
+                    {getCategoryInfo(selectedTicket.category).icon}
+                    {getCategoryInfo(selectedTicket.category).label}
+                  </span>
                   <span>•</span>
-                  <span>Created {formatDate(selectedTicket.created_at)}</span>
+                  <span>{formatDate(selectedTicket.created_at)}</span>
                 </div>
               </div>
               
-              {/* Controls */}
-              <div className="p-4 border-b border-gray-100 space-y-3 flex-shrink-0">
-                <div className="flex gap-2">
-                  <select
-                    value={selectedTicket.status}
-                    onChange={(e) => handleUpdateTicket(selectedTicket.id, { status: e.target.value })}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm"
-                    data-testid="ticket-detail-status"
-                  >
-                    {STATUS_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                  <select
-                    value={selectedTicket.priority}
-                    onChange={(e) => handleUpdateTicket(selectedTicket.id, { priority: e.target.value })}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm"
-                    data-testid="ticket-detail-priority"
-                  >
-                    {PRIORITY_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
+              {/* Controls - Compact layout */}
+              <div className="p-4 border-b border-gray-100 flex-shrink-0 space-y-3">
+                {/* Status & Priority Row */}
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="text-xs text-gray-500 mb-1 block">Status</label>
+                    <select
+                      value={selectedTicket.status}
+                      onChange={(e) => handleUpdateTicket(selectedTicket.id, { status: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+                      data-testid="ticket-detail-status"
+                    >
+                      {STATUS_OPTIONS.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-xs text-gray-500 mb-1 block">Priority</label>
+                    <select
+                      value={selectedTicket.priority}
+                      onChange={(e) => handleUpdateTicket(selectedTicket.id, { priority: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+                      data-testid="ticket-detail-priority"
+                    >
+                      {PRIORITY_OPTIONS.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 
-                {/* Assign */}
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Assign to:</label>
-                  <select
-                    multiple
-                    value={selectedTicket.assigned_to || []}
-                    onChange={(e) => {
-                      const selected = Array.from(e.target.selectedOptions, opt => opt.value);
-                      handleUpdateTicket(selectedTicket.id, { assigned_to: selected });
-                    }}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
-                    data-testid="ticket-assign-select"
-                  >
-                    {admins.map(admin => (
-                      <option key={admin.id} value={admin.id}>{admin.name}</option>
-                    ))}
-                  </select>
+                {/* Assign Dropdown with Chips */}
+                <div ref={assignDropdownRef}>
+                  <label className="text-xs text-gray-500 mb-1 block">Assign to</label>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowAssignDropdown(!showAssignDropdown)}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-left flex items-center justify-between hover:border-gray-300 transition-colors"
+                      data-testid="ticket-assign-dropdown"
+                    >
+                      <span className="text-gray-500">
+                        {selectedTicket.assigned_to?.length > 0 
+                          ? `${selectedTicket.assigned_to.length} assigned` 
+                          : 'Select admins...'}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showAssignDropdown ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    {showAssignDropdown && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                        {admins.map(admin => (
+                          <label
+                            key={admin.id}
+                            className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedTicket.assigned_to?.includes(admin.id) || false}
+                              onChange={() => handleToggleAssign(admin.id)}
+                              className="rounded text-purple-600"
+                            />
+                            <span className="text-sm">{admin.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Selected Admins as Chips */}
+                  {selectedTicket.assigned_names?.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {selectedTicket.assigned_names.map((name, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs"
+                        >
+                          <User className="w-3 h-3" />
+                          {name}
+                          <button
+                            onClick={() => handleToggleAssign(selectedTicket.assigned_to[idx])}
+                            className="hover:text-purple-900"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 
-                {/* SLA Info */}
+                {/* SLA Info - Compact */}
                 {selectedTicket.sla_due_at && (
-                  <div className={`text-sm p-2 rounded-lg ${
+                  <div className={`text-xs p-2 rounded-lg flex items-center gap-2 ${
                     selectedTicket.sla_breached 
                       ? 'bg-red-50 text-red-700' 
-                      : 'bg-gray-50 text-gray-600'
+                      : 'bg-gray-100 text-gray-600'
                   }`}>
-                    <Clock className="w-4 h-4 inline mr-1" />
-                    SLA Due: {formatDate(selectedTicket.sla_due_at)}
-                    {selectedTicket.sla_breached && ' (BREACHED)'}
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>SLA Due: {formatDate(selectedTicket.sla_due_at)}</span>
+                    {selectedTicket.sla_breached && <span className="font-semibold">(BREACHED)</span>}
                   </div>
                 )}
               </div>
 
-              {/* Creator Info & Description */}
-              <div className="p-4 border-b border-gray-100 flex-shrink-0">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+              {/* Creator Info & Description - Collapsible look */}
+              <div className="p-4 border-b border-gray-100 flex-shrink-0 bg-blue-50/30">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                     {selectedTicket.creator_image ? (
-                      <img src={selectedTicket.creator_image} alt="" className="w-8 h-8 rounded-full" />
+                      <img src={selectedTicket.creator_image} alt="" className="w-10 h-10 rounded-full" />
                     ) : (
-                      <User className="w-4 h-4 text-gray-500" />
+                      <User className="w-5 h-5 text-blue-600" />
                     )}
                   </div>
                   <div>
-                    <p className="font-medium text-sm">{selectedTicket.creator_name}</p>
+                    <p className="font-medium text-sm text-gray-900">{selectedTicket.creator_name}</p>
                     <p className="text-xs text-gray-500">{selectedTicket.creator_email}</p>
                   </div>
+                  <span className="ml-auto text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">Requester</span>
                 </div>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedTicket.description}</p>
+                <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{selectedTicket.description}</p>
                 
                 {/* Attachments */}
                 {selectedTicket.attachments?.length > 0 && (
@@ -522,12 +596,12 @@ const AdminTickets = () => {
                         href={`${API_URL}/api/tickets/attachments/${att.filename}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-gray-600 hover:bg-gray-200"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors"
                       >
                         {att.file_type?.startsWith('image') ? (
-                          <ImageIcon className="w-3 h-3" />
+                          <ImageIcon className="w-3.5 h-3.5" />
                         ) : (
-                          <FileText className="w-3 h-3" />
+                          <FileText className="w-3.5 h-3.5" />
                         )}
                         {att.original_filename}
                       </a>
@@ -536,72 +610,94 @@ const AdminTickets = () => {
                 )}
               </div>
 
-              {/* Comments */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* Comments Section */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare className="w-4 h-4 text-gray-400" />
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Conversation</span>
+                  <span className="text-xs text-gray-400">({comments.length})</span>
+                </div>
+                
                 {comments.length === 0 ? (
-                  <p className="text-center text-gray-400 text-sm py-4">No comments yet</p>
+                  <p className="text-center text-gray-400 text-sm py-6">No comments yet. Start the conversation below.</p>
                 ) : (
                   comments.map(comment => (
                     <div 
                       key={comment.id} 
-                      className={`p-3 rounded-lg ${
+                      className={`p-3 rounded-xl shadow-sm ${
                         comment.is_internal 
                           ? 'bg-amber-50 border border-amber-200' 
                           : comment.user_role === 'ADMIN'
-                            ? 'bg-purple-50'
-                            : 'bg-gray-50'
+                            ? 'bg-purple-50 border border-purple-100 ml-4'
+                            : 'bg-white border border-gray-200 mr-4'
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                          <User className="w-3 h-3 text-gray-500" />
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                          comment.user_role === 'ADMIN' ? 'bg-purple-200' : 'bg-blue-200'
+                        }`}>
+                          <User className={`w-3.5 h-3.5 ${
+                            comment.user_role === 'ADMIN' ? 'text-purple-700' : 'text-blue-700'
+                          }`} />
                         </div>
-                        <span className="text-sm font-medium">{comment.user_name}</span>
+                        <span className="text-sm font-medium text-gray-900">{comment.user_name}</span>
                         {comment.user_role === 'ADMIN' && (
-                          <span className="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded">Admin</span>
+                          <span className="text-xs px-1.5 py-0.5 bg-purple-200 text-purple-800 rounded font-medium">Admin</span>
+                        )}
+                        {comment.user_role !== 'ADMIN' && (
+                          <span className="text-xs px-1.5 py-0.5 bg-blue-200 text-blue-800 rounded font-medium">Employee</span>
                         )}
                         {comment.is_internal && (
-                          <span className="text-xs px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">Internal</span>
+                          <span className="text-xs px-1.5 py-0.5 bg-amber-200 text-amber-800 rounded font-medium">Internal</span>
                         )}
                         <span className="text-xs text-gray-400 ml-auto">{formatDate(comment.created_at)}</span>
                       </div>
-                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed pl-9">{comment.content}</p>
                     </div>
                   ))
                 )}
               </div>
 
-              {/* Add Comment */}
-              <div className="p-4 border-t border-gray-100 flex-shrink-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <label className="flex items-center gap-1 text-xs cursor-pointer">
+              {/* Add Comment Section - Clear separation */}
+              <div className="p-4 border-t-2 border-gray-200 flex-shrink-0 bg-white">
+                <div className="flex items-center gap-3 mb-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={isInternalNote}
                       onChange={(e) => setIsInternalNote(e.target.checked)}
-                      className="rounded text-amber-500"
+                      className="rounded text-amber-500 w-4 h-4"
                     />
-                    <span className="text-gray-500">Internal note (hidden from employee)</span>
+                    <span className={`text-sm ${isInternalNote ? 'text-amber-700 font-medium' : 'text-gray-500'}`}>
+                      Internal note (hidden from employee)
+                    </span>
                   </label>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <textarea
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    placeholder={isInternalNote ? "Add internal note..." : "Add a comment..."}
-                    rows={2}
-                    className={`flex-1 px-3 py-2 border rounded-lg text-sm resize-none ${
-                      isInternalNote ? 'border-amber-300 bg-amber-50' : 'border-gray-200'
-                    }`}
+                    placeholder={isInternalNote ? "Add internal note for admins..." : "Type your reply to the employee..."}
+                    rows={3}
+                    className={`flex-1 px-4 py-3 border-2 rounded-xl text-sm resize-none transition-colors ${
+                      isInternalNote 
+                        ? 'border-amber-300 bg-amber-50 focus:border-amber-400 focus:ring-amber-200' 
+                        : 'border-gray-200 focus:border-purple-400 focus:ring-purple-200'
+                    } focus:ring-2 focus:outline-none`}
                     data-testid="ticket-comment-input"
                   />
                   <button
                     onClick={handleAddComment}
                     disabled={!newComment.trim()}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`px-5 py-3 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
+                      isInternalNote
+                        ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                        : 'bg-purple-600 hover:bg-purple-700 text-white'
+                    }`}
                     data-testid="ticket-send-comment-btn"
                   >
                     <Send className="w-4 h-4" />
+                    <span className="hidden sm:inline">Send</span>
                   </button>
                 </div>
               </div>
