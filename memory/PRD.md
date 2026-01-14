@@ -224,12 +224,13 @@ CORtracker is a comprehensive time-tracking and workforce management application
   - Attachments displayed inline with download links
   - Backend endpoint: POST /api/tickets/{id}/comments-with-attachments
   - 14 backend API tests passing (100% success rate)
-- ✅ **In-App Calendar Feature** - Full visual calendar implementation
+- ✅ **In-App Calendar Feature** - Full visual calendar implementation (TESTED ✅)
   - Admin view: Company holidays, all leave requests, birthdays, project deadlines
   - Employee view: Personal leaves, team leaves, holidays, birthdays
   - Holiday management for admins (add/edit/delete)
   - Uses react-big-calendar library
   - Routes: /admin/calendar, /employee/calendar
+  - **21 backend API tests passing (100% success rate)**
 - ✅ **PDF Export Fixes** (Pending User Verification)
   - Fixed incorrect clock-in/out data after corrections
   - Fixed CST timezone handling for all dates/times
