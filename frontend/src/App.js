@@ -195,6 +195,14 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/admin/calendar" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <AdminCalendar />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Catch all - redirect to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
