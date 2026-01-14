@@ -103,10 +103,28 @@ CORtracker is a comprehensive time-tracking and workforce management application
   - `GET /api/tickets` - List tickets (role-based)
   - `GET /api/tickets/{id}` - Get ticket details
   - `PUT /api/tickets/{id}` - Update ticket (admin)
-  - `POST /api/tickets/{id}/comments` - Add comment
-  - `GET /api/tickets/{id}/comments` - Get comments
-  - `POST /api/tickets/{id}/attachments` - Upload attachment
+  - `POST /api/tickets/{id}/comments` - Add text-only comment
+  - `POST /api/tickets/{id}/comments-with-attachments` - Add comment with file attachments
+  - `GET /api/tickets/{id}/comments` - Get comments (includes attachments)
+  - `POST /api/tickets/{id}/attachments` - Upload attachment to ticket
+  - `GET /api/tickets/attachments/{filename}` - Download attachment file
   - `GET /api/admin/tickets/stats` - Admin statistics
+
+### 12. In-App Calendar ✅ NEW (January 14, 2025)
+- **Visual calendar** displaying company events and personal schedules
+- **Admin View** (`/admin/calendar`):
+  - View all company holidays, team leave requests, birthdays, project deadlines
+  - Manage holidays (add/edit/delete)
+- **Employee View** (`/employee/calendar`):
+  - View personal leaves, team leaves, company holidays, birthdays
+- **Event Types**: Holidays (blue), Leave Requests (orange), Birthdays (green), Project Deadlines (red)
+- Uses `react-big-calendar` library
+- **API Endpoints**:
+  - `GET /api/calendar/events` - Get events for calendar display
+  - `GET /api/holidays` - List all holidays
+  - `POST /api/admin/holidays` - Create holiday (admin)
+  - `PUT /api/admin/holidays/{id}` - Update holiday (admin)
+  - `DELETE /api/admin/holidays/{id}` - Delete holiday (admin)
 
 ## Technical Architecture
 
