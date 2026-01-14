@@ -630,6 +630,27 @@ const EmployeeTickets = () => {
                             <span className="text-xs text-gray-400 ml-auto">{formatDate(comment.created_at)}</span>
                           </div>
                           <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed pl-9">{comment.content}</p>
+                          {/* Comment Attachments */}
+                          {comment.attachments?.length > 0 && (
+                            <div className="mt-2 pl-9 flex flex-wrap gap-2">
+                              {comment.attachments.map(att => (
+                                <a
+                                  key={att.id}
+                                  href={`${API_URL}/api/tickets/attachments/${att.filename}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1.5 px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600 hover:bg-gray-50"
+                                >
+                                  {att.file_type?.startsWith('image') ? (
+                                    <ImageIcon className="w-3 h-3" />
+                                  ) : (
+                                    <FileText className="w-3 h-3" />
+                                  )}
+                                  {att.original_filename}
+                                </a>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       ))
                     )}
@@ -638,19 +659,53 @@ const EmployeeTickets = () => {
                   {/* Add Comment Section - Clear separation */}
                   {!['CLOSED'].includes(selectedTicket.status) && (
                     <div className="p-4 border-t-2 border-gray-200 flex-shrink-0 bg-white">
+                      {/* Hidden file input for comment attachments */}
+                      <input
+                        type="file"
+                        ref={commentFileInputRef}
+                        onChange={handleCommentFileSelect}
+                        multiple
+                        className="hidden"
+                        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.mp4,.mov,.webm"
+                      />
+                      
+                      {/* Comment attachment previews */}
+                      {commentAttachments.length > 0 && (
+                        <div className="mb-3 flex flex-wrap gap-2">
+                          {commentAttachments.map((file, idx) => (
+                            <div key={idx} className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs">
+                              <Paperclip className="w-3 h-3 text-gray-500" />
+                              <span className="truncate max-w-[120px]">{file.name}</span>
+                              <button onClick={() => removeCommentAttachment(idx)} className="p-0.5 hover:bg-gray-200 rounded">
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
                       <div className="flex gap-3">
-                        <textarea
-                          value={newComment}
-                          onChange={(e) => setNewComment(e.target.value)}
-                          placeholder="Type your reply..."
-                          rows={3}
-                          className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl text-sm resize-none focus:border-brand-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-colors"
-                          data-testid="employee-ticket-comment-input"
-                        />
+                        <div className="flex-1 flex flex-col gap-2">
+                          <textarea
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            placeholder="Type your reply..."
+                            rows={3}
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm resize-none focus:border-brand-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-colors"
+                            data-testid="employee-ticket-comment-input"
+                          />
+                          <button
+                            onClick={() => commentFileInputRef.current?.click()}
+                            className="self-start flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
+                            <Paperclip className="w-3.5 h-3.5" />
+                            Attach files (max 25MB each)
+                          </button>
+                        </div>
                         <button
                           onClick={handleAddComment}
                           disabled={!newComment.trim()}
-                          className="px-5 py-3 bg-brand-red text-white rounded-xl hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors flex items-center gap-2"
+                          className="px-5 py-3 h-fit bg-brand-red text-white rounded-xl hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors flex items-center gap-2"
                           data-testid="employee-send-comment-btn"
                         >
                           <Send className="w-4 h-4" />
