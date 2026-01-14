@@ -129,6 +129,14 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/employee/calendar" 
+              element={
+                <ProtectedRoute requiredRole="EMPLOYEE">
+                  <EmployeeCalendar />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Admin Routes */}
             <Route 
