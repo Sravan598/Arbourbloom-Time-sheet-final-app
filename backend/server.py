@@ -2282,7 +2282,8 @@ def generate_timesheet_pdf(user_data: dict, timesheets: list, breaks: list, week
         ["Name:", user_data.get("name", "N/A")],
         ["Email:", user_data.get("email", "N/A")],
         ["Report Period:", f"{week_start.strftime('%B %d, %Y')} - {week_end.strftime('%B %d, %Y')}"],
-        ["Generated:", datetime.now().strftime("%B %d, %Y at %I:%M %p")]
+        ["Generated:", datetime.now().strftime("%B %d, %Y at %I:%M %p") + " CST"],
+        ["Timezone:", "Central Standard Time (CST)"]
     ]
     
     info_table = Table(info_data, colWidths=[1.5*inch, 4*inch])
@@ -2301,6 +2302,9 @@ def generate_timesheet_pdf(user_data: dict, timesheets: list, breaks: list, week
     # Daily Summary
     elements.append(Paragraph("Daily Time Summary", section_style))
     
+    # CST timezone (UTC-6)
+    cst_tz = timezone(timedelta(hours=-6))
+    
     # Calculate daily totals
     day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     daily_data = {}
@@ -2317,6 +2321,7 @@ def generate_timesheet_pdf(user_data: dict, timesheets: list, breaks: list, week
         }
     
     for ts in timesheets:
+        clock_in = ts.get("clock_in_at")
         clock_in = ts.get("clock_in_at")
         clock_out = ts.get("clock_out_at")
         
