@@ -198,6 +198,24 @@ CORtracker is a comprehensive time-tracking and workforce management application
   - 29 backend tests passing (100% coverage)
 - ✅ Added "Support Tickets" to Admin and Employee sidebars
 - ✅ Fixed MongoDB ObjectId serialization in ticket comments
+- ✅ **COMPLETED: Ticket Comment Attachments** - Both admin and employee can attach files to comments
+  - Admin can attach files to comments and internal notes
+  - Employee can attach files to comments
+  - 25MB per file limit enforced
+  - Support for images, PDFs, Word docs, Excel files, videos
+  - Attachments displayed inline with download links
+  - Backend endpoint: POST /api/tickets/{id}/comments-with-attachments
+  - 14 backend API tests passing (100% success rate)
+- ✅ **In-App Calendar Feature** - Full visual calendar implementation
+  - Admin view: Company holidays, all leave requests, birthdays, project deadlines
+  - Employee view: Personal leaves, team leaves, holidays, birthdays
+  - Holiday management for admins (add/edit/delete)
+  - Uses react-big-calendar library
+  - Routes: /admin/calendar, /employee/calendar
+- ✅ **PDF Export Fixes** (Pending User Verification)
+  - Fixed incorrect clock-in/out data after corrections
+  - Fixed CST timezone handling for all dates/times
+  - Fixed logo aspect ratio distortion
 
 ### January 12, 2025
 - ✅ Removed "Pending Leave Requests" section from Admin Dashboard (centralized in Leave Requests page)
