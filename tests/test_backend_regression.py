@@ -301,26 +301,26 @@ class TestCalendarAPI:
 
 
 class TestLeaveRequestsAPI:
-    """Leave requests API tests"""
+    """Leave requests API tests - endpoint is /leave/requests"""
     
     def test_get_leave_requests_employee(self, employee_headers):
-        """GET /api/leave-requests returns employee's leave requests"""
-        response = requests.get(f"{BASE_URL}/api/leave-requests", headers=employee_headers)
+        """GET /api/leave/requests returns employee's leave requests"""
+        response = requests.get(f"{BASE_URL}/api/leave/requests", headers=employee_headers)
         assert response.status_code == 200, f"Get leave requests failed: {response.text}"
         data = response.json()
         assert isinstance(data, list), "Expected list of leave requests"
         print(f"Employee has {len(data)} leave requests")
     
     def test_get_leave_requests_admin(self, admin_headers):
-        """GET /api/leave-requests returns all leave requests for admin"""
-        response = requests.get(f"{BASE_URL}/api/leave-requests", headers=admin_headers)
+        """GET /api/admin/leave/requests returns all leave requests for admin"""
+        response = requests.get(f"{BASE_URL}/api/admin/leave/requests", headers=admin_headers)
         assert response.status_code == 200, f"Get leave requests failed: {response.text}"
         data = response.json()
         assert isinstance(data, list), "Expected list of leave requests"
         print(f"Admin can see {len(data)} leave requests")
     
     def test_create_leave_request(self, employee_headers):
-        """POST /api/leave-requests creates a new leave request"""
+        """POST /api/leave/requests creates a new leave request"""
         # Create a leave request for next week
         start_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
         end_date = (datetime.now() + timedelta(days=8)).strftime("%Y-%m-%d")
@@ -332,7 +332,7 @@ class TestLeaveRequestsAPI:
             "end_date": end_date,
             "reason": "TEST_Regression test leave request"
         }
-        response = requests.post(f"{BASE_URL}/api/leave-requests", json=leave_data, headers=employee_headers)
+        response = requests.post(f"{BASE_URL}/api/leave/requests", json=leave_data, headers=employee_headers)
         assert response.status_code == 200, f"Create leave request failed: {response.text}"
         data = response.json()
         assert "id" in data, "Response missing id"
