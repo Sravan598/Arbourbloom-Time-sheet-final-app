@@ -550,7 +550,15 @@ const AdminTickets = () => {
                     </div>
                   ) : (
                     ticketsByStatus[column.value]?.map(ticket => (
-                      <TicketCard key={ticket.id} ticket={ticket} />
+                      <TicketCard 
+                        key={ticket.id} 
+                        ticket={ticket} 
+                        selectedTicket={selectedTicket}
+                        draggedTicket={draggedTicket}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                        onClick={handleSelectTicket}
+                      />
                     ))
                   )}
                 </div>
