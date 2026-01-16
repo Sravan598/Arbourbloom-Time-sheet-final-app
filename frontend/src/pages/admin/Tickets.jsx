@@ -5,7 +5,8 @@ import { NotificationBell } from '../../components/notifications';
 import { 
   Ticket, Search, Clock, AlertTriangle, CheckCircle, 
   MessageSquare, User, Users, ChevronDown, X,
-  RefreshCw, Send, FileText, Image as ImageIcon, Paperclip
+  RefreshCw, Send, FileText, Image as ImageIcon, Paperclip,
+  GripVertical
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
@@ -21,10 +22,18 @@ const CATEGORY_OPTIONS = [
 ];
 
 const PRIORITY_OPTIONS = [
-  { value: 'LOW', label: 'Low', color: 'bg-gray-100 text-gray-700' },
-  { value: 'MEDIUM', label: 'Medium', color: 'bg-blue-100 text-blue-700' },
-  { value: 'HIGH', label: 'High', color: 'bg-orange-100 text-orange-700' },
-  { value: 'URGENT', label: 'Urgent', color: 'bg-red-100 text-red-700' }
+  { value: 'LOW', label: 'Low', color: 'bg-gray-100 text-gray-700', dot: 'bg-gray-400' },
+  { value: 'MEDIUM', label: 'Medium', color: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500' },
+  { value: 'HIGH', label: 'High', color: 'bg-orange-100 text-orange-700', dot: 'bg-orange-500' },
+  { value: 'URGENT', label: 'Urgent', color: 'bg-red-100 text-red-700', dot: 'bg-red-500' }
+];
+
+// Kanban columns - excluding CLOSED
+const KANBAN_COLUMNS = [
+  { value: 'OPEN', label: 'Open', color: 'border-yellow-400', bgColor: 'bg-yellow-50', headerBg: 'bg-yellow-100' },
+  { value: 'IN_PROGRESS', label: 'In Progress', color: 'border-blue-400', bgColor: 'bg-blue-50', headerBg: 'bg-blue-100' },
+  { value: 'WAITING_ON_USER', label: 'Waiting on User', color: 'border-purple-400', bgColor: 'bg-purple-50', headerBg: 'bg-purple-100' },
+  { value: 'RESOLVED', label: 'Resolved', color: 'border-green-400', bgColor: 'bg-green-50', headerBg: 'bg-green-100' }
 ];
 
 const STATUS_OPTIONS = [
@@ -49,9 +58,10 @@ const AdminTickets = () => {
   const [commentAttachments, setCommentAttachments] = useState([]);
   const assignDropdownRef = useRef(null);
   const commentFileInputRef = useRef(null);
+  const [draggedTicket, setDraggedTicket] = useState(null);
+  const [dragOverColumn, setDragOverColumn] = useState(null);
   
   // Filters
-  const [statusFilter, setStatusFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -71,7 +81,6 @@ const AdminTickets = () => {
   const fetchTickets = useCallback(async () => {
     try {
       const params = new URLSearchParams();
-      if (statusFilter) params.append('status', statusFilter);
       if (categoryFilter) params.append('category', categoryFilter);
       if (priorityFilter) params.append('priority', priorityFilter);
       if (showAssignedToMe) params.append('assigned_to_me', 'true');
@@ -80,11 +89,12 @@ const AdminTickets = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
-      setTickets(data);
+      // Filter out CLOSED tickets for Kanban view
+      setTickets(data.filter(t => t.status !== 'CLOSED'));
     } catch (error) {
       console.error('Error fetching tickets:', error);
     }
-  }, [token, statusFilter, categoryFilter, priorityFilter, showAssignedToMe]);
+  }, [token, categoryFilter, priorityFilter, showAssignedToMe]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -179,7 +189,6 @@ const AdminTickets = () => {
       let response;
       
       if (commentAttachments.length > 0) {
-        // Use multipart form for comments with attachments
         const formData = new FormData();
         formData.append('content', newComment);
         formData.append('is_internal', isInternalNote.toString());
@@ -193,7 +202,6 @@ const AdminTickets = () => {
           body: formData
         });
       } else {
-        // Use JSON for text-only comments
         response = await fetch(`${API_URL}/api/tickets/${selectedTicket.id}/comments`, {
           method: 'POST',
           headers: {
@@ -221,7 +229,7 @@ const AdminTickets = () => {
 
   const handleCommentFileSelect = (e) => {
     const files = Array.from(e.target.files);
-    const maxSize = 25 * 1024 * 1024; // 25MB
+    const maxSize = 25 * 1024 * 1024;
     const validFiles = files.filter(file => {
       if (file.size > maxSize) {
         alert(`File ${file.name} exceeds 25MB limit`);
@@ -236,7 +244,54 @@ const AdminTickets = () => {
     setCommentAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Drag and Drop handlers
+  const handleDragStart = (e, ticket) => {
+    setDraggedTicket(ticket);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', ticket.id);
+  };
+
+  const handleDragOver = (e, status) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverColumn(status);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverColumn(null);
+  };
+
+  const handleDrop = async (e, newStatus) => {
+    e.preventDefault();
+    setDragOverColumn(null);
+    
+    if (draggedTicket && draggedTicket.status !== newStatus) {
+      await handleUpdateTicket(draggedTicket.id, { status: newStatus });
+    }
+    setDraggedTicket(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedTicket(null);
+    setDragOverColumn(null);
+  };
+
   const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 60) return `${diffMins}m`;
+    if (diffHours < 24) return `${diffHours}h`;
+    if (diffDays < 7) return `${diffDays}d`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const formatFullDate = (dateStr) => {
     if (!dateStr) return '-';
     return new Date(dateStr).toLocaleDateString('en-US', {
       month: 'short',
@@ -246,6 +301,7 @@ const AdminTickets = () => {
     });
   };
 
+  // Filter tickets
   const filteredTickets = tickets.filter(ticket => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
@@ -256,17 +312,85 @@ const AdminTickets = () => {
     );
   });
 
+  // Group tickets by status for Kanban
+  const ticketsByStatus = KANBAN_COLUMNS.reduce((acc, col) => {
+    acc[col.value] = filteredTickets.filter(t => t.status === col.value);
+    return acc;
+  }, {});
+
   const getCategoryInfo = (cat) => CATEGORY_OPTIONS.find(c => c.value === cat) || { label: cat, icon: '📋' };
-  const getPriorityInfo = (pri) => PRIORITY_OPTIONS.find(p => p.value === pri) || { label: pri, color: 'bg-gray-100 text-gray-700' };
+  const getPriorityInfo = (pri) => PRIORITY_OPTIONS.find(p => p.value === pri) || { label: pri, color: 'bg-gray-100 text-gray-700', dot: 'bg-gray-400' };
   const getStatusInfo = (status) => STATUS_OPTIONS.find(s => s.value === status) || { label: status, color: 'bg-gray-100 text-gray-700' };
+
+  // Ticket Card Component
+  const TicketCard = ({ ticket }) => {
+    const category = getCategoryInfo(ticket.category);
+    const priority = getPriorityInfo(ticket.priority);
+    
+    return (
+      <div
+        draggable
+        onDragStart={(e) => handleDragStart(e, ticket)}
+        onDragEnd={handleDragEnd}
+        onClick={() => handleSelectTicket(ticket)}
+        className={`bg-white rounded-lg shadow-sm border border-gray-200 p-3 cursor-pointer hover:shadow-md transition-all ${
+          selectedTicket?.id === ticket.id ? 'ring-2 ring-purple-500' : ''
+        } ${draggedTicket?.id === ticket.id ? 'opacity-50' : ''}`}
+        data-testid={`ticket-card-${ticket.ticket_number}`}
+      >
+        {/* Header: Category Icon + Ticket # + Priority */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">{category.icon}</span>
+            <span className="text-xs font-mono text-gray-500">{ticket.ticket_number}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {ticket.sla_breached && (
+              <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
+            )}
+            <span className={`w-2 h-2 rounded-full ${priority.dot}`} title={priority.label}></span>
+          </div>
+        </div>
+        
+        {/* Subject */}
+        <h4 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2">{ticket.subject}</h4>
+        
+        {/* Footer: Assigned + Time */}
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center gap-1">
+            {ticket.assigned_names?.length > 0 ? (
+              <>
+                <User className="w-3 h-3" />
+                <span className="truncate max-w-[80px]">{ticket.assigned_names[0]}</span>
+                {ticket.assigned_names.length > 1 && (
+                  <span className="text-gray-400">+{ticket.assigned_names.length - 1}</span>
+                )}
+              </>
+            ) : (
+              <span className="text-orange-500 italic">Unassigned</span>
+            )}
+          </div>
+          <span>{formatDate(ticket.created_at)}</span>
+        </div>
+        
+        {/* Comment count if any */}
+        {ticket.comment_count > 0 && (
+          <div className="flex items-center gap-1 mt-2 text-xs text-gray-400">
+            <MessageSquare className="w-3 h-3" />
+            <span>{ticket.comment_count}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminSidebar />
       
-      <main className="ml-64 p-8">
+      <main className="ml-64 p-6">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Support Tickets</h1>
             <p className="text-gray-500">Manage employee support requests</p>
@@ -346,18 +470,6 @@ const AdminTickets = () => {
             </div>
             
             <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
-              data-testid="ticket-status-filter"
-            >
-              <option value="">All Status</option>
-              {STATUS_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-            
-            <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
@@ -401,85 +513,58 @@ const AdminTickets = () => {
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex gap-6">
-          {/* Ticket List */}
-          <div className="flex-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              {loading ? (
-                <div className="p-8 text-center text-gray-500">Loading tickets...</div>
-              ) : filteredTickets.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  <Ticket className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                  <p>No tickets found</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-100">
-                  {filteredTickets.map(ticket => {
-                    const category = getCategoryInfo(ticket.category);
-                    const priority = getPriorityInfo(ticket.priority);
-                    const status = getStatusInfo(ticket.status);
-                    
-                    return (
-                      <div
-                        key={ticket.id}
-                        onClick={() => handleSelectTicket(ticket)}
-                        className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                          selectedTicket?.id === ticket.id ? 'bg-purple-50 border-l-4 border-purple-500' : ''
-                        }`}
-                        data-testid={`ticket-row-${ticket.ticket_number}`}
-                      >
-                        <div className="flex items-start gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-mono text-gray-500">{ticket.ticket_number}</span>
-                              <span className={`text-xs px-2 py-0.5 rounded-full ${priority.color}`}>
-                                {priority.label}
-                              </span>
-                              {ticket.sla_breached && (
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 flex items-center gap-1">
-                                  <AlertTriangle className="w-3 h-3" /> SLA
-                                </span>
-                              )}
-                            </div>
-                            <h3 className="font-medium text-gray-900 mb-1">{ticket.subject}</h3>
-                            <div className="flex items-center gap-4 text-sm text-gray-500">
-                              <span className="flex items-center gap-1">
-                                <span>{category.icon}</span> {category.label}
-                              </span>
-                              <span>{ticket.creator_name}</span>
-                              <span>{formatDate(ticket.created_at)}</span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <span className={`text-xs px-2 py-1 rounded-full ${status.color}`}>
-                              {status.label}
-                            </span>
-                            {ticket.assigned_names?.length > 0 && (
-                              <p className="text-xs text-gray-500 mt-2">
-                                <Users className="w-3 h-3 inline mr-1" />
-                                {ticket.assigned_names.join(', ')}
-                              </p>
-                            )}
-                            {ticket.comment_count > 0 && (
-                              <p className="text-xs text-gray-400 mt-1">
-                                <MessageSquare className="w-3 h-3 inline mr-1" />
-                                {ticket.comment_count} comments
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+        {/* Kanban Board */}
+        <div className="flex gap-4 overflow-x-auto pb-4">
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center py-12">
+              <div className="text-gray-500">Loading tickets...</div>
             </div>
-          </div>
+          ) : (
+            KANBAN_COLUMNS.map(column => (
+              <div
+                key={column.value}
+                className={`flex-1 min-w-[280px] max-w-[320px] rounded-xl ${column.bgColor} border-t-4 ${column.color} transition-all ${
+                  dragOverColumn === column.value ? 'ring-2 ring-purple-400 ring-offset-2' : ''
+                }`}
+                onDragOver={(e) => handleDragOver(e, column.value)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, column.value)}
+                data-testid={`kanban-column-${column.value}`}
+              >
+                {/* Column Header */}
+                <div className={`p-3 ${column.headerBg} rounded-t-lg`}>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-800">{column.label}</h3>
+                    <span className="px-2 py-0.5 bg-white rounded-full text-sm font-medium text-gray-600">
+                      {ticketsByStatus[column.value]?.length || 0}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Column Content */}
+                <div className="p-3 space-y-3 min-h-[400px] max-h-[calc(100vh-400px)] overflow-y-auto">
+                  {ticketsByStatus[column.value]?.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400 text-sm">
+                      No tickets
+                    </div>
+                  ) : (
+                    ticketsByStatus[column.value]?.map(ticket => (
+                      <TicketCard key={ticket.id} ticket={ticket} />
+                    ))
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
 
-          {/* Ticket Detail Panel - Wider and improved layout */}
-          {selectedTicket && (
-            <div className="w-[550px] bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col max-h-[calc(100vh-200px)] relative z-50">
+        {/* Ticket Detail Panel */}
+        {selectedTicket && (
+          <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setSelectedTicket(null)}>
+            <div 
+              className="fixed right-0 top-0 h-full w-[550px] bg-white shadow-2xl z-50 overflow-hidden flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Header */}
               <div className="p-4 border-b border-gray-100 flex-shrink-0 bg-gray-50">
                 <div className="flex items-center justify-between mb-2">
@@ -498,13 +583,12 @@ const AdminTickets = () => {
                     {getCategoryInfo(selectedTicket.category).label}
                   </span>
                   <span>•</span>
-                  <span>{formatDate(selectedTicket.created_at)}</span>
+                  <span>{formatFullDate(selectedTicket.created_at)}</span>
                 </div>
               </div>
               
-              {/* Controls - Compact layout */}
+              {/* Controls */}
               <div className="p-4 border-b border-gray-100 flex-shrink-0 space-y-3">
-                {/* Status & Priority Row */}
                 <div className="flex gap-3">
                   <div className="flex-1">
                     <label className="text-xs text-gray-500 mb-1 block">Status</label>
@@ -534,7 +618,7 @@ const AdminTickets = () => {
                   </div>
                 </div>
                 
-                {/* Assign Dropdown with Chips */}
+                {/* Assign Dropdown */}
                 <div ref={assignDropdownRef}>
                   <label className="text-xs text-gray-500 mb-1 block">Assign to</label>
                   <div className="relative">
@@ -551,7 +635,6 @@ const AdminTickets = () => {
                       <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showAssignDropdown ? 'rotate-180' : ''}`} />
                     </button>
                     
-                    {/* Dropdown Menu */}
                     {showAssignDropdown && (
                       <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
                         {admins.map(admin => (
@@ -572,7 +655,6 @@ const AdminTickets = () => {
                     )}
                   </div>
                   
-                  {/* Selected Admins as Chips */}
                   {selectedTicket.assigned_names?.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {selectedTicket.assigned_names.map((name, idx) => (
@@ -594,7 +676,6 @@ const AdminTickets = () => {
                   )}
                 </div>
                 
-                {/* SLA Info - Compact */}
                 {selectedTicket.sla_due_at && (
                   <div className={`text-xs p-2 rounded-lg flex items-center gap-2 ${
                     selectedTicket.sla_breached 
@@ -602,13 +683,13 @@ const AdminTickets = () => {
                       : 'bg-gray-100 text-gray-600'
                   }`}>
                     <Clock className="w-3.5 h-3.5" />
-                    <span>SLA Due: {formatDate(selectedTicket.sla_due_at)}</span>
+                    <span>SLA Due: {formatFullDate(selectedTicket.sla_due_at)}</span>
                     {selectedTicket.sla_breached && <span className="font-semibold">(BREACHED)</span>}
                   </div>
                 )}
               </div>
 
-              {/* Creator Info & Description - Collapsible look */}
+              {/* Creator Info & Description */}
               <div className="p-4 border-b border-gray-100 flex-shrink-0 bg-blue-50/30">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -626,7 +707,6 @@ const AdminTickets = () => {
                 </div>
                 <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{selectedTicket.description}</p>
                 
-                {/* Attachments */}
                 {selectedTicket.attachments?.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {selectedTicket.attachments.map(att => (
@@ -689,10 +769,9 @@ const AdminTickets = () => {
                         {comment.is_internal && (
                           <span className="text-xs px-1.5 py-0.5 bg-amber-200 text-amber-800 rounded font-medium">Internal</span>
                         )}
-                        <span className="text-xs text-gray-400 ml-auto">{formatDate(comment.created_at)}</span>
+                        <span className="text-xs text-gray-400 ml-auto">{formatFullDate(comment.created_at)}</span>
                       </div>
                       <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed pl-9">{comment.content}</p>
-                      {/* Comment Attachments */}
                       {comment.attachments?.length > 0 && (
                         <div className="mt-2 pl-9 flex flex-wrap gap-2">
                           {comment.attachments.map(att => (
@@ -718,9 +797,8 @@ const AdminTickets = () => {
                 )}
               </div>
 
-              {/* Add Comment Section - Clear separation */}
+              {/* Add Comment Section */}
               <div className="p-4 border-t-2 border-gray-200 flex-shrink-0 bg-white">
-                {/* Hidden file input for comment attachments */}
                 <input
                   type="file"
                   ref={commentFileInputRef}
@@ -744,7 +822,6 @@ const AdminTickets = () => {
                   </label>
                 </div>
                 
-                {/* Comment attachment previews */}
                 {commentAttachments.length > 0 && (
                   <div className="mb-3 flex flex-wrap gap-2">
                     {commentAttachments.map((file, idx) => (
@@ -798,8 +875,8 @@ const AdminTickets = () => {
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </main>
     </div>
   );
