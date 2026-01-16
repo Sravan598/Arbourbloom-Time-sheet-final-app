@@ -132,12 +132,33 @@ CORtracker is a comprehensive time-tracking and workforce management application
 - React with TailwindCSS
 - Framer Motion for animations and drag-and-drop
 - Shadcn/UI components
+- react-big-calendar for calendar views
 
-### Backend
+### Backend (Refactored ✅ January 2025)
 - FastAPI (Python)
 - MongoDB database
 - WebSocket support for real-time features
 - `aiofiles` for async file handling
+
+**Modular Structure:**
+```
+/app/backend/
+├── server.py           # Main app with all routes
+├── core/               # Core utilities
+│   ├── config.py       # Application settings
+│   ├── database.py     # MongoDB connection
+│   └── auth.py         # JWT authentication
+├── models/             # Pydantic models (12 files)
+│   ├── enums.py        # All enum definitions
+│   ├── user.py         # User models
+│   ├── timesheet.py    # Timesheet models
+│   ├── ticket.py       # Ticket models
+│   └── ...             # Other model files
+├── services/           # Business logic
+│   ├── notification.py # Notification service
+│   └── utils.py        # Utility functions
+└── routes/             # API routes (future)
+```
 
 ### Key Files
 - `/app/backend/server.py` - Main backend with Calendar, Chat, PDF APIs
