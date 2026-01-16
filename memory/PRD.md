@@ -226,9 +226,6 @@ Backend refactored from 7000+ line monolith to modular structure:
 ## Known Issues
 - React Three Fiber incompatibility (3D logo feature)
 
-## Refactoring Needs
-- `/app/backend/server.py` is monolithic - consider splitting into routes/models/services
-
 ## Change Log
 
 ### January 14, 2025
