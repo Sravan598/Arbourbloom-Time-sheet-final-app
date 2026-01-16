@@ -385,68 +385,6 @@ const AdminTickets = () => {
     return acc;
   }, {});
 
-  // Ticket Card Component
-  const TicketCard = ({ ticket }) => {
-    const category = getCategoryInfo(ticket.category);
-    const priority = getPriorityInfo(ticket.priority);
-    
-    return (
-      <div
-        draggable
-        onDragStart={(e) => handleDragStart(e, ticket)}
-        onDragEnd={handleDragEnd}
-        onClick={() => handleSelectTicket(ticket)}
-        className={`bg-white rounded-lg shadow-sm border border-gray-200 p-3 cursor-pointer hover:shadow-md transition-all ${
-          selectedTicket?.id === ticket.id ? 'ring-2 ring-purple-500' : ''
-        } ${draggedTicket?.id === ticket.id ? 'opacity-50' : ''}`}
-        data-testid={`ticket-card-${ticket.ticket_number}`}
-      >
-        {/* Header: Category Icon + Ticket # + Priority */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-1.5">
-            <span className="text-base">{category.icon}</span>
-            <span className="text-xs font-mono text-gray-500">{ticket.ticket_number}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {ticket.sla_breached && (
-              <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
-            )}
-            <span className={`w-2 h-2 rounded-full ${priority.dot}`} title={priority.label}></span>
-          </div>
-        </div>
-        
-        {/* Subject */}
-        <h4 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2">{ticket.subject}</h4>
-        
-        {/* Footer: Assigned + Time */}
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <div className="flex items-center gap-1">
-            {ticket.assigned_names?.length > 0 ? (
-              <>
-                <User className="w-3 h-3" />
-                <span className="truncate max-w-[80px]">{ticket.assigned_names[0]}</span>
-                {ticket.assigned_names.length > 1 && (
-                  <span className="text-gray-400">+{ticket.assigned_names.length - 1}</span>
-                )}
-              </>
-            ) : (
-              <span className="text-orange-500 italic">Unassigned</span>
-            )}
-          </div>
-          <span>{formatDate(ticket.created_at)}</span>
-        </div>
-        
-        {/* Comment count if any */}
-        {ticket.comment_count > 0 && (
-          <div className="flex items-center gap-1 mt-2 text-xs text-gray-400">
-            <MessageSquare className="w-3 h-3" />
-            <span>{ticket.comment_count}</span>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminSidebar />
