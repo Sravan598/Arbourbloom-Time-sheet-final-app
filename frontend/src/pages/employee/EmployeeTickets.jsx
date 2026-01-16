@@ -10,6 +10,99 @@ import {
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
+// Helper functions (outside component)
+const getCategoryInfo = (cat) => CATEGORY_OPTIONS.find(c => c.value === cat) || { label: cat, icon: '📋' };
+const getPriorityInfo = (pri) => PRIORITY_OPTIONS.find(p => p.value === pri) || { label: pri, color: 'bg-gray-100 text-gray-700', dot: 'bg-gray-400' };
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '-';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 60) return `${diffMins}m`;
+  if (diffHours < 24) return `${diffHours}h`;
+  if (diffDays < 7) return `${diffDays}d`;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
+const formatFullDate = (dateStr) => {
+  if (!dateStr) return '-';
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+// Ticket Card Component (outside main component)
+const EmployeeTicketCard = ({ ticket, selectedTicket, draggedTicket, onDragStart, onDragEnd, onClick }) => {
+  const category = getCategoryInfo(ticket.category);
+  const priority = getPriorityInfo(ticket.priority);
+  const needsResponse = ticket.status === 'WAITING_ON_USER';
+  
+  return (
+    <div
+      draggable
+      onDragStart={(e) => onDragStart(e, ticket)}
+      onDragEnd={onDragEnd}
+      onClick={() => onClick(ticket)}
+      className={`bg-white rounded-lg shadow-sm border p-3 cursor-pointer hover:shadow-md transition-all ${
+        needsResponse ? 'border-purple-300 ring-2 ring-purple-200' : 'border-gray-200'
+      } ${selectedTicket?.id === ticket.id ? 'ring-2 ring-brand-red' : ''} ${
+        draggedTicket?.id === ticket.id ? 'opacity-50' : ''
+      }`}
+      data-testid={`employee-ticket-card-${ticket.ticket_number}`}
+    >
+      {/* Header: Category Icon + Ticket # + Priority */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">{category.icon}</span>
+          <span className="text-xs font-mono text-gray-500">{ticket.ticket_number}</span>
+        </div>
+        <span className={`w-2 h-2 rounded-full ${priority.dot}`} title={priority.label}></span>
+      </div>
+      
+      {/* Subject */}
+      <h4 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2">{ticket.subject}</h4>
+      
+      {/* Footer: Assigned + Time */}
+      <div className="flex items-center justify-between text-xs text-gray-500">
+        <div className="flex items-center gap-1">
+          {ticket.assigned_names?.length > 0 ? (
+            <>
+              <User className="w-3 h-3" />
+              <span className="truncate max-w-[80px]">{ticket.assigned_names[0]}</span>
+            </>
+          ) : (
+            <span className="text-gray-400 italic">Pending assignment</span>
+          )}
+        </div>
+        <span>{formatDate(ticket.created_at)}</span>
+      </div>
+      
+      {/* Comment count & needs response indicator */}
+      <div className="flex items-center justify-between mt-2">
+        {ticket.comment_count > 0 && (
+          <div className="flex items-center gap-1 text-xs text-gray-400">
+            <MessageSquare className="w-3 h-3" />
+            <span>{ticket.comment_count}</span>
+          </div>
+        )}
+        {needsResponse && (
+          <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full font-medium">
+            Reply needed
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const CATEGORY_OPTIONS = [
   { value: 'IT_SUPPORT', label: 'IT Support', icon: '💻', description: 'Computer, software, network issues' },
   { value: 'HR', label: 'Human Resources', icon: '👥', description: 'HR policies, workplace concerns' },
