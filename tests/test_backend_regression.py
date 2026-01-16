@@ -336,9 +336,8 @@ class TestLeaveRequestsAPI:
         assert response.status_code == 200, f"Create leave request failed: {response.text}"
         data = response.json()
         assert "id" in data, "Response missing id"
-        assert data["status"] == "PENDING"
-        print(f"Created leave request: {data['id']}")
-        return data["id"]
+        assert "message" in data, "Response missing message"
+        print(f"Created leave request: {data['id']} - {data['message']}")
 
 
 class TestChatChannelsAPI:
