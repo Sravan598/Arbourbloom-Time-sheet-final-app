@@ -228,6 +228,15 @@ Backend refactored from 7000+ line monolith to modular structure:
 
 ## Change Log
 
+### January 2025 (Continued)
+- ✅ **Kanban Board for Tickets** - Replaced list view with visual Kanban board
+  - 4 columns: Open → In Progress → Waiting on User → Resolved
+  - Drag-and-drop to change status (Admin)
+  - Ticket cards show: Category icon, ticket #, priority dot, subject, assigned, time
+  - CLOSED tickets filtered out from view
+  - Employee view shows "Reply needed" badge for tickets needing response
+  - **100% frontend tests passed**
+
 ### January 14, 2025
 - ✅ **NEW FEATURE: Support Ticketing System** - Full implementation
   - 7 ticket categories (IT Support, HR, Payroll, Facilities, Time & Attendance, Benefits, Other)
