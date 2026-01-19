@@ -82,9 +82,9 @@ const AdminSidebar = () => {
       <div className="p-6 border-b border-gray-100">
         <Link to="/admin/dashboard" className="flex items-center gap-3">
           <img 
-            src="https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png" 
-            alt="CORtracker" 
-            className="h-8"
+            src="/aurborbloom_logo.png" 
+            alt="AurborBloom" 
+            className="h-10"
           />
         </Link>
       </div>
