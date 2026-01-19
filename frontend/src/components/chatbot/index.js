@@ -1,2 +1,2 @@
-export { default as CORBot } from './CORBot';
+export { default as AurborBot } from './AurborBot';
 export { faqData, findAnswer } from './faqData';

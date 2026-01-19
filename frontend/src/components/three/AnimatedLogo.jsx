@@ -86,7 +86,7 @@ const AnimatedLogo = () => {
             >
               <img 
                 src="https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png" 
-                alt="CORtracker - A 360° ERP Solutions"
+                alt="AurborBloom - A 360° ERP Solutions"
                 className="w-64 md:w-80 h-auto drop-shadow-2xl"
               />
               

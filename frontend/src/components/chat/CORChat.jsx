@@ -4,7 +4,7 @@ import ChatButton from './ChatButton';
 import ChatPanel from './ChatPanel';
 import chatService, { wsManager } from '../../services/chatService';
 
-const CORChat = ({ currentUser }) => {
+const AurborChat = ({ currentUser }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
@@ -115,4 +115,4 @@ const CORChat = ({ currentUser }) => {
   );
 };
 
-export default CORChat;
+export default AurborChat;

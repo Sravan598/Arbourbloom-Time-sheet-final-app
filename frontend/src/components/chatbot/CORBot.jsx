@@ -3,19 +3,19 @@ import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { Bot, X, Minus, Send } from 'lucide-react';
 import { findAnswer } from './faqData';
 
-// CORtracker logo URL
-const CORTRACKER_LOGO = "https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png";
+// AurborBloom logo URL
+const ARBORBLOOM_LOGO = "https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png";
 
 // Storage key for position persistence
 const POSITION_STORAGE_KEY = 'corbot_position';
 
-const CORBot = () => {
+const AurborBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState([
     {
       type: 'bot',
-      text: "Hi! 👋 I'm CORBot, your CORtracker assistant. Ask me anything about the app - time tracking, timesheets, projects, documents, CORChat, and more!"
+      text: "Hi! 👋 I'm AurborBot, your AurborBloom assistant. Ask me anything about the app - time tracking, timesheets, projects, documents, AurborChat, and more!"
     }
   ]);
   const [inputValue, setInputValue] = useState('');
@@ -134,9 +134,9 @@ const CORBot = () => {
   };
 
   const quickQuestions = [
-    'What is CORtracker?',
+    'What is AurborBloom?',
     'How do I track time?',
-    'How does CORChat work?',
+    'How does AurborChat work?',
     'What can admins do?'
   ];
 
@@ -225,9 +225,9 @@ const CORBot = () => {
             >
               <div className="flex items-center gap-2 pointer-events-none">
                 <div className="bg-white/95 rounded px-1.5 py-0.5 flex items-center">
-                  <img src={CORTRACKER_LOGO} alt="CORtracker" className="h-4 w-auto" />
+                  <img src={ARBORBLOOM_LOGO} alt="AurborBloom" className="h-4 w-auto" />
                 </div>
-                <h2 className="font-semibold text-white text-lg">CORBot</h2>
+                <h2 className="font-semibold text-white text-lg">AurborBot</h2>
                 <span className="text-xs text-white/70 bg-white/20 px-2 py-0.5 rounded-full">FAQ</span>
               </div>
               <div className="flex items-center gap-1">
@@ -353,4 +353,4 @@ const CORBot = () => {
   );
 };
 
-export default CORBot;
+export default AurborBot;

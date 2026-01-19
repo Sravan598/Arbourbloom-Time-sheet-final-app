@@ -3,8 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import CursorDot from './components/ui/CursorDot';
-import { CORChat } from './components/chat';
-import { CORBot } from './components/chatbot';
+import { AurborChat } from './components/chat';
+import { AurborBot } from './components/chatbot';
 import { NotificationBell } from './components/notifications';
 
 // Pages
@@ -37,7 +37,7 @@ const ChatWidget = () => {
   
   if (!isAuthenticated) return null;
   
-  return <CORChat currentUser={user} />;
+  return <AurborChat currentUser={user} />;
 };
 
 // Notification bell wrapper
@@ -55,10 +55,10 @@ function App() {
         <CursorDot />
         
         <BrowserRouter>
-          {/* CORBot FAQ chatbot - appears on ALL pages (including public) */}
-          <CORBot />
+          {/* AurborBot FAQ chatbot - appears on ALL pages (including public) */}
+          <AurborBot />
           
-          {/* CORChat floating widget - appears on all pages when logged in */}
+          {/* AurborChat floating widget - appears on all pages when logged in */}
           <ChatWidget />
           
           {/* Notification Bell - appears on all pages when logged in */}

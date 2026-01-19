@@ -52,7 +52,7 @@ const Navbar = () => {
           >
             <img 
               src="https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png" 
-              alt="CORtracker" 
+              alt="AurborBloom" 
               className="h-10 w-auto"
             />
           </motion.a>

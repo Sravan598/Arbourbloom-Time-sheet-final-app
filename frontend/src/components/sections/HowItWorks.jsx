@@ -43,7 +43,7 @@ const HowItWorks = () => {
             Get started in 3 simple steps
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            CORtracker is designed for simplicity. Your team can be up and running 
+            AurborBloom is designed for simplicity. Your team can be up and running 
             in minutes, not days.
           </p>
         </motion.div>

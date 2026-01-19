@@ -21,7 +21,7 @@ const ProductPreview = () => {
             Beautiful, intuitive interface
           </h2>
           <p className="mt-4 text-lg text-gray-400">
-            Designed for clarity and efficiency. Your team will love using CORtracker.
+            Designed for clarity and efficiency. Your team will love using AurborBloom.
           </p>
         </motion.div>
 

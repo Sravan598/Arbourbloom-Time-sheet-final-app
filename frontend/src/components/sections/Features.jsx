@@ -92,7 +92,7 @@ const Features = () => {
             Everything you need to manage time effectively
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            CORtracker provides a comprehensive suite of tools designed to streamline 
+            AurborBloom provides a comprehensive suite of tools designed to streamline 
             your workforce management and boost operational efficiency.
           </p>
         </motion.div>

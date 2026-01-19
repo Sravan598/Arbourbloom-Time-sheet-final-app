@@ -80,7 +80,7 @@ const Login = () => {
           <Link to="/">
             <img 
               src="https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png" 
-              alt="CORtracker" 
+              alt="AurborBloom" 
               className="h-12 mx-auto mb-4"
             />
           </Link>

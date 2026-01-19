@@ -108,12 +108,12 @@ const Signup = () => {
           <Link to="/">
             <img 
               src="https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png" 
-              alt="CORtracker" 
+              alt="AurborBloom" 
               className="h-12 mx-auto mb-4"
             />
           </Link>
           <h1 className="text-2xl font-bold text-brand-dark">Create Account</h1>
-          <p className="text-gray-600 mt-2">Join CORtracker to start tracking your time</p>
+          <p className="text-gray-600 mt-2">Join AurborBloom to start tracking your time</p>
         </div>
 
         {/* Card */}

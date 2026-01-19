@@ -443,7 +443,7 @@ const Documents = () => {
           <Link to="/employee/dashboard" className="flex items-center gap-3">
             <img 
               src="https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png" 
-              alt="CORtracker" 
+              alt="AurborBloom" 
               className="h-8"
             />
           </Link>

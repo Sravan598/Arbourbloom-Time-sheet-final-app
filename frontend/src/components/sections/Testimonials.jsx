@@ -8,7 +8,7 @@ const testimonials = [
     role: 'HR Director',
     company: 'TechFlow Inc.',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',
-    content: 'CORtracker transformed how we manage our remote team. The real-time tracking and automated reports have saved us countless hours every week.',
+    content: 'AurborBloom transformed how we manage our remote team. The real-time tracking and automated reports have saved us countless hours every week.',
     rating: 5,
   },
   {
@@ -24,7 +24,7 @@ const testimonials = [
     role: 'CEO',
     company: 'HealthFirst Clinics',
     image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-    content: 'Compliance was a nightmare before CORtracker. Now we pass audits with ease. The automatic overtime calculations alone justify the investment.',
+    content: 'Compliance was a nightmare before AurborBloom. Now we pass audits with ease. The automatic overtime calculations alone justify the investment.',
     rating: 5,
   },
 ];
@@ -48,7 +48,7 @@ const Testimonials = () => {
             Loved by teams worldwide
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            See what industry leaders are saying about CORtracker.
+            See what industry leaders are saying about AurborBloom.
           </p>
         </motion.div>
 

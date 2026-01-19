@@ -51,7 +51,7 @@ const Footer = () => {
             >
               <img 
                 src="https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png" 
-                alt="CORtracker" 
+                alt="AurborBloom" 
                 className="h-10 w-auto brightness-0 invert"
               />
             </motion.a>
@@ -99,7 +99,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} CORtracker. All rights reserved.
+            © {new Date().getFullYear()} AurborBloom. All rights reserved.
           </p>
           <p className="text-gray-400 text-sm">
             A 360° ERP Solutions Company

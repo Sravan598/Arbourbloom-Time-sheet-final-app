@@ -5,22 +5,22 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '..
 const faqs = [
   {
     question: 'Can employees clock in from their mobile devices?',
-    answer: 'Yes! CORtracker has native iOS and Android apps that allow employees to clock in/out from anywhere. You can enable GPS verification to ensure employees are at approved locations when clocking in.',
+    answer: 'Yes! AurborBloom has native iOS and Android apps that allow employees to clock in/out from anywhere. You can enable GPS verification to ensure employees are at approved locations when clocking in.',
   },
   {
-    question: 'Does CORtracker integrate with payroll systems?',
+    question: 'Does AurborBloom integrate with payroll systems?',
     answer: 'Absolutely. We integrate with popular payroll providers including ADP, Gusto, QuickBooks, Paychex, and more. Our API also allows custom integrations with your existing HR systems.',
   },
   {
     question: 'How is overtime calculated?',
-    answer: 'CORtracker automatically calculates overtime based on your configured rules. We support federal, state, and custom overtime policies including daily overtime, weekly overtime, and double-time calculations.',
+    answer: 'AurborBloom automatically calculates overtime based on your configured rules. We support federal, state, and custom overtime policies including daily overtime, weekly overtime, and double-time calculations.',
   },
   {
     question: 'Is my data secure?',
     answer: 'Security is our top priority. We use 256-bit SSL encryption, SOC 2 Type II certified data centers, and regular security audits. All data is backed up daily with 99.9% uptime guarantee.',
   },
   {
-    question: 'How do I get started with CORtracker?',
+    question: 'How do I get started with AurborBloom?',
     answer: 'Getting started is easy! Simply contact our team through the form below and we will guide you through the setup process. Our team will help you configure departments, add employees, and customize settings for your organization.',
   },
   {

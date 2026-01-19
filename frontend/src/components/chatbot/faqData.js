@@ -1,15 +1,15 @@
-// CORtracker FAQ Knowledge Base
+// AurborBloom FAQ Knowledge Base
 export const faqData = [
   // General
   {
     keywords: ['what', 'cortracker', 'about', 'application', 'app'],
-    question: 'What is CORtracker?',
-    answer: 'CORtracker is a comprehensive time-tracking and workforce management application. It helps employees track their work hours and allows administrators to manage teams, projects, timesheets, and employee documents.'
+    question: 'What is AurborBloom?',
+    answer: 'AurborBloom is a comprehensive time-tracking and workforce management application. It helps employees track their work hours and allows administrators to manage teams, projects, timesheets, and employee documents.'
   },
   {
     keywords: ['features', 'can do', 'capabilities', 'offer'],
-    question: 'What features does CORtracker offer?',
-    answer: 'CORtracker offers: \n• Time tracking with clock in/out\n• Timesheet management\n• Project tracking\n• Employee management\n• Document storage with PIN protection\n• Leave request management\n• Performance insights\n• Team chat (CORChat)\n• Admin dashboard with analytics'
+    question: 'What features does AurborBloom offer?',
+    answer: 'AurborBloom offers: \n• Time tracking with clock in/out\n• Timesheet management\n• Project tracking\n• Employee management\n• Document storage with PIN protection\n• Leave request management\n• Performance insights\n• Team chat (AurborChat)\n• Admin dashboard with analytics'
   },
 
   // Login & Signup
@@ -94,21 +94,21 @@ export const faqData = [
     answer: 'Admins can access "Performance Insights" from the sidebar. It shows metrics like total hours worked, attendance patterns, project progress, and team productivity analytics.'
   },
 
-  // CORChat
+  // AurborChat
   {
     keywords: ['chat', 'corchat', 'message', 'team chat', 'communicate'],
-    question: 'How does CORChat work?',
-    answer: 'CORChat is the built-in team messaging feature. Click the red chat button in the bottom-right corner. You can:\n• Join channels like #general and #announcements\n• Create new channels\n• Send direct messages to colleagues\n• Stay connected with your team'
+    question: 'How does AurborChat work?',
+    answer: 'AurborChat is the built-in team messaging feature. Click the red chat button in the bottom-right corner. You can:\n• Join channels like #general and #announcements\n• Create new channels\n• Send direct messages to colleagues\n• Stay connected with your team'
   },
   {
     keywords: ['channel', 'create channel', 'group chat'],
     question: 'How do I create a chat channel?',
-    answer: 'Open CORChat, click "Create Channel", enter a name and optional description, then click "Create". All employees can create and join public channels.'
+    answer: 'Open AurborChat, click "Create Channel", enter a name and optional description, then click "Create". All employees can create and join public channels.'
   },
   {
     keywords: ['direct message', 'dm', 'private message'],
     question: 'How do I send a direct message?',
-    answer: 'In CORChat, click "New Message" under Direct Messages. Search for and select the person you want to message. Start typing to begin your conversation.'
+    answer: 'In AurborChat, click "New Message" under Direct Messages. Search for and select the person you want to message. Start typing to begin your conversation.'
   },
 
   // Profile
@@ -122,7 +122,7 @@ export const faqData = [
   {
     keywords: ['help', 'support', 'contact', 'issue', 'problem'],
     question: 'How do I get help?',
-    answer: 'For technical issues, contact your administrator. You can also use CORChat to reach out to your team. For urgent matters, use your organization\'s standard support channels.'
+    answer: 'For technical issues, contact your administrator. You can also use AurborChat to reach out to your team. For urgent matters, use your organization\'s standard support channels.'
   },
   {
     keywords: ['bug', 'error', 'not working', 'broken'],
@@ -134,7 +134,7 @@ export const faqData = [
   {
     keywords: [],
     question: 'default',
-    answer: 'I\'m not sure about that. Try asking about:\n• Time tracking\n• Timesheets\n• Projects\n• Documents\n• Leave requests\n• CORChat\n• Admin features\n\nOr type "features" to see what CORtracker offers!'
+    answer: 'I\'m not sure about that. Try asking about:\n• Time tracking\n• Timesheets\n• Projects\n• Documents\n• Leave requests\n• AurborChat\n• Admin features\n\nOr type "features" to see what AurborBloom offers!'
   }
 ];
 
@@ -146,7 +146,7 @@ export const findAnswer = (userInput) => {
   if (/^(hi|hello|hey|greetings|good morning|good afternoon|good evening)/.test(input)) {
     return {
       question: 'Greeting',
-      answer: 'Hello! 👋 I\'m CORBot, your CORtracker assistant. How can I help you today? You can ask me about time tracking, timesheets, projects, documents, CORChat, or any other feature!'
+      answer: 'Hello! 👋 I\'m AurborBot, your AurborBloom assistant. How can I help you today? You can ask me about time tracking, timesheets, projects, documents, AurborChat, or any other feature!'
     };
   }
 

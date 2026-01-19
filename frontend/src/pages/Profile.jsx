@@ -725,7 +725,7 @@ const Profile = () => {
                   <div>
                     <h3 className="font-semibold text-brand-dark mb-1">Calendar Integration</h3>
                     <p className="text-sm text-gray-600">
-                      Subscribe to your CORtracker calendar to see your approved leave and PTO events in Google Calendar, 
+                      Subscribe to your AurborBloom calendar to see your approved leave and PTO events in Google Calendar, 
                       Outlook, Apple Calendar, or any calendar app that supports ICS feeds.
                     </p>
                   </div>

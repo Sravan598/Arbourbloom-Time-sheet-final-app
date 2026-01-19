@@ -1,4 +1,4 @@
-export { default as CORChat } from './CORChat';
+export { default as AurborChat } from './AurborChat';
 export { default as ChatPanel } from './ChatPanel';
 export { default as ChatButton } from './ChatButton';
 export { default as ChannelList } from './ChannelList';
