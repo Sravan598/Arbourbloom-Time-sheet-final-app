@@ -125,7 +125,7 @@ const Hero = () => {
             <div className="relative">
               {/* Glow effect */}
               <div className="absolute inset-0 bg-brand-accent/10 rounded-full blur-3xl scale-150" />
-              <Logo3D size={320} />
+              <Logo3DLanding size={320} />
             </div>
           </motion.div>
         </div>
