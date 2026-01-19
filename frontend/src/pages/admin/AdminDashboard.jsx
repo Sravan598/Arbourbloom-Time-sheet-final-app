@@ -20,6 +20,7 @@ import AdminTeamProgressSection from '../../components/admin/AdminTeamProgressSe
 import AdminAnnouncementsSection from '../../components/admin/AdminAnnouncementsSection';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import { NotificationBell } from '../../components/notifications';
+import Logo3D from '../../components/Logo3D';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
