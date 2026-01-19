@@ -1054,7 +1054,7 @@ async def signup(user_data: UserCreate):
     # Handle admin signup with invite code
     role = UserRole.EMPLOYEE
     if user_data.role == UserRole.ADMIN:
-        admin_code = os.environ.get('ADMIN_INVITE_CODE', 'ARBORBLOOM-ADMIN-2024')
+        admin_code = os.environ.get('ADMIN_INVITE_CODE', 'ARBORBLOOM-ADMIN-2025')
         if user_data.admin_invite_code != admin_code:
             raise HTTPException(status_code=403, detail="Invalid admin invite code")
         role = UserRole.ADMIN
