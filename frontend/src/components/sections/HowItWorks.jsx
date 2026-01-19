@@ -1,26 +1,26 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { UserPlus, Timer, FileText } from 'lucide-react';
+import { UserPlus, Settings, Rocket } from 'lucide-react';
 import TiltCard from '../ui/TiltCard';
 
 const steps = [
   {
     number: '01',
     icon: UserPlus,
-    title: 'Create Your Account',
-    description: 'Sign up in under 2 minutes. Add your team members and configure your departments with our guided setup wizard.',
+    title: 'Sign Up & Add Your Team',
+    description: 'Create your account in under 2 minutes. Import employees via CSV or add them manually. Configure departments and roles with our guided setup.',
   },
   {
     number: '02',
-    icon: Timer,
-    title: 'Start Tracking Time',
-    description: 'Employees clock in/out via web, mobile, or kiosk. GPS verification and biometric options available for enhanced accuracy.',
+    icon: Settings,
+    title: 'Configure Your Workflows',
+    description: 'Set up leave policies, approval chains, and time tracking rules. Customize settings to match how your organization works.',
   },
   {
     number: '03',
-    icon: FileText,
-    title: 'Generate Reports',
-    description: 'Access real-time dashboards, export timesheets, and sync with payroll. Automate overtime calculations instantly.',
+    icon: Rocket,
+    title: 'Go Live & Empower Your Team',
+    description: 'Invite employees to start tracking time, requesting leave, and using the platform. Get real-time insights from day one.',
   },
 ];
 
@@ -37,20 +37,20 @@ const HowItWorks = () => {
           className="text-center max-w-3xl mx-auto mb-16"
         >
           <span className="text-brand-black font-semibold text-sm uppercase tracking-wider">
-            How It Works
+            Getting Started
           </span>
           <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-brand-dark">
-            Get started in 3 simple steps
+            Up and running in minutes
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            AurborBloom is designed for simplicity. Your team can be up and running 
-            in minutes, not days.
+            AurborBloom is designed for simplicity. No complex implementation, 
+            no lengthy onboarding — just results from day one.
           </p>
         </motion.div>
 
         {/* Steps */}
         <div className="relative">
-          {/* Connection Line - positioned behind cards */}
+          {/* Connection Line */}
           <div className="hidden lg:block absolute top-32 left-[16.67%] right-[16.67%] h-1 bg-gradient-to-r from-brand-black/20 via-brand-black to-brand-black/20" />
 
           <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
@@ -63,7 +63,7 @@ const HowItWorks = () => {
                 transition={{ duration: 0.6, delay: index * 0.2 }}
                 className="relative"
               >
-                {/* Timeline dot - above the card */}
+                {/* Timeline dot */}
                 <div className="hidden lg:flex justify-center mb-6">
                   <motion.div 
                     className="w-8 h-8 bg-brand-black rounded-full border-4 border-white shadow-lg flex items-center justify-center"
@@ -80,8 +80,8 @@ const HowItWorks = () => {
                   scale={1.02}
                 >
                   <div className="bg-white rounded-3xl p-8 border border-gray-100 relative">
-                    {/* Step number badge - mobile only */}
-                    <div className="lg:hidden absolute -top-4 left-8 bg-gradient-to-r from-brand-black to-brand-black-dark text-white text-sm font-bold px-4 py-2 rounded-full">
+                    {/* Step number badge - mobile */}
+                    <div className="lg:hidden absolute -top-4 left-8 bg-gradient-to-r from-brand-black to-gray-800 text-white text-sm font-bold px-4 py-2 rounded-full">
                       Step {step.number}
                     </div>
 
