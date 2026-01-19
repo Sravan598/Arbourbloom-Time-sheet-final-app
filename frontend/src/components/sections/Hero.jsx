@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '../ui/Button';
-import Logo3D from '../Logo3D';
+import Logo3DLanding from '../Logo3DLanding';
 
 const Hero = () => {
   const navigate = useNavigate();
