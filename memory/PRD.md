@@ -1,9 +1,10 @@
 # AurborBloom - Product Requirements Document
 
 ## Overview
-AurborBloom is a comprehensive time-tracking and workforce management application built with React frontend and FastAPI backend, using MongoDB for data storage.
+AurborBloom is a comprehensive Human Resource Management System (HRMS) built with React frontend and FastAPI backend, using MongoDB for data storage.
 
 **Rebranded from CORtracker to AurborBloom - January 2025**
+**Brand Colors: Black (#000000) and Gold (#D4AF37)**
 
 ## Core Features
 
