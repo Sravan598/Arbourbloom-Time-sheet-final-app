@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from '../components/sections/Navbar';
 import Hero from '../components/sections/Hero';
 import Features from '../components/sections/Features';
+import WhyAurborBloom from '../components/sections/WhyAurborBloom';
 import HowItWorks from '../components/sections/HowItWorks';
 import FAQ from '../components/sections/FAQ';
 import Contact from '../components/sections/Contact';
@@ -14,6 +15,7 @@ const Home = () => {
       <main>
         <Hero />
         <Features />
+        <WhyAurborBloom />
         <HowItWorks />
         <FAQ />
         <Contact />
