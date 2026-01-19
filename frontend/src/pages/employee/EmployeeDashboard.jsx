@@ -272,7 +272,7 @@ const EmployeeDashboard = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-brand-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading dashboard...</p>
         </div>
       </div>
@@ -311,7 +311,7 @@ const EmployeeDashboard = () => {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-red to-brand-red-dark">
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-black to-brand-black-dark">
                           <span className="text-sm font-bold text-white">
                             {(profileData?.name || user?.name)?.charAt(0)?.toUpperCase() || 'U'}
                           </span>
@@ -369,7 +369,7 @@ const EmployeeDashboard = () => {
                             setShowProfileDropdown(false);
                             handleLogout();
                           }}
-                          className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full"
+                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-red-50 transition-colors w-full"
                         >
                           <LogOut className="w-4 h-4" />
                           <span>Logout</span>
@@ -397,7 +397,7 @@ const EmployeeDashboard = () => {
             className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3"
           >
             <AlertCircle className="w-5 h-5 text-red-500" />
-            <p className="text-red-700">{error}</p>
+            <p className="text-gray-800">{error}</p>
           </motion.div>
         )}
         {success && (
@@ -436,7 +436,7 @@ const EmployeeDashboard = () => {
                     <Timer className="w-4 h-4" />
                     <span>Started at {new Date(currentShift?.clock_in_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span>
                   </div>
-                  <div className="text-4xl font-mono font-bold text-brand-red" data-testid="elapsed-time">
+                  <div className="text-4xl font-mono font-bold text-brand-black" data-testid="elapsed-time">
                     {formatTime(elapsedTime)}
                   </div>
                 </div>
@@ -448,7 +448,7 @@ const EmployeeDashboard = () => {
               <div className="mb-3">
                 <button
                   onClick={() => setShowNoteInput(!showNoteInput)}
-                  className="flex items-center gap-2 text-sm text-gray-500 hover:text-brand-red transition-colors mx-auto"
+                  className="flex items-center gap-2 text-sm text-gray-500 hover:text-brand-black transition-colors mx-auto"
                 >
                   <MessageSquare className="w-4 h-4" />
                   {showNoteInput ? 'Hide note' : 'Add note (optional)'}
@@ -467,7 +467,7 @@ const EmployeeDashboard = () => {
                     value={isClockedIn ? clockOutNote : clockInNote}
                     onChange={(e) => isClockedIn ? setClockOutNote(e.target.value) : setClockInNote(e.target.value)}
                     placeholder={isClockedIn ? "Note for clocking out..." : "Note for clocking in..."}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent resize-none text-sm"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent resize-none text-sm"
                     rows={2}
                     maxLength={200}
                     data-testid="clock-note-input"
@@ -518,7 +518,7 @@ const EmployeeDashboard = () => {
             <div className="border-t border-gray-100 pt-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <Coffee className="w-5 h-5 text-brand-red" />
+                  <Coffee className="w-5 h-5 text-brand-black" />
                   <h3 className="font-semibold text-brand-dark">Break Timer</h3>
                 </div>
                 {breakData && (
@@ -593,7 +593,7 @@ const EmployeeDashboard = () => {
                             onClick={() => setSelectedBreakType(type.id)}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all text-sm ${
                               selectedBreakType === type.id
-                                ? 'border-brand-red bg-brand-red/10 text-brand-red'
+                                ? 'border-brand-black bg-brand-black/10 text-brand-black'
                                 : 'border-gray-200 hover:border-gray-300 text-gray-600'
                             }`}
                             disabled={!isClockedIn}
@@ -614,7 +614,7 @@ const EmployeeDashboard = () => {
                       data-testid="start-break-btn"
                     >
                       {breakProcessing ? (
-                        <div className="w-4 h-4 border-2 border-brand-red border-t-transparent rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-brand-black border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <>
                           <Play className="w-4 h-4 mr-2" />

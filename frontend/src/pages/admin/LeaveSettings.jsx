@@ -98,8 +98,8 @@ const LeaveSettings = () => {
             </div>
             <motion.button
               onClick={openCreateModal}
-              className="flex items-center gap-2 px-4 py-2 bg-brand-red text-white rounded-lg
-                         hover:bg-red-600 transition-colors font-medium"
+              className="flex items-center gap-2 px-4 py-2 bg-brand-black text-white rounded-lg
+                         hover:bg-gray-700 transition-colors font-medium"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -129,7 +129,7 @@ const LeaveSettings = () => {
             
             {loading ? (
               <div className="p-8 text-center">
-                <div className="animate-spin w-8 h-8 border-3 border-brand-red border-t-transparent rounded-full mx-auto" />
+                <div className="animate-spin w-8 h-8 border-3 border-brand-black border-t-transparent rounded-full mx-auto" />
               </div>
             ) : leaveTypes.length === 0 ? (
               <div className="p-8 text-center">
@@ -160,7 +160,7 @@ const LeaveSettings = () => {
                       </button>
                       <button
                         onClick={() => handleDelete(type.id)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-gray-400 hover:text-gray-700 hover:bg-red-50 rounded-lg transition-colors"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -207,7 +207,7 @@ const LeaveSettings = () => {
               {/* Modal Body */}
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 {error && (
-                  <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                  <div className="flex items-center gap-2 p-3 bg-red-50 text-gray-800 rounded-lg text-sm">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     {error}
                   </div>
@@ -225,7 +225,7 @@ const LeaveSettings = () => {
                         className={`w-10 h-10 rounded-lg text-xl flex items-center justify-center
                                    transition-all ${
                                      formData.icon === emoji
-                                       ? 'bg-brand-red/10 ring-2 ring-brand-red'
+                                       ? 'bg-brand-black/10 ring-2 ring-brand-black'
                                        : 'bg-gray-100 hover:bg-gray-200'
                                    }`}
                       >
@@ -244,7 +244,7 @@ const LeaveSettings = () => {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="e.g., Vacation, Sick Leave"
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg
-                               focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red"
+                               focus:outline-none focus:ring-2 focus:ring-brand-black/20 focus:border-brand-black"
                     required
                   />
                 </div>
@@ -273,8 +273,8 @@ const LeaveSettings = () => {
                   <button
                     type="submit"
                     disabled={submitting || !formData.name}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-red text-white rounded-lg
-                               hover:bg-red-600 transition-colors font-medium disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-black text-white rounded-lg
+                               hover:bg-gray-700 transition-colors font-medium disabled:opacity-50"
                   >
                     <Save className="w-4 h-4" />
                     {submitting ? 'Saving...' : 'Save'}

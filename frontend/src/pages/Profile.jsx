@@ -293,7 +293,7 @@ const Profile = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-brand-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-500">Loading profile...</p>
         </div>
       </div>
@@ -353,7 +353,7 @@ const Profile = () => {
               className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3"
             >
               <AlertCircle className="w-5 h-5 text-red-500" />
-              <p className="text-red-700">{error}</p>
+              <p className="text-gray-800">{error}</p>
               <button onClick={() => setError('')} className="ml-auto">
                 <X className="w-4 h-4 text-red-500" />
               </button>
@@ -392,7 +392,7 @@ const Profile = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-red to-brand-red-dark">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-black to-brand-black-dark">
                     <span className="text-4xl font-bold text-white">
                       {profile?.name?.charAt(0)?.toUpperCase() || 'U'}
                     </span>
@@ -401,7 +401,7 @@ const Profile = () => {
               </div>
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-0 right-0 w-9 h-9 bg-brand-red text-white rounded-full flex items-center justify-center shadow-lg hover:bg-brand-red-dark transition-colors"
+                className="absolute bottom-0 right-0 w-9 h-9 bg-brand-black text-white rounded-full flex items-center justify-center shadow-lg hover:bg-brand-black-dark transition-colors"
               >
                 <Camera className="w-4 h-4" />
               </button>
@@ -439,7 +439,7 @@ const Profile = () => {
               {profile?.profile_image && (
                 <button 
                   onClick={handleDeleteImage}
-                  className="text-sm text-red-500 hover:text-red-700 mt-2"
+                  className="text-sm text-red-500 hover:text-gray-800 mt-2"
                 >
                   Remove photo
                 </button>
@@ -465,7 +465,7 @@ const Profile = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'bg-brand-red text-white shadow-lg shadow-brand-red/30'
+                    ? 'bg-brand-black text-white shadow-lg shadow-brand-black/30'
                     : 'bg-white text-gray-600 hover:bg-gray-50'
                 }`}
               >
@@ -487,7 +487,7 @@ const Profile = () => {
           {activeTab === 'personal' && (
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-brand-dark flex items-center gap-2">
-                <UserCircle className="w-5 h-5 text-brand-red" />
+                <UserCircle className="w-5 h-5 text-brand-black" />
                 Personal Information
               </h3>
               
@@ -498,7 +498,7 @@ const Profile = () => {
                     type="text"
                     value={profile?.name || ''}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   />
                 </div>
                 
@@ -520,7 +520,7 @@ const Profile = () => {
                     value={profile?.phone || ''}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     placeholder="+1 (555) 123-4567"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   />
                 </div>
                 
@@ -530,13 +530,13 @@ const Profile = () => {
                     type="date"
                     value={profile?.date_of_birth || ''}
                     onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   />
                 </div>
               </div>
               
               <h4 className="text-md font-semibold text-brand-dark flex items-center gap-2 pt-4 border-t">
-                <MapPin className="w-4 h-4 text-brand-red" />
+                <MapPin className="w-4 h-4 text-brand-black" />
                 Address
               </h4>
               
@@ -548,7 +548,7 @@ const Profile = () => {
                     value={profile?.address || ''}
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     placeholder="123 Main Street, Apt 4B"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   />
                 </div>
                 
@@ -559,7 +559,7 @@ const Profile = () => {
                     value={profile?.city || ''}
                     onChange={(e) => handleInputChange('city', e.target.value)}
                     placeholder="New York"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   />
                 </div>
                 
@@ -570,7 +570,7 @@ const Profile = () => {
                     value={profile?.state || ''}
                     onChange={(e) => handleInputChange('state', e.target.value)}
                     placeholder="NY"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   />
                 </div>
                 
@@ -581,7 +581,7 @@ const Profile = () => {
                     value={profile?.country || ''}
                     onChange={(e) => handleInputChange('country', e.target.value)}
                     placeholder="United States"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   />
                 </div>
               </div>
@@ -592,7 +592,7 @@ const Profile = () => {
           {activeTab === 'work' && (
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-brand-dark flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-brand-red" />
+                <Briefcase className="w-5 h-5 text-brand-black" />
                 Work Information
               </h3>
               <p className="text-sm text-gray-500">This information is managed by your administrator.</p>
@@ -665,7 +665,7 @@ const Profile = () => {
           {activeTab === 'emergency' && (
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-brand-dark flex items-center gap-2">
-                <Heart className="w-5 h-5 text-brand-red" />
+                <Heart className="w-5 h-5 text-brand-black" />
                 Emergency Contact
               </h3>
               <p className="text-sm text-gray-500">This person will be contacted in case of emergency.</p>
@@ -678,7 +678,7 @@ const Profile = () => {
                     value={profile?.emergency_contact?.name || ''}
                     onChange={(e) => handleEmergencyContactChange('name', e.target.value)}
                     placeholder="Jane Doe"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   />
                 </div>
                 
@@ -689,7 +689,7 @@ const Profile = () => {
                     value={profile?.emergency_contact?.phone || ''}
                     onChange={(e) => handleEmergencyContactChange('phone', e.target.value)}
                     placeholder="+1 (555) 987-6543"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   />
                 </div>
                 
@@ -698,7 +698,7 @@ const Profile = () => {
                   <select
                     value={profile?.emergency_contact?.relation || ''}
                     onChange={(e) => handleEmergencyContactChange('relation', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   >
                     <option value="">Select relationship</option>
                     <option value="Spouse">Spouse</option>
@@ -717,10 +717,10 @@ const Profile = () => {
           {activeTab === 'calendar' && (
             <div className="space-y-8">
               {/* Info Section */}
-              <div className="bg-gradient-to-r from-brand-red/5 to-red-50 rounded-xl p-6 border border-brand-red/10">
+              <div className="bg-gradient-to-r from-brand-black/5 to-red-50 rounded-xl p-6 border border-brand-black/10">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-brand-red/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <CalendarDays className="w-6 h-6 text-brand-red" />
+                  <div className="w-12 h-12 bg-brand-black/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <CalendarDays className="w-6 h-6 text-brand-black" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-brand-dark mb-1">Calendar Integration</h3>
@@ -734,7 +734,7 @@ const Profile = () => {
 
               {isLoadingCalendar ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="w-8 h-8 border-4 border-brand-red border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-8 h-8 border-4 border-brand-black border-t-transparent rounded-full animate-spin"></div>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -787,7 +787,7 @@ const Profile = () => {
                         <div className="flex items-center justify-between pt-2">
                           <button
                             onClick={() => regenerateToken('personal')}
-                            className="text-sm text-gray-500 hover:text-brand-red flex items-center gap-2 transition-colors"
+                            className="text-sm text-gray-500 hover:text-brand-black flex items-center gap-2 transition-colors"
                           >
                             <RefreshCw className="w-4 h-4" />
                             Regenerate URL
@@ -796,7 +796,7 @@ const Profile = () => {
                             href={`${BACKEND_URL}${calendarFeeds.personal_feed.url}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm text-brand-red hover:text-red-700 flex items-center gap-2 transition-colors"
+                            className="text-sm text-brand-black hover:text-gray-800 flex items-center gap-2 transition-colors"
                           >
                             <ExternalLink className="w-4 h-4" />
                             Download ICS
@@ -855,7 +855,7 @@ const Profile = () => {
                         <div className="flex items-center justify-between pt-2">
                           <button
                             onClick={() => regenerateToken('team')}
-                            className="text-sm text-gray-500 hover:text-brand-red flex items-center gap-2 transition-colors"
+                            className="text-sm text-gray-500 hover:text-brand-black flex items-center gap-2 transition-colors"
                           >
                             <RefreshCw className="w-4 h-4" />
                             Regenerate URL
@@ -864,7 +864,7 @@ const Profile = () => {
                             href={`${BACKEND_URL}${calendarFeeds.team_feed.url}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm text-brand-red hover:text-red-700 flex items-center gap-2 transition-colors"
+                            className="text-sm text-brand-black hover:text-gray-800 flex items-center gap-2 transition-colors"
                           >
                             <ExternalLink className="w-4 h-4" />
                             Download ICS
@@ -945,7 +945,7 @@ const Profile = () => {
               {/* Security Section */}
               <div>
                 <h3 className="text-lg font-semibold text-brand-dark flex items-center gap-2 mb-4">
-                  <Shield className="w-5 h-5 text-brand-red" />
+                  <Shield className="w-5 h-5 text-brand-black" />
                   Security
                 </h3>
                 
@@ -971,7 +971,7 @@ const Profile = () => {
               {/* Preferences Section */}
               <div>
                 <h3 className="text-lg font-semibold text-brand-dark flex items-center gap-2 mb-4">
-                  <Palette className="w-5 h-5 text-brand-red" />
+                  <Palette className="w-5 h-5 text-brand-black" />
                   Preferences
                 </h3>
                 
@@ -981,7 +981,7 @@ const Profile = () => {
                     <select
                       value={profile?.theme_preference || 'light'}
                       onChange={(e) => handleInputChange('theme_preference', e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                     >
                       <option value="light">Light Mode</option>
                       <option value="dark">Dark Mode</option>
@@ -993,7 +993,7 @@ const Profile = () => {
                     <select
                       value={profile?.time_zone || 'UTC'}
                       onChange={(e) => handleInputChange('time_zone', e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                     >
                       {timeZones.map(tz => (
                         <option key={tz} value={tz}>{tz}</option>
@@ -1006,7 +1006,7 @@ const Profile = () => {
               {/* Notifications Section */}
               <div>
                 <h3 className="text-lg font-semibold text-brand-dark flex items-center gap-2 mb-4">
-                  <Bell className="w-5 h-5 text-brand-red" />
+                  <Bell className="w-5 h-5 text-brand-black" />
                   Email Notifications
                 </h3>
                 
@@ -1031,7 +1031,7 @@ const Profile = () => {
                         )}
                         className={`w-12 h-7 rounded-full transition-colors relative ${
                           profile?.notification_preferences?.[item.key]
-                            ? 'bg-brand-red'
+                            ? 'bg-brand-black'
                             : 'bg-gray-300'
                         }`}
                       >
@@ -1082,7 +1082,7 @@ const Profile = () => {
                       type={showCurrentPassword ? 'text' : 'password'}
                       value={passwordForm.current_password}
                       onChange={(e) => setPasswordForm({ ...passwordForm, current_password: e.target.value })}
-                      className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                      className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                       required
                     />
                     <button
@@ -1102,7 +1102,7 @@ const Profile = () => {
                       type={showNewPassword ? 'text' : 'password'}
                       value={passwordForm.new_password}
                       onChange={(e) => setPasswordForm({ ...passwordForm, new_password: e.target.value })}
-                      className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                      className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                       required
                       minLength={6}
                     />
@@ -1122,7 +1122,7 @@ const Profile = () => {
                     type="password"
                     value={passwordForm.confirm_password}
                     onChange={(e) => setPasswordForm({ ...passwordForm, confirm_password: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                     required
                   />
                 </div>

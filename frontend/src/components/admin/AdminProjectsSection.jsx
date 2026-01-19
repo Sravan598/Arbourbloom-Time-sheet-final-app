@@ -146,7 +146,7 @@ const AdminProjectsSection = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <FolderKanban className="w-6 h-6 text-brand-red" />
+            <FolderKanban className="w-6 h-6 text-brand-black" />
             <h2 className="text-lg font-bold text-brand-dark">Projects</h2>
           </div>
           <Button
@@ -213,7 +213,7 @@ const AdminProjectsSection = () => {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleEdit(project)}
-                      className="p-2 text-gray-400 hover:text-brand-red rounded-lg hover:bg-gray-100 transition-colors"
+                      className="p-2 text-gray-400 hover:text-brand-black rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
@@ -263,7 +263,7 @@ const AdminProjectsSection = () => {
               {formError && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-red-500" />
-                  <p className="text-red-700 text-sm">{formError}</p>
+                  <p className="text-gray-800 text-sm">{formError}</p>
                 </div>
               )}
 
@@ -276,7 +276,7 @@ const AdminProjectsSection = () => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                     placeholder="e.g., Website Redesign"
                     required
                     data-testid="project-name-input"
@@ -290,7 +290,7 @@ const AdminProjectsSection = () => {
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent resize-none"
                     rows={2}
                     placeholder="Brief project description..."
                   />
@@ -323,7 +323,7 @@ const AdminProjectsSection = () => {
                     type="number"
                     value={formData.estimated_hours}
                     onChange={(e) => setFormData({ ...formData, estimated_hours: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                     placeholder="e.g., 40"
                     min="0"
                     step="0.5"
@@ -345,7 +345,7 @@ const AdminProjectsSection = () => {
                             type="checkbox"
                             checked={formData.assigned_users.includes(emp.id)}
                             onChange={() => toggleUserAssignment(emp.id)}
-                            className="w-4 h-4 text-brand-red rounded focus:ring-brand-red"
+                            className="w-4 h-4 text-brand-black rounded focus:ring-brand-black"
                           />
                           <span className="text-sm text-brand-dark">{emp.name}</span>
                         </label>

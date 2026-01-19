@@ -127,7 +127,7 @@ const Signup = () => {
               data-testid="signup-error"
             >
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <p className="text-red-700 text-sm">{localError || error}</p>
+              <p className="text-gray-800 text-sm">{localError || error}</p>
             </motion.div>
           )}
 
@@ -146,7 +146,7 @@ const Signup = () => {
                   onChange={handleChange}
                   className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
                     validationErrors.name ? 'border-red-500' : 'border-gray-200'
-                  } focus:ring-2 focus:ring-brand-red focus:border-transparent transition-all`}
+                  } focus:ring-2 focus:ring-brand-black focus:border-transparent transition-all`}
                   placeholder="John Doe"
                   required
                   data-testid="signup-name"
@@ -170,7 +170,7 @@ const Signup = () => {
                   onChange={handleChange}
                   className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
                     validationErrors.email ? 'border-red-500' : 'border-gray-200'
-                  } focus:ring-2 focus:ring-brand-red focus:border-transparent transition-all`}
+                  } focus:ring-2 focus:ring-brand-black focus:border-transparent transition-all`}
                   placeholder="you@company.com"
                   required
                   data-testid="signup-email"
@@ -194,7 +194,7 @@ const Signup = () => {
                   onChange={handleChange}
                   className={`w-full pl-12 pr-12 py-3 rounded-xl border ${
                     validationErrors.password ? 'border-red-500' : 'border-gray-200'
-                  } focus:ring-2 focus:ring-brand-red focus:border-transparent transition-all`}
+                  } focus:ring-2 focus:ring-brand-black focus:border-transparent transition-all`}
                   placeholder="Min. 6 characters"
                   required
                   data-testid="signup-password"
@@ -225,7 +225,7 @@ const Signup = () => {
                   onChange={handleChange}
                   className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
                     validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-200'
-                  } focus:ring-2 focus:ring-brand-red focus:border-transparent transition-all`}
+                  } focus:ring-2 focus:ring-brand-black focus:border-transparent transition-all`}
                   placeholder="Confirm your password"
                   required
                   data-testid="signup-confirm-password"
@@ -241,7 +241,7 @@ const Signup = () => {
               <button
                 type="button"
                 onClick={() => setShowAdminCode(!showAdminCode)}
-                className="text-sm text-brand-red hover:underline flex items-center gap-1"
+                className="text-sm text-brand-black hover:underline flex items-center gap-1"
               >
                 <KeyRound className="w-4 h-4" />
                 {showAdminCode ? 'Hide' : 'Have an'} admin invite code?
@@ -260,7 +260,7 @@ const Signup = () => {
                       name="adminInviteCode"
                       value={formData.adminInviteCode}
                       onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent transition-all"
+                      className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent transition-all"
                       placeholder="Enter admin invite code"
                       data-testid="signup-admin-code"
                     />
@@ -294,7 +294,7 @@ const Signup = () => {
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               Already have an account?{' '}
-              <Link to="/login" className="text-brand-red font-medium hover:underline" data-testid="login-link">
+              <Link to="/login" className="text-brand-black font-medium hover:underline" data-testid="login-link">
                 Sign in
               </Link>
             </p>
@@ -303,7 +303,7 @@ const Signup = () => {
 
         {/* Back to Home */}
         <div className="text-center mt-6">
-          <Link to="/" className="text-gray-500 hover:text-brand-red transition-colors">
+          <Link to="/" className="text-gray-500 hover:text-brand-black transition-colors">
             ← Back to Home
           </Link>
         </div>

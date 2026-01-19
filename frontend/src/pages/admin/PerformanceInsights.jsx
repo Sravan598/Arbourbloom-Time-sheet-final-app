@@ -131,7 +131,7 @@ const PerformanceInsights = () => {
       blue: 'bg-blue-100 text-blue-600',
       green: 'bg-green-100 text-green-600',
       yellow: 'bg-yellow-100 text-yellow-600',
-      red: 'bg-red-100 text-red-600',
+      red: 'bg-red-100 text-gray-700',
       purple: 'bg-purple-100 text-purple-600'
     };
     
@@ -146,7 +146,7 @@ const PerformanceInsights = () => {
             <Icon className="w-6 h-6" />
           </div>
           {!isNeutral && (
-            <div className={`flex items-center gap-1 text-sm font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`flex items-center gap-1 text-sm font-medium ${isPositive ? 'text-green-600' : 'text-gray-700'}`}>
               {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
               {Math.abs(change)}{unit === '%' ? '%' : unit === 'h' ? 'h' : ' min'}
             </div>
@@ -182,7 +182,7 @@ const PerformanceInsights = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-brand-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-500">Loading insights...</p>
         </div>
       </div>
@@ -201,7 +201,7 @@ const PerformanceInsights = () => {
           <div className="px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-brand-red to-brand-red-dark rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-brand-black to-brand-black-dark rounded-xl flex items-center justify-center">
                   <BarChart3 className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -216,7 +216,7 @@ const PerformanceInsights = () => {
                   <select
                     value={period}
                     onChange={(e) => setPeriod(Number(e.target.value))}
-                    className="appearance-none bg-gray-100 border-0 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-brand-dark focus:ring-2 focus:ring-brand-red"
+                    className="appearance-none bg-gray-100 border-0 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-brand-dark focus:ring-2 focus:ring-brand-black"
                   >
                     <option value={7}>Last 7 days</option>
                     <option value={30}>Last 30 days</option>
@@ -307,7 +307,7 @@ const PerformanceInsights = () => {
                               setShowProfileDropdown(false);
                               handleLogout();
                             }}
-                            className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-red-50 transition-colors w-full"
                           >
                             <LogOut className="w-4 h-4" />
                             <span>Logout</span>
@@ -529,7 +529,7 @@ const PerformanceInsights = () => {
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
+                  <AlertCircle className="w-5 h-5 text-gray-700" />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-brand-dark">Needs Attention</h2>
@@ -553,14 +553,14 @@ const PerformanceInsights = () => {
                       className="flex items-center gap-3 p-3 bg-red-50 rounded-xl border border-red-100"
                     >
                       <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                        <AlertTriangle className="w-4 h-4 text-red-600" />
+                        <AlertTriangle className="w-4 h-4 text-gray-700" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-brand-dark truncate">{performer.name}</p>
                         <p className="text-xs text-gray-500">{performer.total_hours}h / {performers.target_hours}h target</p>
                       </div>
                       <div className="text-right">
-                        <span className="text-sm font-bold text-red-600">
+                        <span className="text-sm font-bold text-gray-700">
                           {performer.percentage}%
                         </span>
                       </div>

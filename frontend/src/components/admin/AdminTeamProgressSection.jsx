@@ -37,7 +37,7 @@ const statusConfig = {
   },
   OVERTIME: {
     label: 'Overtime',
-    color: 'text-red-600',
+    color: 'text-gray-700',
     bgColor: 'bg-red-100',
     barColor: 'bg-red-500',
     icon: AlertTriangle
@@ -85,7 +85,7 @@ const AdminTeamProgressSection = () => {
     return (
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <div className="flex items-center gap-3 mb-6">
-          <TrendingUp className="w-6 h-6 text-brand-red" />
+          <TrendingUp className="w-6 h-6 text-brand-black" />
           <h2 className="text-lg font-bold text-brand-dark">Team Weekly Progress</h2>
         </div>
         <div className="text-center py-8 bg-gray-50 rounded-xl">
@@ -106,11 +106,11 @@ const AdminTeamProgressSection = () => {
           className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3"
         >
           <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
+            <AlertTriangle className="w-5 h-5 text-gray-700" />
           </div>
           <div>
-            <p className="font-semibold text-red-700">Overtime Alert!</p>
-            <p className="text-sm text-red-600">
+            <p className="font-semibold text-gray-800">Overtime Alert!</p>
+            <p className="text-sm text-gray-700">
               {data.summary.overtime} employee{data.summary.overtime > 1 ? 's have' : ' has'} exceeded the weekly hour limit.
               Review and take action.
             </p>
@@ -140,7 +140,7 @@ const AdminTeamProgressSection = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <TrendingUp className="w-6 h-6 text-brand-red" />
+          <TrendingUp className="w-6 h-6 text-brand-black" />
           <h2 className="text-lg font-bold text-brand-dark">Team Weekly Progress</h2>
         </div>
         <div className="text-xs text-gray-500">
@@ -163,8 +163,8 @@ const AdminTeamProgressSection = () => {
           <p className="text-xs text-yellow-600">Behind</p>
         </div>
         <div className="bg-red-50 rounded-xl p-3 text-center">
-          <p className="text-2xl font-bold text-red-600">{data.summary.overtime}</p>
-          <p className="text-xs text-red-600">Overtime</p>
+          <p className="text-2xl font-bold text-gray-700">{data.summary.overtime}</p>
+          <p className="text-xs text-gray-700">Overtime</p>
         </div>
       </div>
 

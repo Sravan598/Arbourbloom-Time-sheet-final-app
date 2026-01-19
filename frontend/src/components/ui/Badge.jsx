@@ -4,9 +4,9 @@ import { cn } from '../../lib/utils';
 const Badge = ({ children, variant = 'default', className, ...props }) => {
   const variants = {
     default: 'bg-gray-100 text-gray-800',
-    primary: 'bg-brand-red/10 text-brand-red',
+    primary: 'bg-brand-black/10 text-brand-black',
     success: 'bg-green-100 text-green-800',
-    popular: 'bg-gradient-to-r from-brand-red to-brand-red-dark text-white',
+    popular: 'bg-gradient-to-r from-brand-black to-brand-black-dark text-white',
   };
 
   return (

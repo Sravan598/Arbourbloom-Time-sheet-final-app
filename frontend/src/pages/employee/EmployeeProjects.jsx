@@ -196,7 +196,7 @@ const EmployeeProjects = () => {
         <EmployeeSidebar />
         <div className="flex-1 ml-64 flex items-center justify-center">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="w-12 h-12 border-4 border-brand-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-gray-600">Loading projects...</p>
           </div>
         </div>
@@ -227,7 +227,7 @@ const EmployeeProjects = () => {
               >
                 <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <FolderKanban className="w-5 h-5 text-brand-red" />
+                    <FolderKanban className="w-5 h-5 text-brand-black" />
                     <h2 className="font-semibold text-brand-dark">Active Projects</h2>
                   </div>
                   <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
@@ -406,7 +406,7 @@ const EmployeeProjects = () => {
                 className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
               >
                 <div className="flex items-center gap-3 mb-6">
-                  <Timer className="w-5 h-5 text-brand-red" />
+                  <Timer className="w-5 h-5 text-brand-black" />
                   <h2 className="font-semibold text-brand-dark">Time Tracker</h2>
                 </div>
 
@@ -543,7 +543,7 @@ const EmployeeProjects = () => {
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="What are you working on?"
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-brand-black focus:border-transparent"
                         data-testid="task-description"
                       />
 
@@ -577,7 +577,7 @@ const EmployeeProjects = () => {
                 className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <TrendingUp className="w-5 h-5 text-brand-red" />
+                  <TrendingUp className="w-5 h-5 text-brand-black" />
                   <h2 className="font-semibold text-brand-dark">This Week</h2>
                 </div>
 
@@ -619,7 +619,7 @@ const EmployeeProjects = () => {
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-brand-red" />
+                    <Clock className="w-5 h-5 text-brand-black" />
                     <h2 className="font-semibold text-brand-dark">Today</h2>
                   </div>
                   <span className="text-sm text-gray-500">

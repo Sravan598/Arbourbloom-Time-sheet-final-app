@@ -174,13 +174,13 @@ const AurborBot = () => {
             }}
             style={getBaseStyle()}
             className={`fixed z-50 w-14 h-14 rounded-full shadow-lg
-                       bg-gradient-to-r from-brand-red to-red-600 hover:from-red-600 hover:to-red-700
+                       bg-gradient-to-r from-brand-black to-gray-700 hover:from-gray-700 hover:to-gray-800
                        flex items-center justify-center group
-                       ${isDragging ? 'cursor-grabbing shadow-2xl ring-2 ring-brand-red/30' : 'cursor-grab'}`}
+                       ${isDragging ? 'cursor-grabbing shadow-2xl ring-2 ring-brand-black/30' : 'cursor-grab'}`}
           >
             <Bot className="w-6 h-6 text-white pointer-events-none" />
             {!isDragging && (
-              <span className="absolute inset-0 rounded-full bg-brand-red animate-ping opacity-25" />
+              <span className="absolute inset-0 rounded-full bg-brand-black animate-ping opacity-25" />
             )}
           </motion.button>
         )}
@@ -210,7 +210,7 @@ const AurborBot = () => {
             style={getBaseStyle()}
             className={`fixed w-[360px] bg-white rounded-2xl overflow-hidden border border-gray-200 z-50
                        flex flex-col shadow-xl
-                       ${isDragging ? 'shadow-2xl ring-2 ring-brand-red/20' : ''}`}
+                       ${isDragging ? 'shadow-2xl ring-2 ring-brand-black/20' : ''}`}
           >
             {/* Header - Drag Handle */}
             <div
@@ -220,7 +220,7 @@ const AurborBot = () => {
                 }
               }}
               data-testid="corbot-drag-handle"
-              className={`flex items-center justify-between px-4 py-3 bg-gradient-to-r from-brand-red to-red-600
+              className={`flex items-center justify-between px-4 py-3 bg-gradient-to-r from-brand-black to-gray-700
                          select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
             >
               <div className="flex items-center gap-2 pointer-events-none">
@@ -267,14 +267,14 @@ const AurborBot = () => {
                         className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
                         {msg.type === 'bot' && (
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-red to-red-600 
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-black to-gray-700 
                                         flex items-center justify-center mr-2 flex-shrink-0">
                             <Bot className="w-4 h-4 text-white" />
                           </div>
                         )}
                         <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap ${
                           msg.type === 'user'
-                            ? 'bg-brand-red text-white rounded-tr-md'
+                            ? 'bg-brand-black text-white rounded-tr-md'
                             : 'bg-white text-gray-800 rounded-tl-md shadow-sm border border-gray-100'
                         }`}>
                           {msg.text}
@@ -284,7 +284,7 @@ const AurborBot = () => {
                     
                     {isTyping && (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-red to-red-600 
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-black to-gray-700 
                                       flex items-center justify-center flex-shrink-0">
                           <Bot className="w-4 h-4 text-white" />
                         </div>
@@ -309,8 +309,8 @@ const AurborBot = () => {
                           <button
                             key={idx}
                             onClick={() => handleQuickQuestion(q)}
-                            className="text-xs px-2.5 py-1 bg-gray-100 hover:bg-brand-red/10 
-                                     text-gray-600 hover:text-brand-red rounded-full transition-colors"
+                            className="text-xs px-2.5 py-1 bg-gray-100 hover:bg-brand-black/10 
+                                     text-gray-600 hover:text-brand-black rounded-full transition-colors"
                           >
                             {q}
                           </button>
@@ -330,14 +330,14 @@ const AurborBot = () => {
                         onKeyPress={handleKeyPress}
                         placeholder="Ask me anything..."
                         className="flex-1 px-4 py-2 bg-gray-100 rounded-full text-sm
-                                   focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:bg-white transition-all"
+                                   focus:outline-none focus:ring-2 focus:ring-brand-black/20 focus:bg-white transition-all"
                       />
                       <motion.button
                         onClick={handleSend}
                         disabled={!inputValue.trim()}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="p-2 rounded-full bg-brand-red text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-2 rounded-full bg-brand-black text-white disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Send className="w-5 h-5" />
                       </motion.button>

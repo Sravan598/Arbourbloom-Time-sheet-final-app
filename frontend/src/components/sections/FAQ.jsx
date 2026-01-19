@@ -41,7 +41,7 @@ const FAQ = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <span className="text-brand-red font-semibold text-sm uppercase tracking-wider">
+          <span className="text-brand-black font-semibold text-sm uppercase tracking-wider">
             FAQ
           </span>
           <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-brand-dark">

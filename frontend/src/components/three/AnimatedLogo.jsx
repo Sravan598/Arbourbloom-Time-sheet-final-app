@@ -43,7 +43,7 @@ const AnimatedLogo = () => {
             opacity: [0.3, 0.5, 0.3]
           }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/4 left-1/4 w-64 h-64 bg-brand-red/20 rounded-full blur-3xl"
+          className="absolute top-1/4 left-1/4 w-64 h-64 bg-brand-black/20 rounded-full blur-3xl"
         />
         <motion.div
           animate={prefersReducedMotion ? {} : { 
@@ -74,7 +74,7 @@ const AnimatedLogo = () => {
               className="absolute inset-0 pointer-events-none"
             >
               <div className="absolute inset-[-30px] border-2 border-gray-300/30 rounded-full" />
-              <div className="absolute top-[-30px] left-1/2 -translate-x-1/2 w-3 h-3 bg-brand-red rounded-full shadow-lg shadow-brand-red/50" />
+              <div className="absolute top-[-30px] left-1/2 -translate-x-1/2 w-3 h-3 bg-brand-black rounded-full shadow-lg shadow-brand-black/50" />
             </motion.div>
 
             {/* Logo Image */}
@@ -91,7 +91,7 @@ const AnimatedLogo = () => {
               />
               
               {/* Glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-brand-red/20 to-transparent blur-2xl -z-10" />
+              <div className="absolute inset-0 bg-gradient-to-r from-brand-black/20 to-transparent blur-2xl -z-10" />
             </motion.div>
 
             {/* Lightning bolt accent */}
@@ -131,7 +131,7 @@ const AnimatedLogo = () => {
                   delay: i * 0.3,
                   ease: "easeInOut"
                 }}
-                className="absolute w-2 h-2 bg-brand-red rounded-full"
+                className="absolute w-2 h-2 bg-brand-black rounded-full"
                 style={{
                   top: `${20 + (i * 10)}%`,
                   left: `${10 + (i * 13)}%`,
@@ -167,7 +167,7 @@ const AnimatedLogo = () => {
             delay: i * 0.2,
             ease: "easeInOut"
           }}
-          className="absolute w-1 h-1 bg-brand-red/60 rounded-full"
+          className="absolute w-1 h-1 bg-brand-black/60 rounded-full"
           style={{
             top: `${15 + i * 10}%`,
             left: `${10 + i * 10}%`,

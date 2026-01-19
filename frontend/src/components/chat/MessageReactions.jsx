@@ -19,7 +19,7 @@ const MessageReactions = ({ reactions, onReactionClick, currentUserId }) => {
             title={userNames}
             className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors ${
               hasReacted
-                ? 'bg-brand-red/10 text-brand-red border border-brand-red/20'
+                ? 'bg-brand-black/10 text-brand-black border border-brand-black/20'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-transparent'
             }`}
           >

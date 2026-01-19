@@ -40,7 +40,7 @@ const statusConfig = {
   },
   OVERTIME: {
     label: 'Overtime',
-    color: 'text-red-600',
+    color: 'text-gray-700',
     bgColor: 'bg-red-100',
     barColor: 'bg-red-500',
     icon: AlertTriangle
@@ -147,11 +147,11 @@ const WeeklyProgressSection = () => {
           className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3"
         >
           <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
+            <AlertTriangle className="w-5 h-5 text-gray-700" />
           </div>
           <div>
-            <p className="font-semibold text-red-700">Overtime Alert!</p>
-            <p className="text-sm text-red-600">
+            <p className="font-semibold text-gray-800">Overtime Alert!</p>
+            <p className="text-sm text-gray-700">
               You've exceeded your weekly goal by {formatHours(progress.total_hours - progress.goal_hours)}. 
               Please check with your supervisor.
             </p>
@@ -182,7 +182,7 @@ const WeeklyProgressSection = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <TrendingUp className="w-6 h-6 text-brand-red" />
+          <TrendingUp className="w-6 h-6 text-brand-black" />
           <h2 className="text-xl font-bold text-brand-dark">Weekly Progress</h2>
         </div>
         <div className="flex items-center gap-3">
@@ -194,7 +194,7 @@ const WeeklyProgressSection = () => {
             data-testid="export-pdf-btn"
           >
             {exporting ? (
-              <div className="w-4 h-4 border-2 border-brand-red border-t-transparent rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-brand-black border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
                 <Download className="w-4 h-4 mr-1" />
@@ -234,7 +234,7 @@ const WeeklyProgressSection = () => {
                 initial={{ width: 0 }}
                 animate={{ width: `${((progress.progress_percent - 100) / progress.progress_percent) * 100}%` }}
                 transition={{ duration: 0.5, delay: 1 }}
-                className="absolute right-0 top-0 h-full bg-red-600 rounded-r-full"
+                className="absolute right-0 top-0 h-full bg-gray-700 rounded-r-full"
               />
             )}
           </motion.div>
@@ -243,7 +243,7 @@ const WeeklyProgressSection = () => {
         {/* Status Message */}
         <div className="mt-3 flex items-center justify-between text-sm">
           {progress.status === 'OVERTIME' ? (
-            <span className="text-red-600 font-medium">
+            <span className="text-gray-700 font-medium">
               ⚠️ {formatHours(progress.total_hours - progress.goal_hours)} overtime
             </span>
           ) : progress.status === 'COMPLETED' ? (
@@ -281,13 +281,13 @@ const WeeklyProgressSection = () => {
                 key={day.date}
                 className={`text-center p-3 rounded-xl transition-colors ${
                   isToday 
-                    ? 'bg-brand-red/10 border-2 border-brand-red' 
+                    ? 'bg-brand-black/10 border-2 border-brand-black' 
                     : hasHours 
                       ? 'bg-gray-50' 
                       : 'bg-gray-50/50'
                 }`}
               >
-                <p className={`text-xs font-medium mb-1 ${isToday ? 'text-brand-red' : 'text-gray-500'}`}>
+                <p className={`text-xs font-medium mb-1 ${isToday ? 'text-brand-black' : 'text-gray-500'}`}>
                   {day.day_name}
                 </p>
                 <p className={`text-lg font-bold ${

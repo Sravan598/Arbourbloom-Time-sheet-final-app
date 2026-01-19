@@ -341,7 +341,7 @@ const ChatPanel = ({ isOpen, onClose, currentUser, onMessageRead }) => {
                  border border-gray-200 overflow-hidden z-50 flex flex-col"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-brand-red to-red-600">
+      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-brand-black to-gray-700">
         <div className="flex items-center gap-3">
           <div className="bg-white/20 rounded-lg p-2">
             <MessageCircle className="w-5 h-5 text-white" />

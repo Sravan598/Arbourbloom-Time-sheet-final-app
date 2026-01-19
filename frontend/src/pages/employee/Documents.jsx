@@ -304,7 +304,7 @@ const Documents = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-brand-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
         </div>
       </div>
@@ -321,8 +321,8 @@ const Documents = () => {
           className="bg-white rounded-3xl shadow-xl p-8 max-w-md w-full"
         >
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-brand-red/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield className="w-8 h-8 text-brand-red" />
+            <div className="w-16 h-16 bg-brand-black/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Shield className="w-8 h-8 text-brand-black" />
             </div>
             <h1 className="text-2xl font-bold text-brand-dark">Secure Document Storage</h1>
             <p className="text-gray-500 mt-2">Create a PIN to protect your documents</p>
@@ -331,7 +331,7 @@ const Documents = () => {
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-red-500" />
-              <p className="text-red-700 text-sm">{error}</p>
+              <p className="text-gray-800 text-sm">{error}</p>
             </div>
           )}
           
@@ -343,7 +343,7 @@ const Documents = () => {
                 value={newPin}
                 onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 placeholder="Enter PIN"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent text-center text-2xl tracking-widest"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent text-center text-2xl tracking-widest"
                 maxLength={6}
               />
             </div>
@@ -354,7 +354,7 @@ const Documents = () => {
                 value={confirmPin}
                 onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 placeholder="Confirm PIN"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent text-center text-2xl tracking-widest"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent text-center text-2xl tracking-widest"
                 maxLength={6}
               />
             </div>
@@ -369,7 +369,7 @@ const Documents = () => {
             </Button>
             <Link
               to="/employee/dashboard"
-              className="block text-center text-gray-500 hover:text-brand-red mt-4"
+              className="block text-center text-gray-500 hover:text-brand-black mt-4"
             >
               ← Back to Dashboard
             </Link>
@@ -389,8 +389,8 @@ const Documents = () => {
           className="bg-white rounded-3xl shadow-xl p-8 max-w-md w-full"
         >
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-brand-red/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-brand-red" />
+            <div className="w-16 h-16 bg-brand-black/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-brand-black" />
             </div>
             <h1 className="text-2xl font-bold text-brand-dark">Enter Your PIN</h1>
             <p className="text-gray-500 mt-2">Access your secure documents</p>
@@ -399,7 +399,7 @@ const Documents = () => {
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-red-500" />
-              <p className="text-red-700 text-sm">{error}</p>
+              <p className="text-gray-800 text-sm">{error}</p>
             </div>
           )}
           
@@ -409,7 +409,7 @@ const Documents = () => {
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
               placeholder="Enter PIN"
-              className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent text-center text-3xl tracking-widest"
+              className="w-full px-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent text-center text-3xl tracking-widest"
               maxLength={6}
               onKeyPress={(e) => e.key === 'Enter' && handleVerifyPin()}
             />
@@ -424,7 +424,7 @@ const Documents = () => {
             </Button>
             <Link
               to="/employee/dashboard"
-              className="block text-center text-gray-500 hover:text-brand-red mt-4"
+              className="block text-center text-gray-500 hover:text-brand-black mt-4"
             >
               ← Back to Dashboard
             </Link>
@@ -461,7 +461,7 @@ const Documents = () => {
             <button
               onClick={() => setActiveSection('documents')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
-                activeSection === 'documents' ? 'bg-brand-red/10 text-brand-red' : 'text-gray-600 hover:bg-gray-50'
+                activeSection === 'documents' ? 'bg-brand-black/10 text-brand-black' : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
               <Folder className="w-5 h-5" />
@@ -470,7 +470,7 @@ const Documents = () => {
             <button
               onClick={() => setActiveSection('settings')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
-                activeSection === 'settings' ? 'bg-brand-red/10 text-brand-red' : 'text-gray-600 hover:bg-gray-50'
+                activeSection === 'settings' ? 'bg-brand-black/10 text-brand-black' : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
               <Settings className="w-5 h-5" />
@@ -508,7 +508,7 @@ const Documents = () => {
         <header className="bg-white shadow-sm sticky top-0 z-30">
           <div className="px-8 py-4 flex items-center justify-between">
             <h1 className="text-xl font-bold text-brand-dark flex items-center gap-2">
-              <Shield className="w-6 h-6 text-brand-red" />
+              <Shield className="w-6 h-6 text-brand-black" />
               {activeSection === 'documents' ? 'My Documents' : 'Security Settings'}
             </h1>
             
@@ -526,7 +526,7 @@ const Documents = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-red to-brand-red-dark">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-black to-brand-black-dark">
                       <span className="text-sm font-bold text-white">
                         {(profileData?.name || user?.name)?.charAt(0)?.toUpperCase() || 'U'}
                       </span>
@@ -565,7 +565,7 @@ const Documents = () => {
                     <div className="border-t border-gray-100 pt-1">
                       <button
                         onClick={() => { setShowProfileDropdown(false); handleLogout(); }}
-                        className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full"
+                        className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-red-50 transition-colors w-full"
                       >
                         <LogOut className="w-4 h-4" />
                         <span>Logout</span>
@@ -588,7 +588,7 @@ const Documents = () => {
             >
               <div className="flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-red-500" />
-                <p className="text-red-700">{error}</p>
+                <p className="text-gray-800">{error}</p>
               </div>
               <button onClick={() => setError('')}><X className="w-5 h-5 text-red-500" /></button>
             </motion.div>
@@ -618,14 +618,14 @@ const Documents = () => {
                     placeholder="Search documents..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   />
                 </div>
                 <div className="flex gap-2">
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   >
                     {DOCUMENT_CATEGORIES.map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
@@ -720,7 +720,7 @@ const Documents = () => {
                     <input
                       type="password"
                       placeholder="Enter current PIN"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -728,7 +728,7 @@ const Documents = () => {
                     <input
                       type="password"
                       placeholder="Enter new PIN"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -736,7 +736,7 @@ const Documents = () => {
                     <input
                       type="password"
                       placeholder="Confirm new PIN"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
                     />
                   </div>
                   <Button variant="primary" className="w-full">
@@ -790,7 +790,7 @@ const Documents = () => {
                 {/* File Drop Zone */}
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-brand-red transition-colors"
+                  className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-brand-black transition-colors"
                 >
                   <input
                     ref={fileInputRef}
@@ -822,7 +822,7 @@ const Documents = () => {
                   <select
                     value={uploadData.category}
                     onChange={(e) => setUploadData(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   >
                     {DOCUMENT_CATEGORIES.filter(c => c !== 'All').map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
@@ -837,7 +837,7 @@ const Documents = () => {
                     value={uploadData.description}
                     onChange={(e) => setUploadData(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Add a description..."
-                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent resize-none"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent resize-none"
                     rows={3}
                   />
                 </div>

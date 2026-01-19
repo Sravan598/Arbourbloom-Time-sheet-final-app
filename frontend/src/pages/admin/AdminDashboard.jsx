@@ -105,7 +105,7 @@ const AdminDashboard = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-brand-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading dashboard...</p>
         </div>
       </div>
@@ -202,7 +202,7 @@ const AdminDashboard = () => {
                               setShowProfileDropdown(false);
                               handleLogout();
                             }}
-                            className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-red-50 transition-colors w-full"
                           >
                             <LogOut className="w-4 h-4" />
                             <span>Logout</span>
@@ -230,7 +230,7 @@ const AdminDashboard = () => {
             className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3"
           >
             <AlertCircle className="w-5 h-5 text-red-500" />
-            <p className="text-red-700">{error}</p>
+            <p className="text-gray-800">{error}</p>
           </motion.div>
         )}
         {success && (
@@ -252,8 +252,8 @@ const AdminDashboard = () => {
             className="bg-white rounded-2xl shadow-lg p-6"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-brand-red/10 rounded-xl flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-brand-red" />
+              <div className="w-12 h-12 bg-brand-black/10 rounded-xl flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-brand-black" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-brand-dark">{stats?.total_hours_this_week || 0}h</p>

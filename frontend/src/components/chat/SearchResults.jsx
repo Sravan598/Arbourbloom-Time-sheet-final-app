@@ -7,7 +7,7 @@ const SearchResults = ({ results, loading, onResultClick }) => {
   if (loading) {
     return (
       <div className="p-4 text-center">
-        <div className="animate-spin w-6 h-6 border-2 border-brand-red border-t-transparent rounded-full mx-auto" />
+        <div className="animate-spin w-6 h-6 border-2 border-brand-black border-t-transparent rounded-full mx-auto" />
         <p className="text-sm text-gray-500 mt-2">Searching...</p>
       </div>
     );

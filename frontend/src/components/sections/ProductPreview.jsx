@@ -14,7 +14,7 @@ const ProductPreview = () => {
           transition={{ duration: 0.6 }}
           className="text-center max-w-3xl mx-auto mb-16"
         >
-          <span className="text-brand-red font-semibold text-sm uppercase tracking-wider">
+          <span className="text-brand-black font-semibold text-sm uppercase tracking-wider">
             Product Preview
           </span>
           <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-white">
@@ -37,13 +37,13 @@ const ProductPreview = () => {
           >
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-6 border border-gray-700">
               <div className="flex items-center gap-2 mb-4">
-                <Monitor className="w-5 h-5 text-brand-red" />
+                <Monitor className="w-5 h-5 text-brand-black" />
                 <span className="text-white font-medium">Dashboard View</span>
               </div>
               <div className="bg-gray-900 rounded-2xl overflow-hidden aspect-video flex items-center justify-center">
                 <div className="text-center p-8">
-                  <div className="w-20 h-20 bg-brand-red/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <BarChart2 className="w-10 h-10 text-brand-red" />
+                  <div className="w-20 h-20 bg-brand-black/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <BarChart2 className="w-10 h-10 text-brand-black" />
                   </div>
                   <h4 className="text-white font-semibold mb-2">Real-Time Analytics</h4>
                   <p className="text-gray-500 text-sm">Track hours, productivity & attendance</p>
@@ -61,12 +61,12 @@ const ProductPreview = () => {
           >
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-6 border border-gray-700 h-full">
               <div className="flex items-center gap-2 mb-4">
-                <Smartphone className="w-5 h-5 text-brand-red" />
+                <Smartphone className="w-5 h-5 text-brand-black" />
                 <span className="text-white font-medium">Mobile App</span>
               </div>
               <div className="bg-gray-900 rounded-2xl p-6 flex flex-col items-center justify-center h-[calc(100%-3rem)]">
-                <div className="w-32 h-56 bg-gradient-to-b from-brand-red/30 to-brand-red/10 rounded-3xl border-2 border-brand-red/50 flex flex-col items-center justify-center">
-                  <div className="w-16 h-16 bg-brand-red rounded-full flex items-center justify-center mb-4">
+                <div className="w-32 h-56 bg-gradient-to-b from-brand-black/30 to-brand-black/10 rounded-3xl border-2 border-brand-black/50 flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 bg-brand-black rounded-full flex items-center justify-center mb-4">
                     <span className="text-white text-2xl font-bold">▶</span>
                   </div>
                   <span className="text-white text-sm font-medium">Clock In</span>
@@ -92,7 +92,7 @@ const ProductPreview = () => {
             { value: '24/7', label: 'Support' },
           ].map((stat, index) => (
             <div key={index} className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-brand-red mb-2">
+              <div className="text-3xl md:text-4xl font-bold text-brand-black mb-2">
                 {stat.value}
               </div>
               <div className="text-gray-400">{stat.label}</div>

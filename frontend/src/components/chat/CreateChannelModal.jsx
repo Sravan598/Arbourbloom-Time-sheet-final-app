@@ -60,7 +60,7 @@ const CreateChannelModal = ({ onClose, onCreate }) => {
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">
+            <div className="p-3 bg-red-50 text-gray-700 rounded-lg text-sm">
               {error}
             </div>
           )}
@@ -80,7 +80,7 @@ const CreateChannelModal = ({ onClose, onCreate }) => {
                 onChange={(e) => setName(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                 placeholder="e.g. general"
                 className="w-full pl-8 pr-4 py-2 border border-gray-200 rounded-lg
-                         focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red"
+                         focus:outline-none focus:ring-2 focus:ring-brand-black/20 focus:border-brand-black"
                 maxLength={30}
               />
             </div>
@@ -100,7 +100,7 @@ const CreateChannelModal = ({ onClose, onCreate }) => {
               placeholder="What's this channel about?"
               rows={2}
               className="w-full px-4 py-2 border border-gray-200 rounded-lg resize-none
-                       focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red"
+                       focus:outline-none focus:ring-2 focus:ring-brand-black/20 focus:border-brand-black"
               maxLength={200}
             />
           </div>
@@ -128,7 +128,7 @@ const CreateChannelModal = ({ onClose, onCreate }) => {
               type="button"
               onClick={() => setIsPrivate(!isPrivate)}
               className={`w-10 h-6 rounded-full transition-colors ${
-                isPrivate ? 'bg-brand-red' : 'bg-gray-300'
+                isPrivate ? 'bg-brand-black' : 'bg-gray-300'
               }`}
             >
               <div className={`w-4 h-4 bg-white rounded-full shadow transition-transform mx-1 ${
@@ -150,8 +150,8 @@ const CreateChannelModal = ({ onClose, onCreate }) => {
             <button
               type="submit"
               disabled={loading || !name.trim()}
-              className="flex-1 px-4 py-2 bg-brand-red text-white rounded-lg
-                       hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-4 py-2 bg-brand-black text-white rounded-lg
+                       hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Creating...' : 'Create Channel'}
             </button>

@@ -13,7 +13,7 @@ const StatusBadge = ({ status }) => {
   const config = {
     PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700', icon: Clock },
     APPROVED: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle },
-    DENIED: { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle }
+    DENIED: { bg: 'bg-red-100', text: 'text-gray-800', icon: XCircle }
   };
   const { bg, text, icon: Icon } = config[status] || config.PENDING;
   
@@ -136,8 +136,8 @@ const Leave = () => {
             </div>
             <motion.button
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-5 py-2 bg-brand-red text-white rounded-full
-                         hover:bg-red-600 transition-colors font-medium"
+              className="flex items-center gap-2 px-5 py-2 bg-brand-black text-white rounded-full
+                         hover:bg-gray-700 transition-colors font-medium"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -154,7 +154,7 @@ const Leave = () => {
                 onClick={() => setFilter(status)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors
                   ${filter === status 
-                    ? 'bg-brand-red text-white' 
+                    ? 'bg-brand-black text-white' 
                     : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                   }`}
               >
@@ -172,7 +172,7 @@ const Leave = () => {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             {loading ? (
               <div className="p-8 text-center">
-                <div className="animate-spin w-8 h-8 border-3 border-brand-red border-t-transparent rounded-full mx-auto" />
+                <div className="animate-spin w-8 h-8 border-3 border-brand-black border-t-transparent rounded-full mx-auto" />
               </div>
             ) : filteredRequests.length === 0 ? (
               <div className="p-12 text-center">
@@ -288,7 +288,7 @@ const Leave = () => {
               {/* Modal Body */}
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 {error && (
-                  <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                  <div className="flex items-center gap-2 p-3 bg-red-50 text-gray-800 rounded-lg text-sm">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     {error}
                   </div>
@@ -309,7 +309,7 @@ const Leave = () => {
                           }
                         }}
                         className="w-full px-4 py-2.5 border border-gray-300 rounded-lg appearance-none
-                                   focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red"
+                                   focus:outline-none focus:ring-2 focus:ring-brand-black/20 focus:border-brand-black"
                         required
                       >
                         <option value="">Select leave type...</option>
@@ -330,7 +330,7 @@ const Leave = () => {
                         onChange={(e) => setFormData({ ...formData, custom_type: e.target.value })}
                         placeholder="Enter custom leave type..."
                         className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg
-                                   focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red"
+                                   focus:outline-none focus:ring-2 focus:ring-brand-black/20 focus:border-brand-black"
                         required
                       />
                       <button
@@ -354,7 +354,7 @@ const Leave = () => {
                       onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
                       min={new Date().toISOString().split('T')[0]}
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-lg
-                                 focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red"
+                                 focus:outline-none focus:ring-2 focus:ring-brand-black/20 focus:border-brand-black"
                       required
                     />
                   </div>
@@ -366,7 +366,7 @@ const Leave = () => {
                       onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                       min={formData.start_date || new Date().toISOString().split('T')[0]}
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-lg
-                                 focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red"
+                                 focus:outline-none focus:ring-2 focus:ring-brand-black/20 focus:border-brand-black"
                       required
                     />
                   </div>
@@ -381,7 +381,7 @@ const Leave = () => {
                     placeholder="Brief description of your leave request..."
                     rows={3}
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg resize-none
-                               focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red"
+                               focus:outline-none focus:ring-2 focus:ring-brand-black/20 focus:border-brand-black"
                     required
                   />
                 </div>
@@ -399,8 +399,8 @@ const Leave = () => {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 px-4 py-2.5 bg-brand-red text-white rounded-lg
-                               hover:bg-red-600 transition-colors font-medium disabled:opacity-50"
+                    className="flex-1 px-4 py-2.5 bg-brand-black text-white rounded-lg
+                               hover:bg-gray-700 transition-colors font-medium disabled:opacity-50"
                   >
                     {submitting ? 'Submitting...' : 'Submit Request'}
                   </button>

@@ -63,7 +63,7 @@ const Navbar = () => {
               <motion.button
                 key={link.name}
                 onClick={() => scrollToSection(link.href)}
-                className="text-brand-dark hover:text-brand-red font-medium transition-colors"
+                className="text-brand-dark hover:text-brand-black font-medium transition-colors"
                 whileHover={{ y: -2 }}
               >
                 {link.name}

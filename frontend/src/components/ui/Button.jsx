@@ -13,9 +13,9 @@ const Button = React.forwardRef(({
   const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2';
   
   const variants = {
-    primary: 'bg-gradient-to-r from-brand-red to-brand-red-dark text-white hover:shadow-lg hover:shadow-brand-red/30 focus:ring-brand-red',
+    primary: 'bg-gradient-to-r from-brand-black to-brand-black-dark text-white hover:shadow-lg hover:shadow-brand-black/30 focus:ring-brand-black',
     secondary: 'bg-white text-brand-dark border-2 border-brand-dark hover:bg-brand-dark hover:text-white focus:ring-brand-dark',
-    outline: 'bg-transparent text-brand-red border-2 border-brand-red hover:bg-brand-red hover:text-white focus:ring-brand-red',
+    outline: 'bg-transparent text-brand-black border-2 border-brand-black hover:bg-brand-black hover:text-white focus:ring-brand-black',
     ghost: 'bg-transparent text-brand-dark hover:bg-gray-100 focus:ring-gray-300',
   };
   

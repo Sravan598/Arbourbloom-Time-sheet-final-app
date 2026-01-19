@@ -26,7 +26,7 @@ const leaveTypeIcons = {
 
 const leaveTypeColors = {
   VACATION: 'text-blue-600 bg-blue-100',
-  SICK: 'text-red-600 bg-red-100',
+  SICK: 'text-gray-700 bg-red-100',
   PERSONAL: 'text-purple-600 bg-purple-100',
   UNPAID: 'text-gray-600 bg-gray-100'
 };
@@ -98,7 +98,7 @@ const AdminLeaveSection = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Calendar className="w-6 h-6 text-brand-red" />
+          <Calendar className="w-6 h-6 text-brand-black" />
           <h2 className="text-lg font-bold text-brand-dark">Pending Leave Requests</h2>
         </div>
         {requests.length > 0 && (
@@ -163,7 +163,7 @@ const AdminLeaveSection = () => {
                           value={adminNotes}
                           onChange={(e) => setAdminNotes(e.target.value)}
                           placeholder="Add a note for the employee..."
-                          className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-red focus:border-transparent resize-none"
+                          className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-black focus:border-transparent resize-none"
                           rows={2}
                         />
                       </div>
@@ -184,7 +184,7 @@ const AdminLeaveSection = () => {
                         variant="secondary"
                         size="sm"
                         disabled={processing}
-                        className="text-red-600 border-red-200 hover:bg-red-50"
+                        className="text-gray-700 border-red-200 hover:bg-red-50"
                       >
                         <XCircle className="w-4 h-4 mr-1" />
                         Reject

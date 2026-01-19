@@ -41,7 +41,7 @@ const Testimonials = () => {
           transition={{ duration: 0.6 }}
           className="text-center max-w-3xl mx-auto mb-16"
         >
-          <span className="text-brand-red font-semibold text-sm uppercase tracking-wider">
+          <span className="text-brand-black font-semibold text-sm uppercase tracking-wider">
             Testimonials
           </span>
           <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-brand-dark">
@@ -65,7 +65,7 @@ const Testimonials = () => {
               data-testid={`testimonial-card-${index}`}
             >
               {/* Quote icon */}
-              <div className="absolute top-6 right-6 text-brand-red/10">
+              <div className="absolute top-6 right-6 text-brand-black/10">
                 <Quote className="w-12 h-12" />
               </div>
 

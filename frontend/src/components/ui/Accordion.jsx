@@ -59,7 +59,7 @@ const AccordionTrigger = ({ children, isOpen, toggle, className, ...props }) => 
       animate={{ rotate: isOpen ? 180 : 0 }}
       transition={{ duration: 0.3 }}
     >
-      <ChevronDown className="w-5 h-5 text-brand-red" />
+      <ChevronDown className="w-5 h-5 text-brand-black" />
     </motion.div>
   </button>
 );

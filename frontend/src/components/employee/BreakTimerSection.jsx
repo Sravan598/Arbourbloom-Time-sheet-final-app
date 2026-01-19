@@ -152,7 +152,7 @@ const BreakTimerSection = ({ isClockedIn }) => {
     >
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <Coffee className="w-6 h-6 text-brand-red" />
+        <Coffee className="w-6 h-6 text-brand-black" />
         <h2 className="text-xl font-bold text-brand-dark">Break Timer</h2>
       </div>
 
@@ -223,7 +223,7 @@ const BreakTimerSection = ({ isClockedIn }) => {
                       onClick={() => setSelectedBreakType(type.id)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all ${
                         selectedBreakType === type.id
-                          ? 'border-brand-red bg-brand-red/10 text-brand-red'
+                          ? 'border-brand-black bg-brand-black/10 text-brand-black'
                           : 'border-gray-200 hover:border-gray-300 text-gray-600'
                       }`}
                       disabled={!isClockedIn}

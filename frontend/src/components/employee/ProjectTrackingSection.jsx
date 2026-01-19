@@ -185,7 +185,7 @@ const ProjectTrackingSection = () => {
     >
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <FolderKanban className="w-6 h-6 text-brand-red" />
+        <FolderKanban className="w-6 h-6 text-brand-black" />
         <h2 className="text-xl font-bold text-brand-dark">Project Time Tracking</h2>
       </div>
 
@@ -324,7 +324,7 @@ const ProjectTrackingSection = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="What are you working on? (optional)"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                 data-testid="task-description"
               />
 

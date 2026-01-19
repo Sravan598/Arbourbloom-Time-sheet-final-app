@@ -127,7 +127,7 @@ const Login = () => {
               data-testid="login-error"
             >
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <p className="text-red-700 text-sm">{localError || error}</p>
+              <p className="text-gray-800 text-sm">{localError || error}</p>
             </motion.div>
           )}
 
@@ -144,7 +144,7 @@ const Login = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent transition-all"
+                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent transition-all"
                   placeholder="you@company.com"
                   required
                   data-testid="login-email"
@@ -163,7 +163,7 @@ const Login = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full pl-12 pr-12 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent transition-all"
+                  className="w-full pl-12 pr-12 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent transition-all"
                   placeholder="Enter your password"
                   required
                   data-testid="login-password"
@@ -180,10 +180,10 @@ const Login = () => {
 
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-brand-red focus:ring-brand-red" />
+                <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-brand-black focus:ring-brand-black" />
                 <span className="text-sm text-gray-600">Remember me</span>
               </label>
-              <button type="button" className="text-sm text-brand-red hover:underline">
+              <button type="button" className="text-sm text-brand-black hover:underline">
                 Forgot password?
               </button>
             </div>
@@ -210,7 +210,7 @@ const Login = () => {
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               Don't have an account?{' '}
-              <Link to="/signup" className="text-brand-red font-medium hover:underline" data-testid="signup-link">
+              <Link to="/signup" className="text-brand-black font-medium hover:underline" data-testid="signup-link">
                 Sign up
               </Link>
             </p>
@@ -219,7 +219,7 @@ const Login = () => {
 
         {/* Back to Home */}
         <div className="text-center mt-6">
-          <Link to="/" className="text-gray-500 hover:text-brand-red transition-colors">
+          <Link to="/" className="text-gray-500 hover:text-brand-black transition-colors">
             ← Back to Home
           </Link>
         </div>

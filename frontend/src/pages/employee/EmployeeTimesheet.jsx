@@ -233,7 +233,7 @@ const EmployeeTimesheet = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-red to-brand-red-dark">
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-black to-brand-black-dark">
                         <span className="text-sm font-bold text-white">
                           {(profileData?.name || user?.name)?.charAt(0)?.toUpperCase() || 'U'}
                         </span>
@@ -283,7 +283,7 @@ const EmployeeTimesheet = () => {
                             setShowProfileDropdown(false);
                             handleLogout();
                           }}
-                          className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full"
+                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-red-50 transition-colors w-full"
                         >
                           <LogOut className="w-4 h-4" />
                           <span>Logout</span>
@@ -307,7 +307,7 @@ const EmployeeTimesheet = () => {
             className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3"
           >
             <AlertCircle className="w-5 h-5 text-red-500" />
-            <p className="text-red-700">{error}</p>
+            <p className="text-gray-800">{error}</p>
             <button onClick={() => setError('')} className="ml-auto"><X className="w-4 h-4" /></button>
           </motion.div>
         )}
@@ -336,7 +336,7 @@ const EmployeeTimesheet = () => {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                className="px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
               />
             </div>
             <div>
@@ -345,7 +345,7 @@ const EmployeeTimesheet = () => {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                className="px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
               />
             </div>
             <Button
@@ -387,7 +387,7 @@ const EmployeeTimesheet = () => {
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <p className="text-3xl font-bold text-brand-red">{timesheets.length}</p>
+              <p className="text-3xl font-bold text-brand-black">{timesheets.length}</p>
               <p className="text-gray-500 text-sm">Total Entries</p>
             </div>
             <div className="text-center">
@@ -413,7 +413,7 @@ const EmployeeTimesheet = () => {
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           {isLoading ? (
             <div className="p-12 text-center">
-              <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="w-12 h-12 border-4 border-brand-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-gray-600">Loading timesheets...</p>
             </div>
           ) : timesheets.length === 0 ? (
@@ -489,7 +489,7 @@ const EmployeeTimesheet = () => {
                         {ts.clock_out_at && (
                           <button
                             onClick={() => openCorrectionModal(ts)}
-                            className="text-brand-red hover:underline text-sm font-medium"
+                            className="text-brand-black hover:underline text-sm font-medium"
                           >
                             Request Correction
                           </button>
@@ -536,7 +536,7 @@ const EmployeeTimesheet = () => {
                     type="datetime-local"
                     value={correctionForm.newClockIn}
                     onChange={(e) => setCorrectionForm({...correctionForm, newClockIn: e.target.value})}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -545,7 +545,7 @@ const EmployeeTimesheet = () => {
                     type="datetime-local"
                     value={correctionForm.newClockOut}
                     onChange={(e) => setCorrectionForm({...correctionForm, newClockOut: e.target.value})}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -554,7 +554,7 @@ const EmployeeTimesheet = () => {
                     value={correctionForm.reason}
                     onChange={(e) => setCorrectionForm({...correctionForm, reason: e.target.value})}
                     rows={3}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent resize-none"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent resize-none"
                     placeholder="Please explain why this correction is needed (min 10 characters)"
                   />
                 </div>
@@ -608,8 +608,8 @@ const EmployeeTimesheet = () => {
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-brand-red/10 rounded-xl flex items-center justify-center">
-                    <FileEdit className="w-5 h-5 text-brand-red" />
+                  <div className="w-10 h-10 bg-brand-black/10 rounded-xl flex items-center justify-center">
+                    <FileEdit className="w-5 h-5 text-brand-black" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-brand-dark">My Correction Requests</h3>
@@ -657,7 +657,7 @@ const EmployeeTimesheet = () => {
                               ? 'bg-yellow-100 text-yellow-700' 
                               : req.status === 'APPROVED' 
                                 ? 'bg-green-100 text-green-700' 
-                                : 'bg-red-100 text-red-700'
+                                : 'bg-red-100 text-gray-800'
                           }`}>
                             {req.status === 'PENDING' && <Clock className="w-3 h-3 inline mr-1" />}
                             {req.status === 'APPROVED' && <CheckCircle className="w-3 h-3 inline mr-1" />}

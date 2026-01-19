@@ -16,7 +16,7 @@ const StatusBadge = ({ status }) => {
   const config = {
     PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700', icon: Clock, label: 'Pending' },
     APPROVED: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle, label: 'Approved' },
-    DENIED: { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle, label: 'Denied' }
+    DENIED: { bg: 'bg-red-100', text: 'text-gray-800', icon: XCircle, label: 'Denied' }
   };
   const { bg, text, icon: Icon, label } = config[status] || config.PENDING;
   
@@ -180,7 +180,7 @@ const LeaveRequests = () => {
               onClick={() => setMainView('requests')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-colors ${
                 mainView === 'requests'
-                  ? 'bg-brand-red text-white'
+                  ? 'bg-brand-black text-white'
                   : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
               }`}
               data-testid="tab-requests"
@@ -199,7 +199,7 @@ const LeaveRequests = () => {
               onClick={() => setMainView('settings')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-colors ${
                 mainView === 'settings'
-                  ? 'bg-brand-red text-white'
+                  ? 'bg-brand-black text-white'
                   : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
               }`}
               data-testid="tab-settings"
@@ -253,7 +253,7 @@ const LeaveRequests = () => {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search by name or type..."
                       className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
-                                 focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red"
+                                 focus:outline-none focus:ring-2 focus:ring-brand-black/20 focus:border-brand-black"
                     />
                   </div>
                 </div>
@@ -263,7 +263,7 @@ const LeaveRequests = () => {
               <div className="space-y-4">
                 {loading ? (
                   <div className="bg-white rounded-xl p-8 text-center">
-                    <div className="animate-spin w-8 h-8 border-3 border-brand-red border-t-transparent rounded-full mx-auto" />
+                    <div className="animate-spin w-8 h-8 border-3 border-brand-black border-t-transparent rounded-full mx-auto" />
                   </div>
                 ) : filteredRequests.length === 0 ? (
                   <div className="bg-white rounded-xl p-12 text-center">
@@ -294,7 +294,7 @@ const LeaveRequests = () => {
                                 className="w-12 h-12 rounded-full object-cover"
                               />
                             ) : (
-                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-red to-red-600 flex items-center justify-center">
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-black to-gray-700 flex items-center justify-center">
                                 <span className="text-white font-semibold">
                                   {request.user_name?.charAt(0)?.toUpperCase() || '?'}
                                 </span>
@@ -355,7 +355,7 @@ const LeaveRequests = () => {
                                   onChange={(e) => setReviewNote(e.target.value)}
                                   placeholder="Add a note (optional)..."
                                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                                             focus:outline-none focus:ring-2 focus:ring-brand-red/20"
+                                             focus:outline-none focus:ring-2 focus:ring-brand-black/20"
                                   rows={2}
                                 />
                                 <div className="flex gap-2">
@@ -373,7 +373,7 @@ const LeaveRequests = () => {
                                     onClick={() => handleReview(request.id, 'DENIED')}
                                     disabled={processing}
                                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 
-                                               bg-red-600 text-white rounded-lg hover:bg-red-700 
+                                               bg-gray-700 text-white rounded-lg hover:bg-gray-800 
                                                transition-colors disabled:opacity-50"
                                   >
                                     <X className="w-4 h-4" />
@@ -394,8 +394,8 @@ const LeaveRequests = () => {
                             ) : (
                               <button
                                 onClick={() => setReviewingId(request.id)}
-                                className="px-4 py-2 bg-brand-red text-white rounded-lg 
-                                           hover:bg-red-600 transition-colors text-sm font-medium"
+                                className="px-4 py-2 bg-brand-black text-white rounded-lg 
+                                           hover:bg-gray-700 transition-colors text-sm font-medium"
                               >
                                 Review Request
                               </button>
@@ -421,8 +421,8 @@ const LeaveRequests = () => {
                 </div>
                 <motion.button
                   onClick={openCreateModal}
-                  className="flex items-center gap-2 px-4 py-2 bg-brand-red text-white rounded-lg
-                             hover:bg-red-600 transition-colors font-medium"
+                  className="flex items-center gap-2 px-4 py-2 bg-brand-black text-white rounded-lg
+                             hover:bg-gray-700 transition-colors font-medium"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   data-testid="add-leave-type-btn"
@@ -453,7 +453,7 @@ const LeaveRequests = () => {
                 
                 {loadingTypes ? (
                   <div className="p-8 text-center">
-                    <div className="animate-spin w-8 h-8 border-3 border-brand-red border-t-transparent rounded-full mx-auto" />
+                    <div className="animate-spin w-8 h-8 border-3 border-brand-black border-t-transparent rounded-full mx-auto" />
                   </div>
                 ) : leaveTypes.length === 0 ? (
                   <div className="p-8 text-center">
@@ -461,7 +461,7 @@ const LeaveRequests = () => {
                     <p className="text-gray-500">No leave types configured</p>
                     <button
                       onClick={openCreateModal}
-                      className="mt-4 text-brand-red hover:underline text-sm font-medium"
+                      className="mt-4 text-brand-black hover:underline text-sm font-medium"
                     >
                       Add your first leave type
                     </button>
@@ -490,7 +490,7 @@ const LeaveRequests = () => {
                           </button>
                           <button
                             onClick={() => handleDelete(type.id)}
-                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-2 text-gray-400 hover:text-gray-700 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -539,7 +539,7 @@ const LeaveRequests = () => {
               {/* Modal Body */}
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 {error && (
-                  <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                  <div className="flex items-center gap-2 p-3 bg-red-50 text-gray-800 rounded-lg text-sm">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     {error}
                   </div>
@@ -557,7 +557,7 @@ const LeaveRequests = () => {
                         className={`w-10 h-10 rounded-lg text-xl flex items-center justify-center
                                    transition-all ${
                                      formData.icon === emoji
-                                       ? 'bg-brand-red/10 ring-2 ring-brand-red'
+                                       ? 'bg-brand-black/10 ring-2 ring-brand-black'
                                        : 'bg-gray-100 hover:bg-gray-200'
                                    }`}
                       >
@@ -576,7 +576,7 @@ const LeaveRequests = () => {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="e.g., Vacation, Sick Leave"
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg
-                               focus:outline-none focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red"
+                               focus:outline-none focus:ring-2 focus:ring-brand-black/20 focus:border-brand-black"
                     required
                   />
                 </div>
@@ -605,8 +605,8 @@ const LeaveRequests = () => {
                   <button
                     type="submit"
                     disabled={submitting || !formData.name}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-red text-white rounded-lg
-                               hover:bg-red-600 transition-colors font-medium disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-black text-white rounded-lg
+                               hover:bg-gray-700 transition-colors font-medium disabled:opacity-50"
                   >
                     <Save className="w-4 h-4" />
                     {submitting ? 'Saving...' : 'Save'}

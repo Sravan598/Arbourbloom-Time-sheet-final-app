@@ -28,7 +28,7 @@ const leaveTypeIcons = {
 
 const leaveTypeColors = {
   VACATION: 'text-blue-600 bg-blue-100',
-  SICK: 'text-red-600 bg-red-100',
+  SICK: 'text-gray-700 bg-red-100',
   PERSONAL: 'text-purple-600 bg-purple-100',
   UNPAID: 'text-gray-600 bg-gray-100'
 };
@@ -36,7 +36,7 @@ const leaveTypeColors = {
 const statusColors = {
   PENDING: 'text-yellow-600 bg-yellow-100',
   APPROVED: 'text-green-600 bg-green-100',
-  REJECTED: 'text-red-600 bg-red-100',
+  REJECTED: 'text-gray-700 bg-red-100',
   CANCELLED: 'text-gray-600 bg-gray-100'
 };
 
@@ -148,7 +148,7 @@ const LeavePTOSection = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Calendar className="w-6 h-6 text-brand-red" />
+            <Calendar className="w-6 h-6 text-brand-black" />
             <h2 className="text-xl font-bold text-brand-dark">Leave / PTO</h2>
           </div>
           <Button
@@ -184,9 +184,9 @@ const LeavePTOSection = () => {
               <p className="text-xs text-blue-500">of {balance.vacation_total} days</p>
             </div>
             <div className="bg-red-50 rounded-xl p-4 text-center">
-              <Thermometer className="w-6 h-6 text-red-600 mx-auto mb-2" />
-              <p className="text-xs text-red-600 font-medium">Sick</p>
-              <p className="text-2xl font-bold text-red-700">{balance.sick_remaining}</p>
+              <Thermometer className="w-6 h-6 text-gray-700 mx-auto mb-2" />
+              <p className="text-xs text-gray-700 font-medium">Sick</p>
+              <p className="text-2xl font-bold text-gray-800">{balance.sick_remaining}</p>
               <p className="text-xs text-red-500">of {balance.sick_total} days</p>
             </div>
             <div className="bg-purple-50 rounded-xl p-4 text-center">
@@ -280,7 +280,7 @@ const LeavePTOSection = () => {
               {formError && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-red-500" />
-                  <p className="text-red-700 text-sm">{formError}</p>
+                  <p className="text-gray-800 text-sm">{formError}</p>
                 </div>
               )}
 
@@ -292,7 +292,7 @@ const LeavePTOSection = () => {
                   <select
                     value={formData.leave_type}
                     onChange={(e) => setFormData({ ...formData, leave_type: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                     data-testid="leave-type-select"
                   >
                     <option value="VACATION">Vacation</option>
@@ -312,7 +312,7 @@ const LeavePTOSection = () => {
                       value={formData.start_date}
                       onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                       required
                       data-testid="leave-start-date"
                     />
@@ -326,7 +326,7 @@ const LeavePTOSection = () => {
                       value={formData.end_date}
                       onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                       min={formData.start_date || new Date().toISOString().split('T')[0]}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                       required
                       data-testid="leave-end-date"
                     />
@@ -342,7 +342,7 @@ const LeavePTOSection = () => {
                     onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
                     placeholder="Brief description of your leave request..."
                     rows={3}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent resize-none"
                     required
                     minLength={5}
                     data-testid="leave-reason"

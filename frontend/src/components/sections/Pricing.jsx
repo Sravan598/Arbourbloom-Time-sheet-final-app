@@ -75,7 +75,7 @@ const Pricing = () => {
           transition={{ duration: 0.6 }}
           className="text-center max-w-3xl mx-auto mb-12"
         >
-          <span className="text-brand-red font-semibold text-sm uppercase tracking-wider">
+          <span className="text-brand-black font-semibold text-sm uppercase tracking-wider">
             Pricing
           </span>
           <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-brand-dark">
@@ -99,7 +99,7 @@ const Pricing = () => {
           </span>
           <button
             onClick={() => setIsAnnual(!isAnnual)}
-            className="relative w-16 h-8 bg-brand-red rounded-full transition-colors"
+            className="relative w-16 h-8 bg-brand-black rounded-full transition-colors"
             data-testid="pricing-toggle"
           >
             <motion.div
@@ -163,7 +163,7 @@ const Pricing = () => {
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <Check className={`w-5 h-5 flex-shrink-0 ${plan.popular ? 'text-brand-red' : 'text-green-500'}`} />
+                    <Check className={`w-5 h-5 flex-shrink-0 ${plan.popular ? 'text-brand-black' : 'text-green-500'}`} />
                     <span className={`text-sm ${plan.popular ? 'text-gray-300' : 'text-gray-600'}`}>
                       {feature}
                     </span>

@@ -115,7 +115,7 @@ const NotificationBell = () => {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
-              className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-brand-red text-white text-xs
+              className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-brand-black text-white text-xs
                          font-bold rounded-full flex items-center justify-center"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
@@ -141,7 +141,7 @@ const NotificationBell = () => {
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                  className="text-xs text-brand-red hover:text-red-700 font-medium flex items-center gap-1"
+                  className="text-xs text-brand-black hover:text-gray-800 font-medium flex items-center gap-1"
                 >
                   <CheckCheck className="w-3.5 h-3.5" />
                   Mark all read
@@ -153,7 +153,7 @@ const NotificationBell = () => {
             <div className="max-h-96 overflow-y-auto">
               {loading ? (
                 <div className="p-4 text-center">
-                  <div className="animate-spin w-6 h-6 border-2 border-brand-red border-t-transparent rounded-full mx-auto" />
+                  <div className="animate-spin w-6 h-6 border-2 border-brand-black border-t-transparent rounded-full mx-auto" />
                 </div>
               ) : notifications.length === 0 ? (
                 <div className="p-8 text-center">

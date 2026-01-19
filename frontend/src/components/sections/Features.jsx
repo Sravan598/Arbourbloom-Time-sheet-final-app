@@ -15,8 +15,8 @@ const features = [
     icon: Clock,
     title: 'Real-Time Tracking',
     description: 'Track employee hours instantly with our precision clock-in/clock-out system. Never miss a minute.',
-    color: 'text-brand-red',
-    bgColor: 'bg-brand-red/10'
+    color: 'text-brand-black',
+    bgColor: 'bg-brand-black/10'
   },
   {
     icon: Users,
@@ -85,7 +85,7 @@ const Features = () => {
           transition={{ duration: 0.6 }}
           className="text-center max-w-3xl mx-auto mb-16"
         >
-          <span className="text-brand-red font-semibold text-sm uppercase tracking-wider">
+          <span className="text-brand-black font-semibold text-sm uppercase tracking-wider">
             Features
           </span>
           <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-brand-dark">

@@ -53,7 +53,7 @@ const EmployeeTicketCard = ({ ticket, selectedTicket, draggedTicket, onDragStart
       onClick={() => onClick(ticket)}
       className={`bg-white rounded-lg shadow-sm border p-3 cursor-pointer hover:shadow-md transition-all ${
         needsResponse ? 'border-purple-300 ring-2 ring-purple-200' : 'border-gray-200'
-      } ${selectedTicket?.id === ticket.id ? 'ring-2 ring-brand-red' : ''} ${
+      } ${selectedTicket?.id === ticket.id ? 'ring-2 ring-brand-black' : ''} ${
         draggedTicket?.id === ticket.id ? 'opacity-50' : ''
       }`}
       data-testid={`employee-ticket-card-${ticket.ticket_number}`}
@@ -117,7 +117,7 @@ const PRIORITY_OPTIONS = [
   { value: 'LOW', label: 'Low', color: 'bg-gray-100 text-gray-700', dot: 'bg-gray-400', description: 'Not urgent' },
   { value: 'MEDIUM', label: 'Medium', color: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500', description: 'Normal priority' },
   { value: 'HIGH', label: 'High', color: 'bg-orange-100 text-orange-700', dot: 'bg-orange-500', description: 'Important' },
-  { value: 'URGENT', label: 'Urgent', color: 'bg-red-100 text-red-700', dot: 'bg-red-500', description: 'Needs immediate attention' }
+  { value: 'URGENT', label: 'Urgent', color: 'bg-red-100 text-gray-800', dot: 'bg-red-500', description: 'Needs immediate attention' }
 ];
 
 // Kanban columns - excluding CLOSED
@@ -379,7 +379,7 @@ const EmployeeTickets = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => { setShowNewTicket(true); setSelectedTicket(null); }}
-              className="flex items-center gap-2 px-4 py-2 bg-brand-red text-white rounded-lg hover:bg-red-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-brand-black text-white rounded-lg hover:bg-gray-800 transition-colors"
               data-testid="create-ticket-btn"
             >
               <Plus className="w-4 h-4" />
@@ -420,7 +420,7 @@ const EmployeeTickets = () => {
                 placeholder="Search tickets..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-black focus:border-transparent"
                 data-testid="employee-ticket-search"
               />
             </div>
@@ -439,7 +439,7 @@ const EmployeeTickets = () => {
               <p className="text-gray-500 mb-4">No tickets yet</p>
               <button
                 onClick={() => setShowNewTicket(true)}
-                className="px-4 py-2 bg-brand-red text-white rounded-lg hover:bg-red-700"
+                className="px-4 py-2 bg-brand-black text-white rounded-lg hover:bg-gray-800"
               >
                 Create your first ticket
               </button>
@@ -449,7 +449,7 @@ const EmployeeTickets = () => {
               <div
                 key={column.value}
                 className={`flex-1 min-w-[260px] max-w-[300px] rounded-xl ${column.bgColor} border-t-4 ${column.color} transition-all ${
-                  dragOverColumn === column.value ? 'ring-2 ring-brand-red ring-offset-2' : ''
+                  dragOverColumn === column.value ? 'ring-2 ring-brand-black ring-offset-2' : ''
                 }`}
                 onDragOver={(e) => handleDragOver(e, column.value)}
                 onDragLeave={handleDragLeave}
@@ -516,7 +516,7 @@ const EmployeeTickets = () => {
                         onClick={() => setNewTicket(prev => ({ ...prev, category: cat.value }))}
                         className={`p-3 border rounded-lg text-left transition-colors ${
                           newTicket.category === cat.value 
-                            ? 'border-brand-red bg-red-50' 
+                            ? 'border-brand-black bg-red-50' 
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                         data-testid={`category-${cat.value}`}
@@ -536,7 +536,7 @@ const EmployeeTickets = () => {
                     value={newTicket.subject}
                     onChange={(e) => setNewTicket(prev => ({ ...prev, subject: e.target.value }))}
                     placeholder="Brief description of your issue"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-red"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-black"
                     data-testid="ticket-subject-input"
                   />
                 </div>
@@ -549,7 +549,7 @@ const EmployeeTickets = () => {
                     onChange={(e) => setNewTicket(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Please provide details about your issue..."
                     rows={5}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-red resize-none"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-black resize-none"
                     data-testid="ticket-description-input"
                   />
                 </div>
@@ -613,7 +613,7 @@ const EmployeeTickets = () => {
                 <button
                   onClick={handleCreateTicket}
                   disabled={submitting || !newTicket.subject || !newTicket.description || !newTicket.category}
-                  className="w-full py-3 bg-brand-red text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="w-full py-3 bg-brand-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                   data-testid="submit-ticket-btn"
                 >
                   {submitting ? 'Creating...' : 'Submit Ticket'}
@@ -632,7 +632,7 @@ const EmployeeTickets = () => {
             >
               <div className="p-4 border-b border-gray-100 flex-shrink-0 bg-gray-50">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-mono text-brand-red font-medium">{selectedTicket.ticket_number}</span>
+                  <span className="text-sm font-mono text-brand-black font-medium">{selectedTicket.ticket_number}</span>
                   <button onClick={() => setSelectedTicket(null)} className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors">
                     <X className="w-4 h-4" />
                   </button>
@@ -793,7 +793,7 @@ const EmployeeTickets = () => {
                         onChange={(e) => setNewComment(e.target.value)}
                         placeholder="Type your reply..."
                         rows={3}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm resize-none focus:border-brand-red focus:ring-2 focus:ring-red-200 focus:outline-none transition-colors"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm resize-none focus:border-brand-black focus:ring-2 focus:ring-red-200 focus:outline-none transition-colors"
                         data-testid="employee-ticket-comment-input"
                       />
                       <button
@@ -807,7 +807,7 @@ const EmployeeTickets = () => {
                     <button
                       onClick={handleAddComment}
                       disabled={!newComment.trim()}
-                      className="px-5 py-3 h-fit bg-brand-red text-white rounded-xl hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors flex items-center gap-2"
+                      className="px-5 py-3 h-fit bg-brand-black text-white rounded-xl hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors flex items-center gap-2"
                       data-testid="employee-send-comment-btn"
                     >
                       <Send className="w-4 h-4" />

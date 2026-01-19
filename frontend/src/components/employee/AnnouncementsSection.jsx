@@ -17,7 +17,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const priorityConfig = {
-  URGENT: { color: 'red', icon: AlertTriangle, label: 'Urgent', bgClass: 'bg-red-50 border-red-200', badgeClass: 'bg-red-100 text-red-700', dotClass: 'bg-red-500' },
+  URGENT: { color: 'red', icon: AlertTriangle, label: 'Urgent', bgClass: 'bg-red-50 border-red-200', badgeClass: 'bg-red-100 text-gray-800', dotClass: 'bg-red-500' },
   IMPORTANT: { color: 'yellow', icon: AlertCircle, label: 'Important', bgClass: 'bg-yellow-50 border-yellow-200', badgeClass: 'bg-yellow-100 text-yellow-700', dotClass: 'bg-yellow-500' },
   NORMAL: { color: 'green', icon: Info, label: 'Normal', bgClass: 'bg-white border-gray-200', badgeClass: 'bg-green-100 text-green-700', dotClass: 'bg-green-500' }
 };

@@ -10,7 +10,7 @@ const ChannelItem = ({ channel, isSelected, onSelectChannel }) => {
       className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-left text-sm
                   transition-colors group ${
                     isSelected 
-                      ? 'bg-brand-red/10 text-brand-red font-medium' 
+                      ? 'bg-brand-black/10 text-brand-black font-medium' 
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                   }`}
       whileHover={{ x: 2 }}
@@ -23,7 +23,7 @@ const ChannelItem = ({ channel, isSelected, onSelectChannel }) => {
       )}
       <span className="truncate flex-1">{channel.name}</span>
       {channel.unread_count > 0 && (
-        <span className="bg-brand-red text-white text-xs px-1.5 py-0.5 rounded-full font-medium min-w-[20px] text-center">
+        <span className="bg-brand-black text-white text-xs px-1.5 py-0.5 rounded-full font-medium min-w-[20px] text-center">
           {channel.unread_count > 99 ? '99+' : channel.unread_count}
         </span>
       )}

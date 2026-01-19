@@ -36,7 +36,7 @@ const Contact = () => {
           transition={{ duration: 0.6 }}
           className="text-center max-w-3xl mx-auto mb-16"
         >
-          <span className="text-brand-red font-semibold text-sm uppercase tracking-wider">
+          <span className="text-brand-black font-semibold text-sm uppercase tracking-wider">
             Contact Us
           </span>
           <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-brand-dark">
@@ -63,14 +63,14 @@ const Contact = () => {
                 scale={1.05}
               >
                 <div className="bg-gray-50 rounded-3xl p-8 text-center h-full border border-gray-100">
-                  <div className="w-16 h-16 bg-brand-red/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <info.icon className="w-8 h-8 text-brand-red" />
+                  <div className="w-16 h-16 bg-brand-black/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <info.icon className="w-8 h-8 text-brand-black" />
                   </div>
                   <h3 className="font-semibold text-brand-dark text-lg mb-2">{info.title}</h3>
                   {info.href ? (
                     <a 
                       href={info.href}
-                      className="text-gray-600 hover:text-brand-red transition-colors"
+                      className="text-gray-600 hover:text-brand-black transition-colors"
                     >
                       {info.content}
                     </a>

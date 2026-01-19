@@ -14,7 +14,7 @@ const ChatButton = ({ isOpen, onClick, unreadCount = 0, isConnected = false }) =
                       flex items-center justify-center transition-all
                       ${isOpen 
                         ? 'bg-gray-800 hover:bg-gray-700' 
-                        : 'bg-gradient-to-r from-brand-red to-red-600 hover:from-red-600 hover:to-red-700'
+                        : 'bg-gradient-to-r from-brand-black to-gray-700 hover:from-gray-700 hover:to-gray-800'
                       }`}
       >
         {isOpen ? (
@@ -47,7 +47,7 @@ const ChatButton = ({ isOpen, onClick, unreadCount = 0, isConnected = false }) =
         
         {/* Pulse animation when not open */}
         {!isOpen && (
-          <span className="absolute inset-0 rounded-full bg-brand-red animate-ping opacity-20" />
+          <span className="absolute inset-0 rounded-full bg-brand-black animate-ping opacity-20" />
         )}
       </div>
       

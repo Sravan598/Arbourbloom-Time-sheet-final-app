@@ -183,7 +183,7 @@ const Projects = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-brand-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-500">Loading projects...</p>
         </div>
       </div>
@@ -202,7 +202,7 @@ const Projects = () => {
           <div className="px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-brand-red to-brand-red-dark rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-brand-black to-brand-black-dark rounded-xl flex items-center justify-center">
                   <FolderKanban className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -292,7 +292,7 @@ const Projects = () => {
                               setShowProfileDropdown(false);
                               handleLogout();
                             }}
-                            className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-red-50 transition-colors w-full"
                           >
                             <LogOut className="w-4 h-4" />
                             <span>Logout</span>
@@ -318,13 +318,13 @@ const Projects = () => {
                 placeholder="Search projects..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent"
+              className="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
             >
               <option value="ACTIVE">Active Projects</option>
               <option value="ARCHIVED">Archived</option>
@@ -390,7 +390,7 @@ const Projects = () => {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleEdit(project)}
-                          className="p-2 text-gray-400 hover:text-brand-red rounded-lg hover:bg-gray-100 transition-colors"
+                          className="p-2 text-gray-400 hover:text-brand-black rounded-lg hover:bg-gray-100 transition-colors"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
@@ -482,7 +482,7 @@ const Projects = () => {
               {formError && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-red-500" />
-                  <p className="text-red-700 text-sm">{formError}</p>
+                  <p className="text-gray-800 text-sm">{formError}</p>
                 </div>
               )}
 
@@ -495,7 +495,7 @@ const Projects = () => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                     placeholder="e.g., Website Redesign"
                     required
                   />
@@ -508,7 +508,7 @@ const Projects = () => {
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent resize-none"
                     rows={2}
                     placeholder="Brief project description..."
                   />
@@ -541,7 +541,7 @@ const Projects = () => {
                     type="number"
                     value={formData.estimated_hours}
                     onChange={(e) => setFormData({ ...formData, estimated_hours: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                     placeholder="e.g., 40"
                     min="0"
                     step="0.5"
@@ -563,7 +563,7 @@ const Projects = () => {
                             type="checkbox"
                             checked={formData.assigned_users.includes(emp.id)}
                             onChange={() => toggleUserAssignment(emp.id)}
-                            className="w-4 h-4 text-brand-red rounded focus:ring-brand-red"
+                            className="w-4 h-4 text-brand-black rounded focus:ring-brand-black"
                           />
                           <span className="text-sm text-brand-dark">{emp.name}</span>
                         </label>

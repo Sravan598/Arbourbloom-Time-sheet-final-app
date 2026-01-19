@@ -20,7 +20,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const priorityConfig = {
-  URGENT: { color: 'red', icon: AlertTriangle, label: 'Urgent', bgClass: 'bg-red-100 text-red-700 border-red-200' },
+  URGENT: { color: 'red', icon: AlertTriangle, label: 'Urgent', bgClass: 'bg-red-100 text-gray-800 border-red-200' },
   IMPORTANT: { color: 'yellow', icon: AlertCircle, label: 'Important', bgClass: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
   NORMAL: { color: 'green', icon: Info, label: 'Normal', bgClass: 'bg-green-100 text-green-700 border-green-200' }
 };
@@ -161,7 +161,7 @@ const AdminAnnouncementsSection = () => {
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-red-500" />
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm text-gray-800">{error}</p>
           <button onClick={() => setError('')} className="ml-auto"><X className="w-4 h-4" /></button>
         </div>
       )}
@@ -238,7 +238,7 @@ const AdminAnnouncementsSection = () => {
                     </button>
                     <button
                       onClick={() => handleDelete(ann.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-gray-400 hover:text-gray-700 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

@@ -171,7 +171,7 @@ const EmployeeDocs = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-brand-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-500">Loading employee documents...</p>
         </div>
       </div>
@@ -190,7 +190,7 @@ const EmployeeDocs = () => {
           <div className="px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-brand-red to-brand-red-dark rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-brand-black to-brand-black-dark rounded-xl flex items-center justify-center">
                   <Folder className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -267,7 +267,7 @@ const EmployeeDocs = () => {
                               setShowProfileDropdown(false);
                               handleLogout();
                             }}
-                            className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-red-50 transition-colors w-full"
                           >
                             <LogOut className="w-4 h-4" />
                             <span>Logout</span>
@@ -291,7 +291,7 @@ const EmployeeDocs = () => {
               className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3"
             >
               <AlertCircle className="w-5 h-5 text-red-500" />
-              <p className="text-red-700">{error}</p>
+              <p className="text-gray-800">{error}</p>
               <button onClick={() => setError('')} className="ml-auto"><X className="w-4 h-4" /></button>
             </motion.div>
           )}
@@ -304,7 +304,7 @@ const EmployeeDocs = () => {
               placeholder="Search employees by name or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent"
+              className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
             />
           </div>
 
@@ -338,7 +338,7 @@ const EmployeeDocs = () => {
                           className="w-12 h-12 rounded-xl object-cover border-2 border-gray-200"
                         />
                       ) : (
-                        <div className="w-12 h-12 bg-gradient-to-br from-brand-red to-brand-red-dark rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-to-br from-brand-black to-brand-black-dark rounded-xl flex items-center justify-center">
                           <span className="text-white font-bold text-lg">
                             {emp.name.charAt(0).toUpperCase()}
                           </span>

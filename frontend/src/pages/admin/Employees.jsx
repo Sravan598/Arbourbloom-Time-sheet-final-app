@@ -157,7 +157,7 @@ const Employees = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-brand-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-500">Loading employees...</p>
         </div>
       </div>
@@ -176,7 +176,7 @@ const Employees = () => {
           <div className="px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-brand-red to-brand-red-dark rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-brand-black to-brand-black-dark rounded-xl flex items-center justify-center">
                   <Users className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -262,7 +262,7 @@ const Employees = () => {
                               setShowProfileDropdown(false);
                               handleLogout();
                             }}
-                            className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-red-50 transition-colors w-full"
                           >
                             <LogOut className="w-4 h-4" />
                             <span>Logout</span>
@@ -287,7 +287,7 @@ const Employees = () => {
               className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3"
             >
               <AlertCircle className="w-5 h-5 text-red-500" />
-              <p className="text-red-700">{error}</p>
+              <p className="text-gray-800">{error}</p>
               <button onClick={() => setError('')} className="ml-auto"><X className="w-4 h-4" /></button>
             </motion.div>
           )}
@@ -311,7 +311,7 @@ const Employees = () => {
               placeholder="Search employees by name or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent"
+              className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
             />
           </div>
 
@@ -404,7 +404,7 @@ const Employees = () => {
                                 className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
                               />
                             ) : (
-                              <div className="w-10 h-10 bg-gradient-to-br from-brand-red to-brand-red-dark rounded-full flex items-center justify-center">
+                              <div className="w-10 h-10 bg-gradient-to-br from-brand-black to-brand-black-dark rounded-full flex items-center justify-center">
                                 <span className="text-white font-bold">
                                   {emp.name.charAt(0).toUpperCase()}
                                 </span>
@@ -472,8 +472,8 @@ const Employees = () => {
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-brand-red/10 rounded-xl flex items-center justify-center">
-                    <UserPlus className="w-5 h-5 text-brand-red" />
+                  <div className="w-10 h-10 bg-brand-black/10 rounded-xl flex items-center justify-center">
+                    <UserPlus className="w-5 h-5 text-brand-black" />
                   </div>
                   <h2 className="text-xl font-bold text-brand-dark">Add Employee</h2>
                 </div>
@@ -489,7 +489,7 @@ const Employees = () => {
                     type="text"
                     value={addForm.name}
                     onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
                     placeholder="John Smith"
                     required
                   />
@@ -500,7 +500,7 @@ const Employees = () => {
                     type="email"
                     value={addForm.email}
                     onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
                     placeholder="john@company.com"
                     required
                   />
@@ -511,7 +511,7 @@ const Employees = () => {
                     type="password"
                     value={addForm.password}
                     onChange={(e) => setAddForm({ ...addForm, password: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
                     placeholder="Create a password"
                     required
                     minLength={6}
@@ -578,8 +578,8 @@ const Employees = () => {
               </div>
 
               <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6">
-                <p className="text-sm text-red-700 font-medium mb-2">This will permanently delete:</p>
-                <ul className="text-sm text-red-600 space-y-1">
+                <p className="text-sm text-gray-800 font-medium mb-2">This will permanently delete:</p>
+                <ul className="text-sm text-gray-700 space-y-1">
                   <li>• All timesheets and work history</li>
                   <li>• All uploaded documents</li>
                   <li>• All leave requests</li>
@@ -598,7 +598,7 @@ const Employees = () => {
                 <button
                   onClick={handleDeleteEmployee}
                   disabled={isDeleting}
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 bg-red-500 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isDeleting ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

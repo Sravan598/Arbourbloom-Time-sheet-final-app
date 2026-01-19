@@ -10,7 +10,7 @@ const Hero = () => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-red/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-black/5 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-brand-silver/10 rounded-full blur-3xl" />
       </div>
 
@@ -27,7 +27,7 @@ const Hero = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="inline-block px-4 py-2 bg-brand-red/10 text-brand-red rounded-full text-sm font-semibold mb-6"
+              className="inline-block px-4 py-2 bg-brand-black/10 text-brand-black rounded-full text-sm font-semibold mb-6"
             >
               360° ERP Solutions
             </motion.span>
@@ -39,7 +39,7 @@ const Hero = () => {
               className="text-4xl sm:text-5xl lg:text-6xl font-bold text-brand-dark leading-tight mb-6"
             >
               Streamline Your
-              <span className="text-brand-red"> Workforce</span>
+              <span className="text-brand-black"> Workforce</span>
               <br />
               Time Tracking
             </motion.h1>
@@ -97,7 +97,7 @@ const Hero = () => {
           transition={{ repeat: Infinity, duration: 1.5 }}
           className="w-6 h-10 border-2 border-brand-dark/30 rounded-full flex justify-center pt-2"
         >
-          <div className="w-1.5 h-3 bg-brand-red rounded-full" />
+          <div className="w-1.5 h-3 bg-brand-black rounded-full" />
         </motion.div>
       </motion.div>
     </section>

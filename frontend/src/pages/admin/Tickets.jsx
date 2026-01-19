@@ -117,7 +117,7 @@ const PRIORITY_OPTIONS = [
   { value: 'LOW', label: 'Low', color: 'bg-gray-100 text-gray-700', dot: 'bg-gray-400' },
   { value: 'MEDIUM', label: 'Medium', color: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500' },
   { value: 'HIGH', label: 'High', color: 'bg-orange-100 text-orange-700', dot: 'bg-orange-500' },
-  { value: 'URGENT', label: 'Urgent', color: 'bg-red-100 text-red-700', dot: 'bg-red-500' }
+  { value: 'URGENT', label: 'Urgent', color: 'bg-red-100 text-gray-800', dot: 'bg-red-500' }
 ];
 
 // Kanban columns - excluding CLOSED
@@ -427,7 +427,7 @@ const AdminTickets = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">SLA Breached</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.sla_breached}</p>
+                  <p className="text-2xl font-bold text-gray-700">{stats.sla_breached}</p>
                 </div>
                 <AlertTriangle className="w-10 h-10 text-red-500 opacity-50" />
               </div>
@@ -688,7 +688,7 @@ const AdminTickets = () => {
                 {selectedTicket.sla_due_at && (
                   <div className={`text-xs p-2 rounded-lg flex items-center gap-2 ${
                     selectedTicket.sla_breached 
-                      ? 'bg-red-50 text-red-700' 
+                      ? 'bg-red-50 text-gray-800' 
                       : 'bg-gray-100 text-gray-600'
                   }`}>
                     <Clock className="w-3.5 h-3.5" />

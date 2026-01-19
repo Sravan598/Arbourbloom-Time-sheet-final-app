@@ -44,7 +44,7 @@ const DMList = ({
       <div className="space-y-0.5">
         {loading ? (
           <div className="px-4 py-8 text-center">
-            <div className="animate-spin w-6 h-6 border-2 border-brand-red border-t-transparent rounded-full mx-auto" />
+            <div className="animate-spin w-6 h-6 border-2 border-brand-black border-t-transparent rounded-full mx-auto" />
           </div>
         ) : threads.length === 0 ? (
           <div className="px-4 py-8 text-center">
@@ -52,7 +52,7 @@ const DMList = ({
             <p className="text-sm text-gray-500">No conversations yet</p>
             <button
               onClick={onStartNewDM}
-              className="mt-2 text-sm text-brand-red hover:underline"
+              className="mt-2 text-sm text-brand-black hover:underline"
             >
               Start a conversation
             </button>
@@ -68,7 +68,7 @@ const DMList = ({
                 onClick={() => onSelectThread(thread)}
                 className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors ${
                   isSelected 
-                    ? 'bg-brand-red/10' 
+                    ? 'bg-brand-black/10' 
                     : 'hover:bg-gray-50'
                 }`}
                 whileHover={{ x: 2 }}
@@ -98,7 +98,7 @@ const DMList = ({
                 <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-center justify-between">
                     <span className={`font-medium truncate ${
-                      isSelected ? 'text-brand-red' : 'text-gray-900'
+                      isSelected ? 'text-brand-black' : 'text-gray-900'
                     }`}>
                       {thread.other_user_name}
                     </span>
@@ -112,7 +112,7 @@ const DMList = ({
                     </p>
                     {/* Unread indicator */}
                     {thread.unread_count > 0 && (
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-brand-red text-white text-xs flex items-center justify-center">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-brand-black text-white text-xs flex items-center justify-center">
                         {thread.unread_count > 9 ? '9+' : thread.unread_count}
                       </span>
                     )}

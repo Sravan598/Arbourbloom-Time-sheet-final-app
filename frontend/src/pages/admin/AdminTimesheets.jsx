@@ -229,7 +229,7 @@ const AdminTimesheets = () => {
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => setShowAuditModal(true)}
-                  className="flex items-center gap-2 text-gray-600 hover:text-brand-red transition-colors"
+                  className="flex items-center gap-2 text-gray-600 hover:text-brand-black transition-colors"
                 >
                   <History className="w-5 h-5" />
                   <span className="hidden sm:inline">Audit Log</span>
@@ -302,7 +302,7 @@ const AdminTimesheets = () => {
                               setShowProfileDropdown(false);
                               handleLogout();
                             }}
-                            className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-red-50 transition-colors w-full"
                           >
                             <LogOut className="w-4 h-4" />
                             <span>Logout</span>
@@ -327,7 +327,7 @@ const AdminTimesheets = () => {
               className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3"
             >
               <AlertCircle className="w-5 h-5 text-red-500" />
-              <p className="text-red-700">{error}</p>
+              <p className="text-gray-800">{error}</p>
               <button onClick={() => setError('')} className="ml-auto"><X className="w-4 h-4" /></button>
             </motion.div>
           )}
@@ -355,7 +355,7 @@ const AdminTimesheets = () => {
               <select
                 value={selectedUserId}
                 onChange={(e) => setSelectedUserId(e.target.value)}
-                className="px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent min-w-[200px]"
+                className="px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent min-w-[200px]"
               >
                 <option value="">All Employees</option>
                 {employees.map(emp => (
@@ -369,7 +369,7 @@ const AdminTimesheets = () => {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                className="px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
               />
             </div>
             <div>
@@ -378,7 +378,7 @@ const AdminTimesheets = () => {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                className="px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
               />
             </div>
             <Button
@@ -406,7 +406,7 @@ const AdminTimesheets = () => {
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           {isLoading ? (
             <div className="p-12 text-center">
-              <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="w-12 h-12 border-4 border-brand-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-gray-600">Loading timesheets...</p>
             </div>
           ) : timesheets.length === 0 ? (
@@ -434,8 +434,8 @@ const AdminTimesheets = () => {
                     <tr key={ts.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-brand-red/10 rounded-full flex items-center justify-center">
-                            <User className="w-4 h-4 text-brand-red" />
+                          <div className="w-8 h-8 bg-brand-black/10 rounded-full flex items-center justify-center">
+                            <User className="w-4 h-4 text-brand-black" />
                           </div>
                           <div>
                             <p className="font-medium text-brand-dark">{ts.user_name || 'Unknown'}</p>
@@ -492,7 +492,7 @@ const AdminTimesheets = () => {
                       <td className="px-6 py-4">
                         <button
                           onClick={() => openEditModal(ts)}
-                          className="flex items-center gap-1 text-brand-red hover:underline text-sm font-medium"
+                          className="flex items-center gap-1 text-brand-black hover:underline text-sm font-medium"
                         >
                           <Edit2 className="w-4 h-4" />
                           Edit
@@ -543,7 +543,7 @@ const AdminTimesheets = () => {
                     type="datetime-local"
                     value={editForm.clock_in_at}
                     onChange={(e) => setEditForm({...editForm, clock_in_at: e.target.value})}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -552,7 +552,7 @@ const AdminTimesheets = () => {
                     type="datetime-local"
                     value={editForm.clock_out_at}
                     onChange={(e) => setEditForm({...editForm, clock_out_at: e.target.value})}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -561,7 +561,7 @@ const AdminTimesheets = () => {
                     value={editForm.notes}
                     onChange={(e) => setEditForm({...editForm, notes: e.target.value})}
                     rows={2}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-red focus:border-transparent resize-none"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent resize-none"
                     placeholder="Add notes..."
                   />
                 </div>
@@ -571,7 +571,7 @@ const AdminTimesheets = () => {
                     id="is_approved"
                     checked={editForm.is_approved}
                     onChange={(e) => setEditForm({...editForm, is_approved: e.target.checked})}
-                    className="w-4 h-4 rounded border-gray-300 text-brand-red focus:ring-brand-red"
+                    className="w-4 h-4 rounded border-gray-300 text-brand-black focus:ring-brand-black"
                   />
                   <label htmlFor="is_approved" className="text-sm font-medium text-brand-dark">
                     Mark as Approved
