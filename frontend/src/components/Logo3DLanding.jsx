@@ -130,8 +130,9 @@ const Logo3DLanding = ({ size = 320, className = '' }) => {
           style={{
             width: size * 0.7,
             height: size * 0.7,
-            mixBlendMode: 'multiply',
-            filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.1))',
+            mixBlendMode: 'darken',
+            filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.1)) contrast(1.05)',
+            backgroundColor: 'transparent',
           }}
         />
       </motion.div>
