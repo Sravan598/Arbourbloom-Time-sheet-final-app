@@ -3,55 +3,71 @@ import { motion } from 'framer-motion';
 import { 
   Clock, 
   Users, 
+  CalendarDays, 
   BarChart3, 
-  Shield, 
-  Smartphone, 
-  Zap 
+  MessageSquare,
+  Ticket,
+  Shield,
+  Smartphone
 } from 'lucide-react';
 import TiltCard from '../ui/TiltCard';
 
 const features = [
   {
     icon: Clock,
-    title: 'Real-Time Tracking',
-    description: 'Track employee hours instantly with our precision clock-in/clock-out system. Never miss a minute.',
+    title: 'Time & Attendance',
+    description: 'Clock in/out from desktop or mobile. Timesheet approvals, overtime tracking, and break management built-in.',
     color: 'text-brand-black',
     bgColor: 'bg-brand-black/10'
   },
   {
     icon: Users,
-    title: 'Team Management',
-    description: 'Organize teams, departments, and shifts effortlessly. Complete visibility into your workforce.',
+    title: 'Employee Management',
+    description: 'Centralized employee profiles with role-based access. Manage departments, positions, and team structures effortlessly.',
     color: 'text-blue-600',
     bgColor: 'bg-blue-100'
   },
   {
-    icon: BarChart3,
-    title: 'Advanced Analytics',
-    description: 'Powerful reports and insights to optimize productivity and identify trends in real-time.',
+    icon: CalendarDays,
+    title: 'Leave & Holiday Management',
+    description: 'Custom leave types, approval workflows, and carry-forward logic. Visual calendar for team-wide leave visibility.',
     color: 'text-green-600',
     bgColor: 'bg-green-100'
   },
   {
-    icon: Shield,
-    title: 'Compliance Ready',
-    description: 'Stay compliant with labor laws. Automatic overtime calculations and audit trails included.',
+    icon: BarChart3,
+    title: 'HR Analytics & Dashboards',
+    description: 'Real-time insights into attendance trends, leave patterns, and workforce productivity. Export reports instantly.',
     color: 'text-purple-600',
     bgColor: 'bg-purple-100'
   },
   {
-    icon: Smartphone,
-    title: 'Mobile First',
-    description: 'Clock in from anywhere with our native mobile apps. GPS verification available.',
+    icon: Ticket,
+    title: 'Support Ticketing',
+    description: 'Internal helpdesk for HR, IT, and facilities requests. SLA tracking, priority management, and comment threads.',
     color: 'text-orange-600',
     bgColor: 'bg-orange-100'
   },
   {
-    icon: Zap,
-    title: 'Instant Integration',
-    description: 'Seamlessly connect with payroll, HR, and accounting software you already use.',
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-100'
+    icon: MessageSquare,
+    title: 'Team Communication',
+    description: 'Built-in chat channels, direct messaging, and company announcements. Keep your team connected and informed.',
+    color: 'text-pink-600',
+    bgColor: 'bg-pink-100'
+  },
+  {
+    icon: Shield,
+    title: 'Secure & Compliant',
+    description: 'Role-based permissions, audit trails, and data encryption. Stay compliant with labor regulations effortlessly.',
+    color: 'text-indigo-600',
+    bgColor: 'bg-indigo-100'
+  },
+  {
+    icon: Smartphone,
+    title: 'Mobile-First Design',
+    description: 'Access HR tools from anywhere. Responsive interface that works seamlessly on all devices.',
+    color: 'text-teal-600',
+    bgColor: 'bg-teal-100'
   }
 ];
 
@@ -86,14 +102,14 @@ const Features = () => {
           className="text-center max-w-3xl mx-auto mb-16"
         >
           <span className="text-brand-black font-semibold text-sm uppercase tracking-wider">
-            Features
+            Full Suite of HR Tools
           </span>
           <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-brand-dark">
-            Everything you need to manage time effectively
+            Everything you need to manage your workforce
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            AurborBloom provides a comprehensive suite of tools designed to streamline 
-            your workforce management and boost operational efficiency.
+            AurborBloom HRM offers modular tools that work beautifully together — 
+            streamlining processes and creating meaningful employee experiences.
           </p>
         </motion.div>
 
@@ -103,7 +119,7 @@ const Features = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
         >
           {features.map((feature, index) => (
             <motion.div key={index} variants={itemVariants}>
@@ -114,16 +130,16 @@ const Features = () => {
                 scale={1.03}
               >
                 <div 
-                  className="bg-white rounded-3xl p-6 h-full border border-gray-100"
+                  className="bg-white rounded-2xl p-6 h-full border border-gray-100 hover:border-gray-200 transition-colors"
                   data-testid={`feature-card-${index}`}
                 >
-                  <div className={`w-14 h-14 ${feature.bgColor} rounded-2xl flex items-center justify-center mb-6`}>
-                    <feature.icon className={`w-7 h-7 ${feature.color}`} />
+                  <div className={`w-12 h-12 ${feature.bgColor} rounded-xl flex items-center justify-center mb-4`}>
+                    <feature.icon className={`w-6 h-6 ${feature.color}`} />
                   </div>
-                  <h3 className="text-xl font-bold text-brand-dark mb-3">
+                  <h3 className="text-lg font-bold text-brand-dark mb-2">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-gray-600 text-sm leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
