@@ -72,16 +72,16 @@ const Hero = () => {
               transition={{ delay: 0.5 }}
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
             >
-              <Button 
-                variant="primary" 
-                size="lg"
-                data-testid="hero-get-started-btn"
-                className="w-full sm:w-auto"
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => navigate('/auth')}
+                data-testid="hero-get-started-btn"
+                className="inline-flex items-center justify-center font-semibold rounded-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gradient-to-r from-brand-black to-gray-800 text-white hover:shadow-lg hover:shadow-brand-black/30 focus:ring-brand-black px-8 py-4 text-lg w-full sm:w-auto"
               >
                 Get Started Free
                 <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
+              </motion.button>
               <a href="#features">
                 <Button 
                   variant="outline" 
