@@ -8,12 +8,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Brand colors derived from CORtracker logo
+        // Brand colors for AurborBloom - Black elegant theme
         brand: {
-          red: '#CC0000',
-          'red-dark': '#990000',
-          'red-light': '#FF3333',
+          black: '#1a1a1a',
+          'black-dark': '#0d0d0d',
+          'black-light': '#333333',
           dark: '#1a1a1a',
+          accent: '#D4AF37', // Gold accent
           silver: '#C0C0C0',
           gray: '#666666',
         },
@@ -66,7 +67,7 @@ module.exports = {
       boxShadow: {
         'premium': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
         'soft': '0 10px 40px -10px rgba(0, 0, 0, 0.1)',
-        'glow-red': '0 0 40px rgba(204, 0, 0, 0.3)',
+        'glow-black': '0 0 40px rgba(26, 26, 26, 0.3)',
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',
@@ -81,7 +82,7 @@ module.exports = {
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'brand-gradient': 'linear-gradient(135deg, #CC0000 0%, #990000 100%)',
+        'brand-gradient': 'linear-gradient(135deg, #1a1a1a 0%, #333333 100%)',
       },
     },
   },
