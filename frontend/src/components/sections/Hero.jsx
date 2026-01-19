@@ -60,7 +60,7 @@ const Hero = () => {
               transition={{ delay: 0.45 }}
               className="text-base text-gray-500 mb-8 max-w-lg mx-auto lg:mx-0"
             >
-              Whether you're a growing startup or a global organization, AurborBloom HRM 
+              Whether you are a growing startup or a global organization, AurborBloom HRM 
               adapts to how you hire, engage, and grow talent.
             </motion.p>
 
