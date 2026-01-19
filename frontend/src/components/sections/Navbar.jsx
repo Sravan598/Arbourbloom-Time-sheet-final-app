@@ -51,7 +51,7 @@ const Navbar = () => {
             whileHover={{ scale: 1.02 }}
           >
             <img 
-              src="https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png" 
+              src="/aurborbloom_logo.png" 
               alt="AurborBloom" 
               className="h-10 w-auto"
             />

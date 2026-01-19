@@ -4,7 +4,7 @@ import { Bot, X, Minus, Send } from 'lucide-react';
 import { findAnswer } from './faqData';
 
 // AurborBloom logo URL
-const ARBORBLOOM_LOGO = "https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png";
+const ARBORBLOOM_LOGO = "/aurborbloom_logo.png";
 
 // Storage key for position persistence
 const POSITION_STORAGE_KEY = 'corbot_position';

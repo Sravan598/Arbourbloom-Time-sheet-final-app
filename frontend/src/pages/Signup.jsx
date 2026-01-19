@@ -107,7 +107,7 @@ const Signup = () => {
         <div className="text-center mb-8">
           <Link to="/">
             <img 
-              src="https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png" 
+              src="/aurborbloom_logo.png" 
               alt="AurborBloom" 
               className="h-12 mx-auto mb-4"
             />
