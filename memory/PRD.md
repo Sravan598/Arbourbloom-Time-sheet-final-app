@@ -231,6 +231,10 @@ Backend refactored from 7000+ line monolith to modular structure:
 ## Change Log
 
 ### January 2025 (Continued)
+- ✅ **3D Interactive Logo** - Mouse-responsive perspective tilt effect on dashboards
+  - Transparent background with soft shadow
+  - Smooth animation on mouse movement
+  - Added to Admin and Employee dashboards
 - ✅ **Kanban Board for Tickets** - Replaced list view with visual Kanban board
   - 4 columns: Open → In Progress → Waiting on User → Resolved
   - Drag-and-drop to change status (Admin)
