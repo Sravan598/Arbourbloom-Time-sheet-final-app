@@ -72,17 +72,16 @@ const Hero = () => {
               transition={{ delay: 0.5 }}
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
             >
-              <Link to="/auth">
-                <Button 
-                  variant="primary" 
-                  size="lg"
-                  data-testid="hero-get-started-btn"
-                  className="w-full sm:w-auto"
-                >
-                  Get Started Free
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
+              <Button 
+                variant="primary" 
+                size="lg"
+                data-testid="hero-get-started-btn"
+                className="w-full sm:w-auto"
+                onClick={() => navigate('/auth')}
+              >
+                Get Started Free
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
               <a href="#features">
                 <Button 
                   variant="outline" 
