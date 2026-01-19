@@ -69,9 +69,9 @@ const EmployeeSidebar = () => {
       <div className="p-6 border-b border-gray-100">
         <Link to="/employee/dashboard" className="flex items-center gap-3">
           <img 
-            src="https://customer-assets.emergentagent.com/job_readable-link/artifacts/ufwwws2h_image.png" 
-            alt="CORtracker" 
-            className="h-8"
+            src="/aurborbloom_logo.png" 
+            alt="AurborBloom" 
+            className="h-10"
           />
         </Link>
       </div>
@@ -108,7 +108,7 @@ const EmployeeSidebar = () => {
                 to={item.path}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                   active 
-                    ? 'bg-brand-red/10 text-brand-red font-medium' 
+                    ? 'bg-brand-black/10 text-brand-black font-medium' 
                     : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
