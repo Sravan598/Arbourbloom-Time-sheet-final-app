@@ -211,9 +211,11 @@ AurborBloom is a comprehensive Human Resource Management System (HRMS) built wit
 2. Advanced Payroll Export (CSV/Excel for ADP)
 
 ### P3 - Future
-1. AI Integration (HR Chatbot using Emergent LLM Key or Groq free tier)
+1. AI Integration (HR Chatbot using Emergent LLM Key or Groq free tier) - **Ready to discuss**
 2. White-Labeling support (env-based branding)
 3. Email Notifications for Ticketing System (Resend free tier - ON HOLD)
+4. Onboarding & Offboarding Module
+5. Performance & Feedback Module
 
 ## Refactoring Status ✅ COMPLETE (January 2025)
 Backend refactored from 7000+ line monolith to modular structure:
