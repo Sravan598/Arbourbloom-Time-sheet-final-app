@@ -115,24 +115,21 @@ const Logo3DLanding = ({ size = 320, className = '' }) => {
           }}
         >
           <img
-            src="/aurborbloom_logo.png"
+            src="/aurborbloom_logo_transparent.png"
             alt=""
             className="w-full h-full object-contain"
-            style={{ mixBlendMode: 'multiply' }}
           />
         </motion.div>
 
         {/* Main logo image */}
         <img
-          src="/aurborbloom_logo.png"
+          src="/aurborbloom_logo_transparent.png"
           alt="AurborBloom"
           className="relative z-10 object-contain"
           style={{
             width: size * 0.7,
             height: size * 0.7,
-            mixBlendMode: 'darken',
-            filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.1)) contrast(1.05)',
-            backgroundColor: 'transparent',
+            filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.1))',
           }}
         />
       </motion.div>
