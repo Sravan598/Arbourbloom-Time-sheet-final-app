@@ -231,6 +231,15 @@ Backend refactored from 7000+ line monolith to modular structure:
 
 ## Change Log
 
+### January 19, 2025
+- ✅ **Landing Page 3D Logo Animation** - Implemented "Morphing Bloom" + "Glowing Pulse" effect
+  - Created transparent PNG version of logo (removed white background)
+  - Golden pulsing aura effect behind logo
+  - Logo scales/morphs with breathing animation
+  - Sparkle particles around logo
+  - Component: `/app/frontend/src/components/Logo3DLanding.jsx`
+- ✅ **Fixed Preview/Landing Page Crash** - Corrected component import mismatch in Hero.jsx
+
 ### January 2025 (Continued)
 - ✅ **3D Interactive Logo** - Mouse-responsive perspective tilt effect on dashboards
   - Transparent background with soft shadow
