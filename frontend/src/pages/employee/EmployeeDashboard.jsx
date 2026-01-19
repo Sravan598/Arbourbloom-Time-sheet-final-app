@@ -24,6 +24,7 @@ import WeeklyProgressSection from '../../components/employee/WeeklyProgressSecti
 import AnnouncementsSection from '../../components/employee/AnnouncementsSection';
 import EmployeeSidebar from '../../components/employee/EmployeeSidebar';
 import { NotificationBell } from '../../components/notifications';
+import Logo3D from '../../components/Logo3D';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
