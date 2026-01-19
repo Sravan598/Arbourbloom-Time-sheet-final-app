@@ -1,7 +1,9 @@
-# CORtracker - Product Requirements Document
+# AurborBloom - Product Requirements Document
 
 ## Overview
-CORtracker is a comprehensive time-tracking and workforce management application built with React frontend and FastAPI backend, using MongoDB for data storage.
+AurborBloom is a comprehensive time-tracking and workforce management application built with React frontend and FastAPI backend, using MongoDB for data storage.
+
+**Rebranded from CORtracker to AurborBloom - January 2025**
 
 ## Core Features
 
