@@ -55,7 +55,7 @@ const WhyAurborBloom = () => {
           </h2>
           <p className="mt-4 text-lg text-gray-300">
             Traditional systems are disconnected and built for administrators — not for people. 
-            We're changing that with a modern approach to HR management.
+            We are changing that with a modern approach to HR management.
           </p>
         </motion.div>
 
