@@ -35,10 +35,10 @@ class Settings:
     ALLOWED_FILE_TYPES: set = ALLOWED_IMAGE_TYPES | ALLOWED_DOC_TYPES | ALLOWED_VIDEO_TYPES
     
     # PDF
-    LOGO_PATH: Path = ROOT_DIR / "assets" / "cortracker_logo.png"
+    LOGO_PATH: Path = ROOT_DIR / "assets" / "aurborbloom_logo.png"
     
     # Admin signup code
-    ADMIN_SIGNUP_CODE: str = "CORTRACKER-ADMIN-2024"
+    ADMIN_SIGNUP_CODE: str = "ARBORBLOOM-ADMIN-2025"
 
 
 settings = Settings()
