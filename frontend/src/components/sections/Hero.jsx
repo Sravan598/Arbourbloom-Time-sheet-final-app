@@ -75,7 +75,7 @@ const Hero = () => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate('/signup')}
                 data-testid="hero-get-started-btn"
                 className="inline-flex items-center justify-center font-semibold rounded-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gradient-to-r from-brand-black to-gray-800 text-white hover:shadow-lg hover:shadow-brand-black/30 focus:ring-brand-black px-8 py-4 text-lg w-full sm:w-auto"
               >
