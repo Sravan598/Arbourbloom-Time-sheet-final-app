@@ -155,6 +155,13 @@ const Signup = () => {
     setIsLoading(false);
   };
 
+  // Handle Google Sign Up
+  // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+  const handleGoogleSignUp = () => {
+    const redirectUrl = window.location.origin + '/employee/dashboard';
+    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center px-4 py-8">
       <motion.div
