@@ -103,20 +103,20 @@ const CursorSpotlight = () => {
 
   return (
     <>
-      {/* Spotlight glow effect - subtle and elegant */}
+      {/* Spotlight glow effect */}
       <motion.div
         className="cursor-spotlight"
         style={{
           position: 'fixed',
           top: 0,
           left: 0,
-          width: '400px',
-          height: '400px',
+          width: '300px',
+          height: '300px',
           background: `radial-gradient(
             circle at center,
-            rgba(212, 175, 55, 0.04) 0%,
-            rgba(212, 175, 55, 0.02) 30%,
-            rgba(212, 175, 55, 0.01) 50%,
+            rgba(212, 175, 55, 0.15) 0%,
+            rgba(212, 175, 55, 0.08) 30%,
+            rgba(212, 175, 55, 0.03) 50%,
             transparent 70%
           )`,
           borderRadius: '50%',
