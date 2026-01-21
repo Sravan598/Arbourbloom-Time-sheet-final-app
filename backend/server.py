@@ -1176,10 +1176,10 @@ async def login(credentials: UserLogin):
     user = await db.users.find_one({"email": credentials.email.lower()}, {"_id": 0})
     
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        raise HTTPException(status_code=401, detail="No account found with this email address")
     
     if not verify_password(credentials.password, user.get("password_hash", "")):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        raise HTTPException(status_code=401, detail="Incorrect password. Please try again")
     
     if not user.get("is_active", True):
         raise HTTPException(status_code=403, detail="Account is deactivated. Please contact administrator.")
