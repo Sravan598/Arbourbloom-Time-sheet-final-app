@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import CursorDot from './components/ui/CursorDot';
+import CursorSpotlight from './components/ui/CursorSpotlight';
 import { AurborChat } from './components/chat';
 import { AurborBot } from './components/chatbot';
 import { NotificationBell } from './components/notifications';
