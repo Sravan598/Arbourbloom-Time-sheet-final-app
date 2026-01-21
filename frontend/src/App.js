@@ -51,8 +51,8 @@ function App() {
   return (
     <AuthProvider>
       <div className="App antialiased">
-        {/* Custom Red Dot Cursor Follower */}
-        <CursorDot />
+        {/* Spotlight cursor effect */}
+        <CursorSpotlight />
         
         <BrowserRouter>
           {/* AurborBot FAQ chatbot - appears on ALL pages (including public) */}
