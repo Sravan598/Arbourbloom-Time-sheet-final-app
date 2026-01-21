@@ -72,6 +72,9 @@ const Login = () => {
       } else {
         navigate('/employee/dashboard');
       }
+    } else {
+      // Set local error from result
+      setLocalError(result.error || 'Login failed. Please try again.');
     }
     
     setIsLoading(false);
