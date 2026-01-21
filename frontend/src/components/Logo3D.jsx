@@ -65,13 +65,12 @@ const Logo3D = ({ size = 120, className = '' }) => {
         
         {/* Main logo image */}
         <img
-          src="/aurborbloom_logo.png"
+          src="/aurborbloom_icon_only.png"
           alt="AurborBloom"
           className="w-full h-full object-contain"
           style={{
             transform: 'translateZ(20px)',
             filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))',
-            mixBlendMode: 'multiply', // Makes white background transparent
           }}
         />
         
