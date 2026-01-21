@@ -43,11 +43,15 @@ const Login = () => {
   useEffect(() => {
     clearError();
     setLocalError('');
-  }, [activeTab, clearError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setLocalError('');
+    // Don't clear error on every keystroke - only clear when actively typing after an error
+    if (localError) {
+      setLocalError('');
+    }
   };
 
   const handleSubmit = async (e) => {
