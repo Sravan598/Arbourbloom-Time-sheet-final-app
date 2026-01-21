@@ -94,33 +94,68 @@ const Employees = () => {
     }
   }, []);
 
+  // Fetch invitations
+  const fetchInvitations = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/admin/invitations`);
+      setInvitations(response.data);
+    } catch (err) {
+      console.error('Failed to fetch invitations:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchEmployees();
-  }, [fetchEmployees]);
+    fetchInvitations();
+  }, [fetchEmployees, fetchInvitations]);
 
-  // Add Employee
-  const handleAddEmployee = async (e) => {
+  // Invite Employee
+  const handleInviteEmployee = async (e) => {
     e.preventDefault();
-    setIsAdding(true);
+    setIsInviting(true);
     setError('');
 
     try {
-      await axios.post(`${API}/auth/signup`, {
-        name: addForm.name,
-        email: addForm.email,
-        password: addForm.password,
-        role: 'EMPLOYEE'
+      const response = await axios.post(`${API}/admin/invitations`, {
+        email: inviteForm.email,
+        department: inviteForm.department || null,
+        expires_in_days: 7
       });
       
-      setSuccess(`Employee "${addForm.name}" added successfully!`);
-      setShowAddModal(false);
-      setAddForm({ name: '', email: '', password: '' });
-      fetchEmployees();
+      setNewInviteCode(response.data.code);
+      setSuccess(`Invitation sent! Code: ${response.data.code}`);
+      fetchInvitations();
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to add employee');
+      setError(err.response?.data?.detail || 'Failed to create invitation');
     } finally {
-      setIsAdding(false);
+      setIsInviting(false);
     }
+  };
+
+  // Revoke Invitation
+  const handleRevokeInvitation = async (invitationId) => {
+    try {
+      await axios.delete(`${API}/admin/invitations/${invitationId}`);
+      setSuccess('Invitation revoked successfully');
+      fetchInvitations();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to revoke invitation');
+    }
+  };
+
+  // Copy invite code to clipboard
+  const copyToClipboard = (code) => {
+    navigator.clipboard.writeText(code);
+    setSuccess('Invitation code copied to clipboard!');
+    setTimeout(() => setSuccess(''), 3000);
+  };
+
+  // Copy signup link to clipboard
+  const copySignupLink = (code) => {
+    const link = `${window.location.origin}/signup?code=${code}`;
+    navigator.clipboard.writeText(link);
+    setSuccess('Signup link copied to clipboard!');
+    setTimeout(() => setSuccess(''), 3000);
   };
 
   // Delete Employee
