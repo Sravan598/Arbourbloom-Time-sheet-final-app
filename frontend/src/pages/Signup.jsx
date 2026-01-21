@@ -106,9 +106,17 @@ const Signup = () => {
       errors.confirmPassword = 'Passwords do not match';
     }
 
-    // Require either admin code or employee invite code
-    if (!formData.adminInviteCode && !formData.employeeInviteCode) {
-      errors.employeeInviteCode = 'Invitation code is required';
+    // Require either admin code or employee invite code based on mode
+    if (showAdminCode) {
+      // Admin mode - require admin code
+      if (!formData.adminInviteCode) {
+        errors.adminInviteCode = 'Admin invite code is required';
+      }
+    } else {
+      // Employee mode - require invitation code
+      if (!formData.employeeInviteCode) {
+        errors.employeeInviteCode = 'Invitation code is required';
+      }
     }
     
     setValidationErrors(errors);
