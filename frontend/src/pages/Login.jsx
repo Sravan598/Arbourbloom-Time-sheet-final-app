@@ -260,11 +260,10 @@ const Login = () => {
               </button>
             </div>
 
-            <Button
+            <button
               type="submit"
-              variant="primary"
-              className="w-full"
               disabled={isLoading}
+              className="w-full inline-flex items-center justify-center font-semibold rounded-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gradient-to-r from-brand-black to-brand-black-dark text-white hover:shadow-lg hover:shadow-brand-black/30 focus:ring-brand-black px-6 py-3 text-base disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="login-submit"
             >
               {isLoading ? (
@@ -275,7 +274,7 @@ const Login = () => {
               ) : (
                 `Sign in as ${activeTab === 'ADMIN' ? 'Admin' : 'Employee'}`
               )}
-            </Button>
+            </button>
           </form>
 
           {/* Signup Link */}
