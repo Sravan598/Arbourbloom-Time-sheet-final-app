@@ -56,16 +56,13 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted, starting login...");
     
     // Set loading state
     setIsLoading(true);
     setLocalError('');
 
     try {
-      console.log("Calling login API...");
       const result = await login(formData.email, formData.password);
-      console.log("Login result:", result);
       
       if (result.success) {
         const userRole = result.user.role;
@@ -84,14 +81,11 @@ const Login = () => {
         }
       } else {
         // Set local error from result
-        console.log("Setting error:", result.error);
         setLocalError(result.error || 'Login failed. Please try again.');
       }
     } catch (err) {
-      console.log("Caught error:", err);
       setLocalError('An unexpected error occurred. Please try again.');
     } finally {
-      console.log("Setting isLoading to false");
       setIsLoading(false);
     }
   };
