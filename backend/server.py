@@ -1655,6 +1655,141 @@ async def delete_employee(
     return {"message": f"Employee '{employee.get('name')}' and all associated data deleted successfully"}
 
 
+# ============== INVITATION ENDPOINTS ==============
+
+@api_router.post("/admin/invitations", response_model=InvitationResponse)
+async def create_invitation(
+    invitation_data: InvitationCreate,
+    admin: dict = Depends(require_admin)
+):
+    """Create a new employee invitation (admin only)"""
+    # Check if email already has a pending invitation
+    existing = await db.invitations.find_one({
+        "email": invitation_data.email.lower(),
+        "status": "pending"
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="A pending invitation already exists for this email")
+    
+    # Check if email is already registered
+    existing_user = await db.users.find_one({"email": invitation_data.email.lower()})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="This email is already registered")
+    
+    # Generate unique invitation code
+    code = generate_invite_code()
+    while await db.invitations.find_one({"code": code}):
+        code = generate_invite_code()
+    
+    invitation = {
+        "id": str(uuid.uuid4()),
+        "email": invitation_data.email.lower(),
+        "code": code,
+        "department": invitation_data.department,
+        "status": "pending",
+        "invited_by": admin["id"],
+        "invited_by_name": admin.get("name"),
+        "expires_at": (datetime.now(timezone.utc) + timedelta(days=invitation_data.expires_in_days)).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "accepted_at": None
+    }
+    
+    await db.invitations.insert_one(invitation)
+    
+    # Remove _id for response
+    invitation.pop("_id", None)
+    
+    # Parse dates for response
+    invitation["expires_at"] = datetime.fromisoformat(invitation["expires_at"])
+    invitation["created_at"] = datetime.fromisoformat(invitation["created_at"])
+    
+    return invitation
+
+
+@api_router.get("/admin/invitations", response_model=List[InvitationResponse])
+async def get_all_invitations(
+    status: Optional[str] = None,
+    admin: dict = Depends(require_admin)
+):
+    """Get all invitations (admin only)"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    invitations = await db.invitations.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    # Parse dates and check for expired invitations
+    for inv in invitations:
+        if isinstance(inv.get("expires_at"), str):
+            inv["expires_at"] = datetime.fromisoformat(inv["expires_at"])
+        if isinstance(inv.get("created_at"), str):
+            inv["created_at"] = datetime.fromisoformat(inv["created_at"])
+        if inv.get("accepted_at") and isinstance(inv["accepted_at"], str):
+            inv["accepted_at"] = datetime.fromisoformat(inv["accepted_at"])
+        
+        # Auto-expire pending invitations
+        if inv["status"] == "pending" and datetime.now(timezone.utc) > inv["expires_at"]:
+            inv["status"] = "expired"
+            await db.invitations.update_one(
+                {"id": inv["id"]},
+                {"$set": {"status": "expired"}}
+            )
+    
+    return invitations
+
+
+@api_router.delete("/admin/invitations/{invitation_id}")
+async def revoke_invitation(
+    invitation_id: str,
+    admin: dict = Depends(require_admin)
+):
+    """Revoke/delete an invitation (admin only)"""
+    invitation = await db.invitations.find_one({"id": invitation_id}, {"_id": 0})
+    if not invitation:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+    
+    if invitation["status"] == "accepted":
+        raise HTTPException(status_code=400, detail="Cannot revoke an accepted invitation")
+    
+    await db.invitations.update_one(
+        {"id": invitation_id},
+        {"$set": {"status": "revoked"}}
+    )
+    
+    return {"message": "Invitation revoked successfully"}
+
+
+@api_router.get("/invitations/validate/{code}")
+async def validate_invitation_code(code: str):
+    """Validate an invitation code (public endpoint)"""
+    invitation = await db.invitations.find_one({
+        "code": code.upper(),
+        "status": "pending"
+    }, {"_id": 0})
+    
+    if not invitation:
+        raise HTTPException(status_code=404, detail="Invalid or expired invitation code")
+    
+    # Check expiry
+    expires_at = invitation.get("expires_at")
+    if isinstance(expires_at, str):
+        expires_at = datetime.fromisoformat(expires_at)
+    
+    if datetime.now(timezone.utc) > expires_at:
+        await db.invitations.update_one(
+            {"id": invitation["id"]},
+            {"$set": {"status": "expired"}}
+        )
+        raise HTTPException(status_code=404, detail="Invitation code has expired")
+    
+    return {
+        "valid": True,
+        "email": invitation["email"],
+        "department": invitation.get("department"),
+        "expires_at": expires_at.isoformat()
+    }
+
+
 @api_router.get("/admin/timesheets", response_model=List[Timesheet])
 async def get_all_timesheets(
     user_id: Optional[str] = None,
