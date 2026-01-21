@@ -234,6 +234,15 @@ Backend refactored from 7000+ line monolith to modular structure:
 ## Change Log
 
 ### January 21, 2025
+- ✅ **Google OAuth Login** - Implemented "Continue with Google" button using Emergent-managed Google Auth
+  - Users can sign up/login with their Google account
+  - New users via Google are automatically created as EMPLOYEE role
+  - Google profile picture is synced to user account
+  - AuthCallback component handles OAuth redirect flow
+- ✅ **Specific Login Error Messages** - Users now see clear error messages:
+  - "No account found with this email address" (wrong email)
+  - "Incorrect password. Please try again" (wrong password)
+  - "Account is deactivated. Please contact administrator" (deactivated account)
 - ✅ **Employee Invitation System** - Implemented invitation-only employee signup
   - Admin generates invitation codes (INV-XXXXXX format) from Employees page
   - Employees must have valid invitation code to sign up
