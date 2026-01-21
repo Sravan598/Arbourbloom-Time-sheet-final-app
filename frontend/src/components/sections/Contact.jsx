@@ -7,19 +7,19 @@ const contactInfo = [
   {
     icon: Mail,
     title: 'Email Us',
-    content: 'Hr@cortracker360.com',
-    href: 'mailto:Hr@cortracker360.com',
+    content: 'hr@aurborbloom.com',
+    href: 'mailto:hr@aurborbloom.com',
   },
   {
     icon: Phone,
     title: 'Call Us',
-    content: '+1 9472286910',
-    href: 'tel:+19472286910',
+    content: '+1 (469) 465-0554',
+    href: 'tel:+14694650554',
   },
   {
     icon: MapPin,
     title: 'Visit Us',
-    content: '5005 W Royal Ln, Ste 298\nIrving, Texas 75063',
+    content: '2351 W Northwest Hwy,\nSuite 1115, Dallas TX, 75220\nUnited States',
     href: null,
   },
 ];
