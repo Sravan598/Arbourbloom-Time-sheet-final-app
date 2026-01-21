@@ -1205,6 +1205,109 @@ async def login(credentials: UserLogin):
     )
 
 
+# ============== GOOGLE OAUTH ENDPOINTS ==============
+
+@api_router.post("/auth/google/session")
+async def process_google_session(request: Request):
+    """
+    Process Google OAuth session_id and create/login user
+    Frontend sends session_id from URL fragment after Google auth redirect
+    """
+    import httpx
+    
+    body = await request.json()
+    session_id = body.get("session_id")
+    
+    if not session_id:
+        raise HTTPException(status_code=400, detail="session_id is required")
+    
+    # Exchange session_id for user data from Emergent Auth
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+                headers={"X-Session-ID": session_id}
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(status_code=401, detail="Invalid or expired session")
+            
+            google_user = response.json()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to verify Google session: {str(e)}")
+    
+    email = google_user.get("email", "").lower()
+    name = google_user.get("name", "")
+    picture = google_user.get("picture", "")
+    session_token = google_user.get("session_token", "")
+    
+    if not email:
+        raise HTTPException(status_code=400, detail="Email not provided by Google")
+    
+    # Check if user exists
+    existing_user = await db.users.find_one({"email": email}, {"_id": 0})
+    
+    if existing_user:
+        # User exists - update profile picture if changed
+        if picture and existing_user.get("profile_image") != picture:
+            await db.users.update_one(
+                {"email": email},
+                {"$set": {"profile_image": picture}}
+            )
+        
+        user = existing_user
+    else:
+        # New user via Google - create account (default to EMPLOYEE role)
+        user = {
+            "id": str(uuid.uuid4()),
+            "name": name,
+            "email": email,
+            "role": UserRole.EMPLOYEE.value,
+            "is_active": True,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "profile_image": picture,
+            "auth_provider": "google"
+        }
+        await db.users.insert_one(user)
+        user.pop("_id", None)
+    
+    # Store Google session token for logout capability
+    await db.google_sessions.update_one(
+        {"user_id": user["id"]},
+        {
+            "$set": {
+                "user_id": user["id"],
+                "session_token": session_token,
+                "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+        },
+        upsert=True
+    )
+    
+    # Create our own JWT token
+    token = create_token(user["id"], user["email"], user["role"])
+    
+    # Parse created_at
+    created_at = user.get("created_at")
+    if isinstance(created_at, str):
+        created_at = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+    
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": user["id"],
+            "name": user["name"],
+            "email": user["email"],
+            "role": user["role"],
+            "is_active": user.get("is_active", True),
+            "created_at": created_at.isoformat() if isinstance(created_at, datetime) else created_at,
+            "profile_image": user.get("profile_image")
+        }
+    }
+
+
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(current_user: dict = Depends(get_current_user)):
     created_at = current_user.get("created_at")
