@@ -72,12 +72,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signup = async (name, email, password, role = 'EMPLOYEE', adminInviteCode = null) => {
+  const signup = async (name, email, password, role = 'EMPLOYEE', adminInviteCode = null, employeeInviteCode = null) => {
     try {
       setError(null);
       const payload = { name, email, password, role };
       if (adminInviteCode) {
         payload.admin_invite_code = adminInviteCode;
+      }
+      if (employeeInviteCode) {
+        payload.employee_invite_code = employeeInviteCode;
       }
       
       const response = await axios.post(`${API}/auth/signup`, payload);
