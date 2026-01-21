@@ -377,11 +377,16 @@ const Signup = () => {
                       name="adminInviteCode"
                       value={formData.adminInviteCode}
                       onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent transition-all"
+                      className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
+                        validationErrors.adminInviteCode ? 'border-red-500' : 'border-gray-200'
+                      } focus:ring-2 focus:ring-brand-black focus:border-transparent transition-all`}
                       placeholder="Enter admin invite code"
                       data-testid="signup-admin-code"
                     />
                   </div>
+                  {validationErrors.adminInviteCode && (
+                    <p className="mt-1 text-sm text-red-500">{validationErrors.adminInviteCode}</p>
+                  )}
                   <p className="mt-1 text-xs text-gray-500">
                     Admin code is required for administrator access
                   </p>
