@@ -530,18 +530,130 @@ const Employees = () => {
               </div>
             </div>
           )}
+            </>
+          )}
+
+          {/* Invitations Tab Content */}
+          {activeTab === 'invitations' && (
+            <>
+              {invitations.filter(i => i.email.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
+                  <Ticket className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">No invitations found</h3>
+                  <p className="text-gray-500 mb-4">
+                    {searchQuery ? 'Try a different search term' : 'Create your first invitation'}
+                  </p>
+                  {!searchQuery && (
+                    <Button onClick={() => setShowInviteModal(true)} variant="primary">
+                      <Ticket className="w-5 h-5 mr-2" />
+                      Invite Employee
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 border-b border-gray-100">
+                        <tr>
+                          <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Email</th>
+                          <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Invitation Code</th>
+                          <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
+                          <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Expires</th>
+                          <th className="text-right px-6 py-4 text-sm font-semibold text-gray-600">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {invitations
+                          .filter(i => i.email.toLowerCase().includes(searchQuery.toLowerCase()))
+                          .map((inv) => (
+                          <motion.tr
+                            key={inv.id}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="hover:bg-gray-50 transition-colors"
+                          >
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Mail className="w-4 h-4 text-gray-400" />
+                                <span>{inv.email}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <code className="px-3 py-1 bg-gray-100 rounded-lg font-mono text-sm">{inv.code}</code>
+                                <button
+                                  onClick={() => copyToClipboard(inv.code)}
+                                  className="p-1 text-gray-400 hover:text-brand-black transition-colors"
+                                  title="Copy code"
+                                >
+                                  <Copy className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`px-3 py-1 text-sm font-medium rounded-full ${
+                                inv.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                inv.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                                inv.status === 'expired' ? 'bg-gray-100 text-gray-700' :
+                                'bg-red-100 text-red-700'
+                              }`}>
+                                {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2 text-gray-500 text-sm">
+                                <Calendar className="w-4 h-4" />
+                                <span>{new Date(inv.expires_at).toLocaleDateString()}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex justify-end gap-2">
+                                {inv.status === 'pending' && (
+                                  <>
+                                    <button
+                                      onClick={() => copySignupLink(inv.code)}
+                                      className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                      title="Copy signup link"
+                                    >
+                                      <Copy className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                      onClick={() => handleRevokeInvitation(inv.id)}
+                                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                      title="Revoke invitation"
+                                    >
+                                      <X className="w-5 h-5" />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </main>
       </div>
 
-      {/* Add Employee Modal */}
+      {/* Invite Employee Modal */}
       <AnimatePresence>
-        {showAddModal && (
+        {showInviteModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowAddModal(false)}
+            onClick={() => {
+              setShowInviteModal(false);
+              setNewInviteCode(null);
+              setInviteForm({ email: '', department: '' });
+            }}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -553,78 +665,116 @@ const Employees = () => {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-brand-black/10 rounded-xl flex items-center justify-center">
-                    <UserPlus className="w-5 h-5 text-brand-black" />
+                    <Ticket className="w-5 h-5 text-brand-black" />
                   </div>
-                  <h2 className="text-xl font-bold text-brand-dark">Add Employee</h2>
+                  <h2 className="text-xl font-bold text-brand-dark">Invite Employee</h2>
                 </div>
-                <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600">
+                <button 
+                  onClick={() => {
+                    setShowInviteModal(false);
+                    setNewInviteCode(null);
+                    setInviteForm({ email: '', department: '' });
+                  }} 
+                  className="text-gray-400 hover:text-gray-600"
+                >
                   <X className="w-6 h-6" />
                 </button>
               </div>
 
-              <form onSubmit={handleAddEmployee} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                  <input
-                    type="text"
-                    value={addForm.name}
-                    onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
-                    placeholder="John Smith"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                  <input
-                    type="email"
-                    value={addForm.email}
-                    onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
-                    placeholder="john@company.com"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
-                  <input
-                    type="password"
-                    value={addForm.password}
-                    onChange={(e) => setAddForm({ ...addForm, password: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
-                    placeholder="Create a password"
-                    required
-                    minLength={6}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
-                </div>
-
-                <div className="flex gap-3 pt-2">
+              {newInviteCode ? (
+                <div className="space-y-4">
+                  <div className="text-center p-6 bg-green-50 rounded-xl">
+                    <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                    <h3 className="font-semibold text-green-800 mb-2">Invitation Created!</h3>
+                    <p className="text-sm text-green-700 mb-4">Share this code with the employee:</p>
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <code className="px-4 py-2 bg-white rounded-lg font-mono text-xl font-bold">{newInviteCode}</code>
+                      <button
+                        onClick={() => copyToClipboard(newInviteCode)}
+                        className="p-2 bg-white rounded-lg hover:bg-gray-100 transition-colors"
+                        title="Copy code"
+                      >
+                        <Copy className="w-5 h-5 text-gray-600" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-green-600">Or share the signup link:</p>
+                    <button
+                      onClick={() => copySignupLink(newInviteCode)}
+                      className="mt-2 text-sm text-brand-black hover:underline flex items-center justify-center gap-1 mx-auto"
+                    >
+                      <Copy className="w-4 h-4" />
+                      Copy signup link
+                    </button>
+                  </div>
                   <Button
-                    type="button"
-                    variant="secondary"
-                    className="flex-1"
-                    onClick={() => setShowAddModal(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
                     variant="primary"
-                    className="flex-1"
-                    disabled={isAdding}
+                    className="w-full"
+                    onClick={() => {
+                      setShowInviteModal(false);
+                      setNewInviteCode(null);
+                      setInviteForm({ email: '', department: '' });
+                    }}
                   >
-                    {isAdding ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <UserPlus className="w-5 h-5 mr-2" />
-                        Add Employee
-                      </>
-                    )}
+                    Done
                   </Button>
                 </div>
-              </form>
+              ) : (
+                <form onSubmit={handleInviteEmployee} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Employee Email *</label>
+                    <input
+                      type="email"
+                      value={inviteForm.email}
+                      onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
+                      placeholder="employee@company.com"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Department (Optional)</label>
+                    <input
+                      type="text"
+                      value={inviteForm.department}
+                      onChange={(e) => setInviteForm({ ...inviteForm, department: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
+                      placeholder="e.g., Engineering, Sales"
+                    />
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    The employee will receive a unique invitation code valid for 7 days.
+                  </p>
+
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="flex-1"
+                      onClick={() => {
+                        setShowInviteModal(false);
+                        setInviteForm({ email: '', department: '' });
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      className="flex-1"
+                      disabled={isInviting}
+                    >
+                      {isInviting ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Ticket className="w-5 h-5 mr-2" />
+                          Generate Code
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              )}
             </motion.div>
           </motion.div>
         )}
