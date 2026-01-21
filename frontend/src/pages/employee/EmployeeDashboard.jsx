@@ -291,13 +291,9 @@ const EmployeeDashboard = () => {
         <header className="bg-white shadow-sm sticky top-0 z-30">
           <div className="px-8 py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                {/* 3D Interactive Logo */}
-                <Logo3D size={70} className="hidden lg:block" />
-                <div>
-                  <h1 className="text-xl font-bold text-brand-dark">Dashboard</h1>
-                  <p className="text-sm text-gray-500">Welcome back, {profileData?.name || user?.name}</p>
-                </div>
+              <div>
+                <h1 className="text-xl font-bold text-brand-dark">Dashboard</h1>
+                <p className="text-sm text-gray-500">Welcome back, {profileData?.name || user?.name}</p>
               </div>
               
               {/* Profile Dropdown and Notification */}
