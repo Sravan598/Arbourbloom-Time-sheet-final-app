@@ -227,12 +227,12 @@ const Employees = () => {
               
               <div className="flex items-center gap-4">
                 <Button
-                  onClick={() => setShowAddModal(true)}
+                  onClick={() => setShowInviteModal(true)}
                   variant="primary"
                   size="sm"
                 >
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Add Employee
+                  <Ticket className="w-4 h-4 mr-2" />
+                  Invite Employee
                 </Button>
                 
                 {/* Profile Dropdown */}
