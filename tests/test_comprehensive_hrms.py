@@ -276,14 +276,25 @@ class TestTicketingSystem:
         assert isinstance(data, list)
     
     def test_admin_view_all_tickets(self, admin_token):
-        """Admin sees all tickets"""
+        """Admin sees all tickets via /api/tickets endpoint"""
         response = requests.get(
-            f"{BASE_URL}/api/admin/tickets",
+            f"{BASE_URL}/api/tickets",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
+    
+    def test_admin_view_ticket_stats(self, admin_token):
+        """Admin can view ticket statistics"""
+        response = requests.get(
+            f"{BASE_URL}/api/admin/tickets/stats",
+            headers={"Authorization": f"Bearer {admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "by_status" in data
+        assert "by_category" in data
     
     def test_ticket_status_update(self, admin_token, employee_token):
         """Ticket status can be updated"""
@@ -301,9 +312,9 @@ class TestTicketingSystem:
         assert create_response.status_code == 200
         ticket_id = create_response.json()["id"]
         
-        # Update status as admin
+        # Update status as admin via /api/tickets/{id}
         update_response = requests.put(
-            f"{BASE_URL}/api/admin/tickets/{ticket_id}",
+            f"{BASE_URL}/api/tickets/{ticket_id}",
             json={"status": "IN_PROGRESS"},
             headers={"Authorization": f"Bearer {admin_token}"}
         )
