@@ -233,6 +233,19 @@ Backend refactored from 7000+ line monolith to modular structure:
 
 ## Change Log
 
+### January 21, 2025
+- ✅ **Employee Invitation System** - Implemented invitation-only employee signup
+  - Admin generates invitation codes (INV-XXXXXX format) from Employees page
+  - Employees must have valid invitation code to sign up
+  - Real-time code validation on signup page with visual feedback
+  - Pending Invitations tab for admin to manage invitations
+  - Copy code and signup link functionality
+  - 18/18 backend tests passed (100%)
+- ✅ **UI Improvements**
+  - Removed AurborBloom text from dashboard headers (icon only)
+  - Updated contact details (Dallas, TX address)
+  - Replaced red dot cursor with golden spotlight effect
+
 ### January 19, 2025
 - ✅ **Landing Page 3D Logo Animation** - Implemented "Morphing Bloom" + "Glowing Pulse" effect
   - Created transparent PNG version of logo (removed white background)
