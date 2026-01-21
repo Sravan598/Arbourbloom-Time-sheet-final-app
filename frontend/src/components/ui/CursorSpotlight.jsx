@@ -103,20 +103,20 @@ const CursorSpotlight = () => {
 
   return (
     <>
-      {/* Spotlight glow effect */}
+      {/* Spotlight glow effect - subtle and elegant */}
       <motion.div
         className="cursor-spotlight"
         style={{
           position: 'fixed',
           top: 0,
           left: 0,
-          width: '350px',
-          height: '350px',
+          width: '400px',
+          height: '400px',
           background: `radial-gradient(
             circle at center,
-            rgba(212, 175, 55, 0.08) 0%,
-            rgba(212, 175, 55, 0.04) 25%,
-            rgba(212, 175, 55, 0.02) 45%,
+            rgba(212, 175, 55, 0.04) 0%,
+            rgba(212, 175, 55, 0.02) 30%,
+            rgba(212, 175, 55, 0.01) 50%,
             transparent 70%
           )`,
           borderRadius: '50%',
@@ -127,44 +127,12 @@ const CursorSpotlight = () => {
           translateX: '-50%',
           translateY: '-50%',
           opacity: isVisible ? 1 : 0,
-          filter: 'blur(2px)',
         }}
         initial={{ opacity: 0 }}
         animate={{ 
           opacity: isVisible ? 1 : 0,
         }}
         transition={{ duration: 0.3 }}
-      />
-      
-      {/* Inner brighter core */}
-      <motion.div
-        className="cursor-spotlight-core"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '150px',
-          height: '150px',
-          background: `radial-gradient(
-            circle at center,
-            rgba(255, 255, 255, 0.06) 0%,
-            rgba(212, 175, 55, 0.04) 40%,
-            transparent 70%
-          )`,
-          borderRadius: '50%',
-          pointerEvents: 'none',
-          zIndex: 99999,
-          x: smoothX,
-          y: smoothY,
-          translateX: '-50%',
-          translateY: '-50%',
-          opacity: isVisible ? 1 : 0,
-        }}
-        initial={{ opacity: 0 }}
-        animate={{ 
-          opacity: isVisible ? 1 : 0,
-        }}
-        transition={{ duration: 0.2 }}
       />
     </>
   );
