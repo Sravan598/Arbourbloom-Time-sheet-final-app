@@ -343,12 +343,38 @@ const Employees = () => {
             </motion.div>
           )}
 
+          {/* Tabs */}
+          <div className="flex gap-4 mb-6">
+            <button
+              onClick={() => setActiveTab('employees')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeTab === 'employees' 
+                  ? 'bg-brand-black text-white' 
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <Users className="w-4 h-4 inline mr-2" />
+              Employees ({employees.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('invitations')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeTab === 'invitations' 
+                  ? 'bg-brand-black text-white' 
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <Ticket className="w-4 h-4 inline mr-2" />
+              Pending Invitations ({invitations.filter(i => i.status === 'pending').length})
+            </button>
+          </div>
+
           {/* Search */}
           <div className="relative mb-6">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search employees by name or email..."
+              placeholder={activeTab === 'employees' ? "Search employees by name or email..." : "Search invitations by email..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-black focus:border-transparent"
@@ -356,7 +382,7 @@ const Employees = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
             <div className="bg-white rounded-xl shadow-lg p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -364,7 +390,18 @@ const Employees = () => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-brand-dark">{employees.length}</p>
-                  <p className="text-sm text-gray-500">Total Employees</p>
+                  <p className="text-sm text-gray-500">Employees</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl shadow-lg p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                  <Ticket className="w-5 h-5 text-yellow-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-brand-dark">{invitations.filter(i => i.status === 'pending').length}</p>
+                  <p className="text-sm text-gray-500">Pending Invites</p>
                 </div>
               </div>
             </div>
@@ -374,8 +411,8 @@ const Employees = () => {
                   <CheckCircle className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-brand-dark">{employees.length}</p>
-                  <p className="text-sm text-gray-500">Active</p>
+                  <p className="text-2xl font-bold text-brand-dark">{invitations.filter(i => i.status === 'accepted').length}</p>
+                  <p className="text-sm text-gray-500">Accepted</p>
                 </div>
               </div>
             </div>
@@ -399,13 +436,16 @@ const Employees = () => {
             </div>
           </div>
 
+          {/* Employees Tab Content */}
+          {activeTab === 'employees' && (
+            <>
           {/* Employees List */}
           {filteredEmployees.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
               <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-600 mb-2">No employees found</h3>
               <p className="text-gray-500 mb-4">
-                {searchQuery ? 'Try a different search term' : 'Add your first employee to get started'}
+                {searchQuery ? 'Try a different search term' : 'Invite your first employee to get started'}
               </p>
               {!searchQuery && (
                 <Button onClick={() => setShowAddModal(true)} variant="primary">
