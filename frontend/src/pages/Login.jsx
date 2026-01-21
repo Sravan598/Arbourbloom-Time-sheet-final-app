@@ -52,32 +52,38 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Set loading state
     setIsLoading(true);
     setLocalError('');
 
-    const result = await login(formData.email, formData.password);
-    
-    if (result.success) {
-      const userRole = result.user.role;
+    try {
+      const result = await login(formData.email, formData.password);
       
-      // Check if user is logging in with correct tab
-      if (activeTab !== userRole) {
-        setLocalError(`This account is registered as ${userRole}. Please use the ${userRole} login tab.`);
-        setIsLoading(false);
-        return;
-      }
-      
-      if (userRole === 'ADMIN') {
-        navigate('/admin/dashboard');
+      if (result.success) {
+        const userRole = result.user.role;
+        
+        // Check if user is logging in with correct tab
+        if (activeTab !== userRole) {
+          setLocalError(`This account is registered as ${userRole}. Please use the ${userRole} login tab.`);
+          setIsLoading(false);
+          return;
+        }
+        
+        if (userRole === 'ADMIN') {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/employee/dashboard');
+        }
       } else {
-        navigate('/employee/dashboard');
+        // Set local error from result
+        setLocalError(result.error || 'Login failed. Please try again.');
       }
-    } else {
-      // Set local error from result
-      setLocalError(result.error || 'Login failed. Please try again.');
+    } catch (err) {
+      setLocalError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   // Handle Google Sign In
