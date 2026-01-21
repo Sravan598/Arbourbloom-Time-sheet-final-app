@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import CursorSpotlight from './components/ui/CursorSpotlight';
@@ -11,7 +11,6 @@ import { NotificationBell } from './components/notifications';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import AuthCallback from './pages/AuthCallback';
 import Profile from './pages/Profile';
 import EmployeeDashboard from './pages/employee/EmployeeDashboard';
 import EmployeeTimesheet from './pages/employee/EmployeeTimesheet';
@@ -43,175 +42,7 @@ const ChatWidget = () => {
 
 // Notification bell wrapper
 const NotificationWidget = () => {
-  // Moved NotificationBell to individual dashboard headers
-  // Keeping this component disabled to avoid duplicate notifications
   return null;
-};
-
-// AppRouter handles Google OAuth callback detection
-// REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
-const AppRouter = () => {
-  const location = useLocation();
-  
-  // Check URL fragment for session_id (Google OAuth callback)
-  // This must be checked synchronously during render, NOT in useEffect
-  if (location.hash?.includes('session_id=')) {
-    return <AuthCallback />;
-  }
-  
-  return (
-    <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      
-      {/* Profile Route (Both Employee and Admin) */}
-      <Route 
-        path="/profile" 
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        } 
-      />
-      
-      {/* Employee Routes */}
-      <Route 
-        path="/employee/dashboard" 
-        element={
-          <ProtectedRoute requiredRole="EMPLOYEE">
-            <EmployeeDashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/employee/timesheet" 
-        element={
-          <ProtectedRoute requiredRole="EMPLOYEE">
-            <EmployeeTimesheet />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/employee/projects" 
-        element={
-          <ProtectedRoute requiredRole="EMPLOYEE">
-            <EmployeeProjects />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/employee/documents" 
-        element={
-          <ProtectedRoute requiredRole="EMPLOYEE">
-            <Documents />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/employee/leave" 
-        element={
-          <ProtectedRoute requiredRole="EMPLOYEE">
-            <Leave />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/employee/tickets" 
-        element={
-          <ProtectedRoute requiredRole="EMPLOYEE">
-            <EmployeeTickets />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/employee/calendar" 
-        element={
-          <ProtectedRoute requiredRole="EMPLOYEE">
-            <EmployeeCalendar />
-          </ProtectedRoute>
-        } 
-      />
-      
-      {/* Admin Routes */}
-      <Route 
-        path="/admin/dashboard" 
-        element={
-          <ProtectedRoute requiredRole="ADMIN">
-            <AdminDashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin/employees" 
-        element={
-          <ProtectedRoute requiredRole="ADMIN">
-            <Employees />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin/timesheets" 
-        element={
-          <ProtectedRoute requiredRole="ADMIN">
-            <AdminTimesheets />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin/performance" 
-        element={
-          <ProtectedRoute requiredRole="ADMIN">
-            <PerformanceInsights />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin/projects" 
-        element={
-          <ProtectedRoute requiredRole="ADMIN">
-            <Projects />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin/employee-docs" 
-        element={
-          <ProtectedRoute requiredRole="ADMIN">
-            <EmployeeDocs />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin/leave-requests" 
-        element={
-          <ProtectedRoute requiredRole="ADMIN">
-            <LeaveRequests />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin/tickets" 
-        element={
-          <ProtectedRoute requiredRole="ADMIN">
-            <AdminTickets />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/admin/calendar" 
-        element={
-          <ProtectedRoute requiredRole="ADMIN">
-            <AdminCalendar />
-          </ProtectedRoute>
-        } 
-      />
-      
-      {/* Catch all - redirect to home */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
 };
 
 function App() {
@@ -231,8 +62,157 @@ function App() {
           {/* Notification Bell - appears on all pages when logged in */}
           <NotificationWidget />
           
-          {/* Main Router with Google OAuth handling */}
-          <AppRouter />
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            
+            {/* Profile Route (Both Employee and Admin) */}
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Employee Routes */}
+            <Route 
+              path="/employee/dashboard" 
+              element={
+                <ProtectedRoute requiredRole="EMPLOYEE">
+                  <EmployeeDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/employee/timesheet" 
+              element={
+                <ProtectedRoute requiredRole="EMPLOYEE">
+                  <EmployeeTimesheet />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/employee/projects" 
+              element={
+                <ProtectedRoute requiredRole="EMPLOYEE">
+                  <EmployeeProjects />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/employee/documents" 
+              element={
+                <ProtectedRoute requiredRole="EMPLOYEE">
+                  <Documents />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/employee/leave" 
+              element={
+                <ProtectedRoute requiredRole="EMPLOYEE">
+                  <Leave />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/employee/tickets" 
+              element={
+                <ProtectedRoute requiredRole="EMPLOYEE">
+                  <EmployeeTickets />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/employee/calendar" 
+              element={
+                <ProtectedRoute requiredRole="EMPLOYEE">
+                  <EmployeeCalendar />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Admin Routes */}
+            <Route 
+              path="/admin/dashboard" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/employees" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <Employees />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/timesheets" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <AdminTimesheets />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/performance" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <PerformanceInsights />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/projects" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <Projects />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/employee-docs" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <EmployeeDocs />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/leave-requests" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <LeaveRequests />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/tickets" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <AdminTickets />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/calendar" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <AdminCalendar />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Catch all - redirect to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </BrowserRouter>
       </div>
     </AuthProvider>
