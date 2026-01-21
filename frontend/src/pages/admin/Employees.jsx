@@ -448,9 +448,9 @@ const Employees = () => {
                 {searchQuery ? 'Try a different search term' : 'Invite your first employee to get started'}
               </p>
               {!searchQuery && (
-                <Button onClick={() => setShowAddModal(true)} variant="primary">
-                  <UserPlus className="w-5 h-5 mr-2" />
-                  Add Employee
+                <Button onClick={() => setShowInviteModal(true)} variant="primary">
+                  <Ticket className="w-5 h-5 mr-2" />
+                  Invite Employee
                 </Button>
               )}
             </div>
