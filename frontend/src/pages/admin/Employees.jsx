@@ -16,7 +16,10 @@ import {
   ChevronDown,
   Settings,
   AlertTriangle,
-  Clock
+  Clock,
+  Ticket,
+  Copy,
+  RefreshCw
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -32,21 +35,23 @@ const Employees = () => {
   const profileDropdownRef = useRef(null);
 
   const [employees, setEmployees] = useState([]);
+  const [invitations, setInvitations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [profileData, setProfileData] = useState(null);
+  const [activeTab, setActiveTab] = useState('employees'); // 'employees' or 'invitations'
   
-  // Add Employee Modal
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [addForm, setAddForm] = useState({
-    name: '',
+  // Invite Employee Modal
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteForm, setInviteForm] = useState({
     email: '',
-    password: ''
+    department: ''
   });
-  const [isAdding, setIsAdding] = useState(false);
+  const [isInviting, setIsInviting] = useState(false);
+  const [newInviteCode, setNewInviteCode] = useState(null);
   
   // Delete Confirmation Modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
