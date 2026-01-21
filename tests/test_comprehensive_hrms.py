@@ -412,9 +412,9 @@ class TestLeaveManagement:
     
     def test_admin_approve_leave_request(self, admin_token, employee_token):
         """Admin can approve leave request"""
-        # Create a leave request
-        start_date = (datetime.now() + timedelta(days=60)).strftime("%Y-%m-%d")
-        end_date = (datetime.now() + timedelta(days=61)).strftime("%Y-%m-%d")
+        # Create a leave request with unique dates
+        start_date = (datetime.now() + timedelta(days=200)).strftime("%Y-%m-%d")
+        end_date = (datetime.now() + timedelta(days=201)).strftime("%Y-%m-%d")
         
         create_response = requests.post(
             f"{BASE_URL}/api/leave/requests",
@@ -427,9 +427,21 @@ class TestLeaveManagement:
             headers={"Authorization": f"Bearer {employee_token}"}
         )
         if create_response.status_code != 200:
-            pytest.skip("Could not create leave request")
-        
-        request_id = create_response.json()["id"]
+            # Try to get an existing pending request
+            list_response = requests.get(
+                f"{BASE_URL}/api/admin/leave/requests",
+                headers={"Authorization": f"Bearer {admin_token}"}
+            )
+            if list_response.status_code == 200:
+                pending = [r for r in list_response.json() if r.get("status") == "PENDING"]
+                if pending:
+                    request_id = pending[0]["id"]
+                else:
+                    pytest.skip("No pending leave requests to approve")
+            else:
+                pytest.skip("Could not create or find leave request")
+        else:
+            request_id = create_response.json()["id"]
         
         # Approve it
         approve_response = requests.put(
