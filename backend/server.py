@@ -212,11 +212,39 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=6)
     role: Optional[UserRole] = UserRole.EMPLOYEE
     admin_invite_code: Optional[str] = None
+    employee_invite_code: Optional[str] = None  # New field for employee invitation
 
 
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+
+# ============== INVITATION MODELS ==============
+class InvitationStatus(str, Enum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    EXPIRED = "expired"
+    REVOKED = "revoked"
+
+
+class InvitationCreate(BaseModel):
+    email: EmailStr
+    department: Optional[str] = None
+    expires_in_days: Optional[int] = 7
+
+
+class InvitationResponse(BaseModel):
+    id: str
+    email: str
+    code: str
+    department: Optional[str] = None
+    status: InvitationStatus
+    invited_by: str
+    invited_by_name: Optional[str] = None
+    expires_at: datetime
+    created_at: datetime
+    accepted_at: Optional[datetime] = None
 
 
 class UserResponse(BaseModel):
