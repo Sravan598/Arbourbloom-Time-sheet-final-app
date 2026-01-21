@@ -1020,6 +1020,15 @@ def decode_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
+def generate_invite_code() -> str:
+    """Generate a human-readable invitation code like INV-X7K9M2"""
+    import random
+    import string
+    chars = string.ascii_uppercase + string.digits
+    code = ''.join(random.choices(chars, k=6))
+    return f"INV-{code}"
+
+
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
     if not credentials:
         raise HTTPException(status_code=401, detail="Not authenticated")
