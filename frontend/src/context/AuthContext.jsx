@@ -116,6 +116,8 @@ export const AuthProvider = ({ children }) => {
     signup,
     logout,
     clearError,
+    setUser,
+    setToken,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'ADMIN',
     isEmployee: user?.role === 'EMPLOYEE',
