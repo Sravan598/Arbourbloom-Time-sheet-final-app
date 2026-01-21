@@ -1090,11 +1090,43 @@ async def signup(user_data: UserCreate):
     
     # Handle admin signup with invite code
     role = UserRole.EMPLOYEE
+    invitation = None
+    
     if user_data.role == UserRole.ADMIN:
         admin_code = os.environ.get('ADMIN_INVITE_CODE', 'ARBORBLOOM-ADMIN-2025')
         if user_data.admin_invite_code != admin_code:
             raise HTTPException(status_code=403, detail="Invalid admin invite code")
         role = UserRole.ADMIN
+    else:
+        # Employee signup requires invitation code
+        if not user_data.employee_invite_code:
+            raise HTTPException(status_code=403, detail="Employee invitation code is required")
+        
+        # Validate invitation code
+        invitation = await db.invitations.find_one({
+            "code": user_data.employee_invite_code.upper(),
+            "status": "pending"
+        }, {"_id": 0})
+        
+        if not invitation:
+            raise HTTPException(status_code=403, detail="Invalid or expired invitation code")
+        
+        # Check if invitation has expired
+        expires_at = invitation.get("expires_at")
+        if isinstance(expires_at, str):
+            expires_at = datetime.fromisoformat(expires_at)
+        
+        if datetime.now(timezone.utc) > expires_at:
+            # Mark as expired
+            await db.invitations.update_one(
+                {"id": invitation["id"]},
+                {"$set": {"status": "expired"}}
+            )
+            raise HTTPException(status_code=403, detail="Invitation code has expired")
+        
+        # Check if email matches invitation (optional - can be removed for flexibility)
+        if invitation.get("email") and invitation["email"].lower() != user_data.email.lower():
+            raise HTTPException(status_code=403, detail="This invitation was sent to a different email address")
     
     # Create user
     user = UserBase(
@@ -1107,7 +1139,21 @@ async def signup(user_data: UserCreate):
     user_doc["password_hash"] = hash_password(user_data.password)
     user_doc["created_at"] = user_doc["created_at"].isoformat()
     
+    # Add department from invitation if available
+    if invitation and invitation.get("department"):
+        user_doc["department"] = invitation["department"]
+    
     await db.users.insert_one(user_doc)
+    
+    # Mark invitation as accepted
+    if invitation:
+        await db.invitations.update_one(
+            {"id": invitation["id"]},
+            {"$set": {
+                "status": "accepted",
+                "accepted_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
     
     # Create token
     token = create_token(user.id, user.email, user.role.value)
