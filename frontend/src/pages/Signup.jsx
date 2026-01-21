@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, AlertCircle, User, KeyRound } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, User, KeyRound, Ticket, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 
+const API = process.env.REACT_APP_BACKEND_URL;
+
 const Signup = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { signup, error, clearError, isAuthenticated, user } = useAuth();
   
   const [formData, setFormData] = useState({
@@ -14,13 +17,16 @@ const Signup = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    adminInviteCode: ''
+    adminInviteCode: '',
+    employeeInviteCode: searchParams.get('code') || ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showAdminCode, setShowAdminCode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
+  const [invitationValid, setInvitationValid] = useState(false);
+  const [validatingCode, setValidatingCode] = useState(false);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -37,6 +43,49 @@ const Signup = () => {
     clearError();
     setLocalError('');
   }, [clearError]);
+
+  // Validate invitation code from URL
+  useEffect(() => {
+    const codeFromUrl = searchParams.get('code');
+    if (codeFromUrl) {
+      validateInvitationCode(codeFromUrl);
+    }
+  }, [searchParams]);
+
+  const validateInvitationCode = async (code) => {
+    if (!code || code.length < 4) {
+      setInvitationValid(false);
+      return;
+    }
+    
+    setValidatingCode(true);
+    try {
+      const response = await fetch(`${API}/api/invitations/validate/${code}`);
+      if (response.ok) {
+        const data = await response.json();
+        setInvitationValid(true);
+        // Pre-fill email if available
+        if (data.email) {
+          setFormData(prev => ({ ...prev, email: data.email }));
+        }
+        setLocalError('');
+      } else {
+        setInvitationValid(false);
+        const errorData = await response.json();
+        setLocalError(errorData.detail || 'Invalid invitation code');
+      }
+    } catch (err) {
+      setInvitationValid(false);
+      setLocalError('Failed to validate invitation code');
+    }
+    setValidatingCode(false);
+  };
+
+  const handleInviteCodeBlur = () => {
+    if (formData.employeeInviteCode && !showAdminCode) {
+      validateInvitationCode(formData.employeeInviteCode);
+    }
+  };
 
   const validateForm = () => {
     const errors = {};
@@ -56,6 +105,11 @@ const Signup = () => {
     if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = 'Passwords do not match';
     }
+
+    // Require either admin code or employee invite code
+    if (!formData.adminInviteCode && !formData.employeeInviteCode) {
+      errors.employeeInviteCode = 'Invitation code is required';
+    }
     
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -65,6 +119,11 @@ const Signup = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setValidationErrors({ ...validationErrors, [e.target.name]: '' });
     setLocalError('');
+    
+    // Reset invitation validity when code changes
+    if (e.target.name === 'employeeInviteCode') {
+      setInvitationValid(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -81,7 +140,8 @@ const Signup = () => {
       formData.email,
       formData.password,
       role,
-      formData.adminInviteCode || null
+      formData.adminInviteCode || null,
+      formData.employeeInviteCode || null
     );
     
     if (result.success) {
@@ -133,6 +193,48 @@ const Signup = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Invitation Code - Required for Employees */}
+            {!showAdminCode && (
+              <div>
+                <label className="block text-sm font-medium text-brand-dark mb-2">
+                  Invitation Code *
+                </label>
+                <div className="relative">
+                  <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    name="employeeInviteCode"
+                    value={formData.employeeInviteCode}
+                    onChange={handleChange}
+                    onBlur={handleInviteCodeBlur}
+                    className={`w-full pl-12 pr-12 py-3 rounded-xl border ${
+                      validationErrors.employeeInviteCode ? 'border-red-500' : 
+                      invitationValid ? 'border-green-500' : 'border-gray-200'
+                    } focus:ring-2 focus:ring-brand-black focus:border-transparent transition-all uppercase`}
+                    placeholder="INV-XXXXXX"
+                    data-testid="signup-invite-code"
+                  />
+                  {validatingCode && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                      <div className="w-5 h-5 border-2 border-brand-black border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                  {invitationValid && !validatingCode && (
+                    <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                  )}
+                </div>
+                {validationErrors.employeeInviteCode && (
+                  <p className="mt-1 text-sm text-red-500">{validationErrors.employeeInviteCode}</p>
+                )}
+                {invitationValid && (
+                  <p className="mt-1 text-sm text-green-600">✓ Valid invitation code</p>
+                )}
+                <p className="mt-1 text-xs text-gray-500">
+                  Ask your administrator for an invitation code
+                </p>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-brand-dark mb-2">
                 Full Name *
@@ -236,15 +338,22 @@ const Signup = () => {
               )}
             </div>
 
-            {/* Admin Invite Code (Optional) */}
+            {/* Admin Invite Code Toggle */}
             <div>
               <button
                 type="button"
-                onClick={() => setShowAdminCode(!showAdminCode)}
+                onClick={() => {
+                  setShowAdminCode(!showAdminCode);
+                  if (!showAdminCode) {
+                    setFormData(prev => ({ ...prev, employeeInviteCode: '' }));
+                  } else {
+                    setFormData(prev => ({ ...prev, adminInviteCode: '' }));
+                  }
+                }}
                 className="text-sm text-brand-black hover:underline flex items-center gap-1"
               >
                 <KeyRound className="w-4 h-4" />
-                {showAdminCode ? 'Hide' : 'Have an'} admin invite code?
+                {showAdminCode ? 'Sign up as Employee instead' : 'Sign up as Admin?'}
               </button>
               
               {showAdminCode && (
@@ -266,7 +375,7 @@ const Signup = () => {
                     />
                   </div>
                   <p className="mt-1 text-xs text-gray-500">
-                    Leave empty to sign up as an Employee
+                    Admin code is required for administrator access
                   </p>
                 </motion.div>
               )}
