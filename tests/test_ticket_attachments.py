@@ -8,7 +8,7 @@ import os
 import tempfile
 from pathlib import Path
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://timeflow-54.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://talentflow-60.preview.emergentagent.com')
 
 # Test credentials
 ADMIN_EMAIL = "admin@company.com"
