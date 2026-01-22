@@ -343,7 +343,7 @@ const SpotlightTutorial = ({ forceShow = false, onComplete }) => {
                 Welcome to AurborBloom! 👋
               </h2>
               <p className="text-gray-600 mb-6">
-                Let's take a quick tour to help you get started with your dashboard.
+                Let&apos;s take a quick tour to help you get started with your dashboard.
               </p>
               <div className="flex gap-3">
                 <button
