@@ -15,7 +15,8 @@ import {
   MessageSquare,
   Coffee,
   UtensilsCrossed,
-  Pause
+  Pause,
+  HelpCircle
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -25,6 +26,7 @@ import AnnouncementsSection from '../../components/employee/AnnouncementsSection
 import EmployeeSidebar from '../../components/employee/EmployeeSidebar';
 import { NotificationBell } from '../../components/notifications';
 import Logo3D from '../../components/Logo3D';
+import { SpotlightTutorial, resetTutorial } from '../../components/tutorial';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
