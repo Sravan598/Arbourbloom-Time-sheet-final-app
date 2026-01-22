@@ -61,13 +61,24 @@ const SpotlightTutorial = ({ forceShow = false, onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState(null);
   const [isReady, setIsReady] = useState(false);
+  const isActiveRef = useRef(isActive);
+  const currentStepRef = useRef(currentStep);
+
+  // Keep refs in sync
+  useEffect(() => {
+    isActiveRef.current = isActive;
+    currentStepRef.current = currentStep;
+  }, [isActive, currentStep]);
 
   // Check if tutorial should show
   useEffect(() => {
     if (forceShow) {
-      setIsActive(true);
-      setCurrentStep(0);
-      return;
+      // Use timeout to avoid synchronous setState
+      const timer = setTimeout(() => {
+        setIsActive(true);
+        setCurrentStep(0);
+      }, 0);
+      return () => clearTimeout(timer);
     }
 
     const completed = localStorage.getItem(STORAGE_KEY);
@@ -82,9 +93,9 @@ const SpotlightTutorial = ({ forceShow = false, onComplete }) => {
 
   // Update target element position
   const updateTargetPosition = useCallback(() => {
-    if (!isActive || currentStep >= TUTORIAL_STEPS.length) return;
+    if (!isActiveRef.current || currentStepRef.current >= TUTORIAL_STEPS.length) return;
 
-    const step = TUTORIAL_STEPS[currentStep];
+    const step = TUTORIAL_STEPS[currentStepRef.current];
     const element = document.querySelector(step.target);
 
     if (element) {
@@ -103,24 +114,28 @@ const SpotlightTutorial = ({ forceShow = false, onComplete }) => {
     } else {
       // Element not found, skip to next step
       console.warn(`Tutorial target not found: ${step.target}`);
-      if (currentStep < TUTORIAL_STEPS.length - 1) {
+      if (currentStepRef.current < TUTORIAL_STEPS.length - 1) {
         setCurrentStep(prev => prev + 1);
       }
     }
-  }, [isActive, currentStep]);
+  }, []);
 
   useEffect(() => {
-    updateTargetPosition();
+    // Initial position update with small delay
+    const timer = setTimeout(() => {
+      updateTargetPosition();
+    }, 100);
     
     // Update on resize/scroll
     window.addEventListener('resize', updateTargetPosition);
     window.addEventListener('scroll', updateTargetPosition, true);
     
     return () => {
+      clearTimeout(timer);
       window.removeEventListener('resize', updateTargetPosition);
       window.removeEventListener('scroll', updateTargetPosition, true);
     };
-  }, [updateTargetPosition]);
+  }, [updateTargetPosition, isActive, currentStep]);
 
   const handleNext = () => {
     if (currentStep < TUTORIAL_STEPS.length - 1) {
