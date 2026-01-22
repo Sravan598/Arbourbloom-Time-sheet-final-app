@@ -19,37 +19,44 @@ const EmployeeSidebar = () => {
     { 
       path: '/employee/dashboard', 
       label: 'Dashboard', 
-      icon: Home 
+      icon: Home,
+      tourId: 'sidebar-dashboard'
     },
     { 
       path: '/employee/timesheet', 
       label: 'My Timesheet', 
-      icon: FileText 
+      icon: FileText,
+      tourId: 'sidebar-timesheet'
     },
     { 
       path: '/employee/projects', 
       label: 'My Projects', 
-      icon: FolderKanban 
+      icon: FolderKanban,
+      tourId: 'sidebar-projects'
     },
     { 
       path: '/employee/documents', 
       label: 'Documents', 
-      icon: Folder 
+      icon: Folder,
+      tourId: 'sidebar-documents'
     },
     { 
       path: '/employee/leave', 
       label: 'Leave / PTO', 
-      icon: Calendar 
+      icon: Calendar,
+      tourId: 'sidebar-leave'
     },
     { 
       path: '/employee/tickets', 
       label: 'Support Tickets', 
-      icon: Ticket 
+      icon: Ticket,
+      tourId: 'sidebar-tickets'
     },
     { 
       path: '/employee/calendar', 
       label: 'Calendar', 
-      icon: CalendarDays 
+      icon: CalendarDays,
+      tourId: 'sidebar-calendar'
     },
     { 
       path: 'https://workforcenow.adp.com', 
