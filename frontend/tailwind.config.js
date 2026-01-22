@@ -15,6 +15,7 @@ module.exports = {
           'black-light': '#333333',
           dark: '#1a1a1a',
           accent: '#D4AF37', // Gold accent
+          gold: '#D4AF37', // Gold color for tutorial
           silver: '#C0C0C0',
           gray: '#666666',
         },
