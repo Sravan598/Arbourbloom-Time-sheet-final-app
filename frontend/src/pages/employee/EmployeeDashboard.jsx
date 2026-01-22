@@ -668,6 +668,12 @@ const EmployeeDashboard = () => {
         </div>
         </main>
       </div>
+      
+      {/* Spotlight Tutorial */}
+      <SpotlightTutorial 
+        forceShow={showTutorial} 
+        onComplete={() => setShowTutorial(false)} 
+      />
     </div>
   );
 };
