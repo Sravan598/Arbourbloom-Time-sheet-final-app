@@ -402,7 +402,9 @@ const EmployeeDashboard = () => {
               </div>
               
               {/* Notification Bell */}
-              <NotificationBell />
+              <div data-tour="notification-bell">
+                <NotificationBell />
+              </div>
             </div>
             </div>
           </div>
