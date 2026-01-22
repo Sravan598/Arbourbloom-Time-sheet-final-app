@@ -307,9 +307,19 @@ const EmployeeDashboard = () => {
               </div>
               
               {/* Profile Dropdown and Notification */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                {/* Help Tour Button */}
+                <button
+                  onClick={handleStartTour}
+                  className="p-2 text-gray-500 hover:text-brand-gold hover:bg-brand-gold/10 rounded-lg transition-colors"
+                  title="Take a tour"
+                  data-testid="help-tour-button"
+                >
+                  <HelpCircle className="w-5 h-5" />
+                </button>
+                
                 {/* Profile Dropdown */}
-                <div className="relative" ref={profileDropdownRef}>
+                <div className="relative" ref={profileDropdownRef} data-tour="profile-menu">
                   <button
                     onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                     className="flex items-center gap-2 hover:bg-gray-100 rounded-full py-1 pl-1 pr-3 transition-colors"
