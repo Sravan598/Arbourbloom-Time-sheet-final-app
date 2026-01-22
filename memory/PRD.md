@@ -241,6 +241,12 @@ Backend refactored from 7000+ line monolith to modular structure:
   - `QUICK_REFERENCE.md` (246 lines) - Quick reference card
   - Location: `/app/docs/`
   - All guides include tables, workflow diagrams, and troubleshooting sections
+- ✅ **Interactive Spotlight Tutorial** - First-time employee onboarding tour
+  - 8-step guided tour covering: Clock In/Out, Break Timer, Timesheet, Leave, Tickets, Calendar, Profile, Notifications
+  - Spotlight style with dark overlay and golden border highlights
+  - Auto-shows on first login, stored in localStorage
+  - Help icon (?) in header to replay tour anytime
+  - Component: `/app/frontend/src/components/tutorial/SpotlightTutorial.jsx`
 
 ### January 21, 2025
 - ✅ **Google OAuth Login** - Implemented "Continue with Google" button using Emergent-managed Google Auth
