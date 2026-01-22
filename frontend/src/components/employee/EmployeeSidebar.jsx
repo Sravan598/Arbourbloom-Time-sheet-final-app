@@ -113,6 +113,7 @@ const EmployeeSidebar = () => {
               <Link
                 key={item.path}
                 to={item.path}
+                data-tour={item.tourId}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                   active 
                     ? 'bg-brand-black/10 text-brand-black font-medium' 
