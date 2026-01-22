@@ -64,6 +64,14 @@ const EmployeeDashboard = () => {
   const [selectedBreakType, setSelectedBreakType] = useState('GENERAL');
   const [breakProcessing, setBreakProcessing] = useState(false);
   const breakTimerRef = useRef(null);
+  
+  // Tutorial state
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  const handleStartTour = () => {
+    resetTutorial();
+    setShowTutorial(true);
+  };
 
   // Fetch profile data
   useEffect(() => {
