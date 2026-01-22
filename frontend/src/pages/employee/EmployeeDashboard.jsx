@@ -539,7 +539,7 @@ const EmployeeDashboard = () => {
             </div>
 
             {/* Integrated Break Timer Section */}
-            <div className="border-t border-gray-100 pt-6">
+            <div className="border-t border-gray-100 pt-6" data-tour="break-timer">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Coffee className="w-5 h-5 text-brand-black" />
