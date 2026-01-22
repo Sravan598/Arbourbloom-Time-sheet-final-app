@@ -440,6 +440,7 @@ const EmployeeDashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-3xl shadow-lg p-8"
+            data-tour="clock-widget"
           >
             {/* Clock Section */}
             <div className="text-center mb-6">
