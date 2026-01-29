@@ -127,7 +127,9 @@ const AdminDashboard = () => {
           <div className="px-8 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-bold text-brand-dark">Admin Dashboard</h1>
+                <h1 className="text-xl font-bold" style={{ color: tenant.primary_color }}>
+                  {getTenantName()} Dashboard
+                </h1>
                 <p className="text-sm text-gray-500">Welcome back, {profileData?.name || user?.name}</p>
               </div>
               
