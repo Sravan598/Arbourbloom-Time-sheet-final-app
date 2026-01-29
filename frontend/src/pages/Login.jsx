@@ -147,7 +147,7 @@ const Login = () => {
                 alt={selectedTenant.name} 
                 className="h-12 mx-auto mb-4 object-contain"
               />
-            ) : (
+            ) : selectedTenant?.slug === 'aurborbloom' || !selectedTenant ? (
               <img 
                 src="/aurborbloom_logo.png" 
                 alt="AurborBloom" 
