@@ -2991,13 +2991,16 @@ def create_pdf_header_with_logo(elements: list, styles, subtitle_text: str = "",
         )
         elements.append(Paragraph(subtitle_text, subtitle_style))
 
-def generate_timesheet_pdf(user_data: dict, timesheets: list, breaks: list, week_start: datetime, week_end: datetime) -> bytes:
+def generate_timesheet_pdf(user_data: dict, timesheets: list, breaks: list, week_start: datetime, week_end: datetime, tenant_info: dict = None) -> bytes:
     """Generate a professional timesheet PDF"""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
     
     elements = []
     styles = getSampleStyleSheet()
+    
+    # Get tenant colors
+    tenant_primary = tenant_info.get("primary_color", "#1a1a1a") if tenant_info else "#1a1a1a"
     
     # Custom styles
     subtitle_style = ParagraphStyle(
@@ -3013,13 +3016,13 @@ def generate_timesheet_pdf(user_data: dict, timesheets: list, breaks: list, week
         'SectionHeader',
         parent=styles['Heading2'],
         fontSize=14,
-        textColor=colors.HexColor('#EF4444'),
+        textColor=colors.HexColor(tenant_primary),
         spaceBefore=20,
         spaceAfter=10
     )
     
-    # Header with Logo
-    create_pdf_header_with_logo(elements, styles, "Employee Timesheet Report")
+    # Header with Logo (tenant-aware)
+    create_pdf_header_with_logo(elements, styles, "Employee Timesheet Report", tenant_info)
     
     # Employee Info
     elements.append(Paragraph("Employee Information", section_style))
