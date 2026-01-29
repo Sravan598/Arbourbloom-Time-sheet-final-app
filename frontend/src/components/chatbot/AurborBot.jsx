@@ -2,20 +2,26 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { Bot, X, Minus, Send } from 'lucide-react';
 import { findAnswer } from './faqData';
-
-// AurborBloom logo URL
-const ARBORBLOOM_LOGO = "/aurborbloom_logo.png";
+import { useTenant } from '../../context/TenantContext';
 
 // Storage key for position persistence
 const POSITION_STORAGE_KEY = 'corbot_position';
 
 const AurborBot = () => {
+  const { tenant, getTenantName, isDefaultTenant } = useTenant();
+  
+  // Get tenant-specific bot name
+  const getBotName = () => {
+    if (isDefaultTenant()) return 'AurborBot';
+    return `${getTenantName()} Assistant`;
+  };
+  
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState([
     {
       type: 'bot',
-      text: "Hi! 👋 I'm AurborBot, your AurborBloom assistant. Ask me anything about the app - time tracking, timesheets, projects, documents, AurborChat, and more!"
+      text: `Hi! 👋 I'm ${getBotName()}, your HR assistant. Ask me anything about the app - time tracking, timesheets, leave requests, support tickets, and more!`
     }
   ]);
   const [inputValue, setInputValue] = useState('');
