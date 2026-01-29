@@ -15,10 +15,12 @@ import {
   Building2
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useTenant } from '../../context/TenantContext';
 
 const AdminSidebar = () => {
   const location = useLocation();
   const { user } = useAuth();
+  const { tenant, getTenantLogo, getTenantName } = useTenant();
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   
   const navItems = [
@@ -89,16 +91,31 @@ const AdminSidebar = () => {
     return location.pathname === path;
   };
 
+  // Dynamic colors based on tenant
+  const primaryColor = tenant.primary_color || '#1a1a1a';
+  const activeStyles = {
+    backgroundColor: `${primaryColor}15`,
+    color: primaryColor,
+  };
+
   return (
     <aside className="w-64 bg-white shadow-lg fixed left-0 top-0 bottom-0 z-40">
-      {/* Logo */}
+      {/* Logo - Dynamic based on tenant */}
       <div className="p-6 border-b border-gray-100">
         <Link to="/admin/dashboard" className="flex items-center gap-3">
-          <img 
-            src="/aurborbloom_logo.png" 
-            alt="AurborBloom" 
-            className="h-10"
-          />
+          {tenant.logo_url ? (
+            <img 
+              src={tenant.logo_url} 
+              alt={getTenantName()} 
+              className="h-10 object-contain"
+            />
+          ) : (
+            <img 
+              src="/aurborbloom_logo.png" 
+              alt="AurborBloom" 
+              className="h-10"
+            />
+          )}
         </Link>
       </div>
       
@@ -132,9 +149,10 @@ const AdminSidebar = () => {
               <Link
                 key={item.path}
                 to={item.path}
+                style={active ? activeStyles : {}}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                   active 
-                    ? 'bg-purple-100 text-purple-700 font-medium' 
+                    ? 'font-medium' 
                     : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
@@ -145,19 +163,24 @@ const AdminSidebar = () => {
           })}
         </div>
         
-        {/* Admin Badge */}
-        <div className={`mt-6 p-4 rounded-xl ${isSuperAdmin ? 'bg-amber-50' : 'bg-purple-50'}`}>
+        {/* Admin Badge - Uses tenant color */}
+        <div 
+          className="mt-6 p-4 rounded-xl"
+          style={{ backgroundColor: `${primaryColor}10` }}
+        >
           <div className="flex items-center gap-2 mb-1">
-            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
-              isSuperAdmin 
-                ? 'bg-amber-100 text-amber-700' 
-                : 'bg-purple-100 text-purple-700'
-            }`}>
+            <span 
+              className="px-2 py-0.5 text-xs font-semibold rounded-full"
+              style={{ 
+                backgroundColor: `${primaryColor}20`,
+                color: primaryColor
+              }}
+            >
               {isSuperAdmin ? 'Super Admin' : 'Admin'}
             </span>
           </div>
-          <p className={`text-xs ${isSuperAdmin ? 'text-amber-600' : 'text-purple-600'}`}>
-            {isSuperAdmin ? 'Full system access' : 'Full access to all features'}
+          <p className="text-xs" style={{ color: `${primaryColor}aa` }}>
+            {isSuperAdmin ? 'Full system access' : `${getTenantName()} Admin`}
           </p>
         </div>
       </nav>
