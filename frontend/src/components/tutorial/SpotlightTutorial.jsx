@@ -57,13 +57,15 @@ const TUTORIAL_STEPS = [
 // Storage key includes tenant for isolation
 const getStorageKey = (tenantSlug) => `${tenantSlug || 'default'}_tutorial_completed`;
 
-const SpotlightTutorial = ({ forceShow = false, onComplete, tenantName = 'Your Company', tenantColor = '#1a1a1a' }) => {
+const SpotlightTutorial = ({ forceShow = false, onComplete, tenantName = 'Your Company', tenantColor = '#1a1a1a', tenantSlug = 'default' }) => {
   const [isActive, setIsActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState(null);
   const [isReady, setIsReady] = useState(false);
   const isActiveRef = useRef(isActive);
   const currentStepRef = useRef(currentStep);
+  
+  const storageKey = getStorageKey(tenantSlug);
 
   // Keep refs in sync
   useEffect(() => {
@@ -82,7 +84,7 @@ const SpotlightTutorial = ({ forceShow = false, onComplete, tenantName = 'Your C
       return () => clearTimeout(timer);
     }
 
-    const completed = localStorage.getItem(STORAGE_KEY);
+    const completed = localStorage.getItem(storageKey);
     if (!completed) {
       // Small delay to let page render
       const timer = setTimeout(() => {
@@ -90,7 +92,7 @@ const SpotlightTutorial = ({ forceShow = false, onComplete, tenantName = 'Your C
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [forceShow]);
+  }, [forceShow, storageKey]);
 
   // Update target element position
   const updateTargetPosition = useCallback(() => {
