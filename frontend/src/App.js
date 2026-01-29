@@ -50,7 +50,8 @@ const NotificationWidget = () => {
 function App() {
   return (
     <AuthProvider>
-      <div className="App antialiased">
+      <TenantProvider>
+        <div className="App antialiased">
         {/* Spotlight cursor effect */}
         <CursorSpotlight />
         
