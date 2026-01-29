@@ -265,12 +265,17 @@ Backend refactored from 7000+ line monolith to modular structure:
   - **Dashboard Header**: Shows "{Tenant Name} Dashboard" with tenant's primary color
   - **Navigation Highlights**: Active menu items use tenant's primary color
   - **Admin Badge**: Shows tenant name and uses tenant colors
-  - **PDF Reports**: Timesheet PDFs include tenant logo and branding
+  - **PDF Reports**: Timesheet PDFs include tenant logo and branding (no "Powered by AurborBloom")
   - **Browser Tab Title**: Updates to "{Tenant Name} HRMS"
+  - **Chatbot**: Named "{Tenant Name} Assistant" with tenant colors
+  - **Tutorial**: Welcome message uses tenant name and colors
+  - **Login Page**: Shows "Sign in to {Tenant Name}" with tenant branding
+  - **Zero AurborBloom references**: When logged into another tenant, no AurborBloom branding appears
   - Key files:
     - `/app/frontend/src/context/TenantContext.jsx` - Tenant branding context
     - `/app/frontend/src/components/ui/TenantButton.jsx` - Tenant-colored buttons
-    - Updated sidebars and dashboards for both Admin and Employee
+    - `/app/frontend/src/components/chatbot/AurborBot.jsx` - Tenant-aware chatbot
+    - Updated sidebars, dashboards, tutorial, and PDF generation
 
 ### January 21, 2025
 - ✅ **Google OAuth Login** - Implemented "Continue with Google" button using Emergent-managed Google Auth
