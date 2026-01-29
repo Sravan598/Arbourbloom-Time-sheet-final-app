@@ -2011,12 +2011,15 @@ async def get_employee_correction_requests(current_user: dict = Depends(get_curr
 # ============== ADMIN ROUTES ==============
 @api_router.get("/admin/dashboard-stats")
 async def get_admin_dashboard_stats(admin: dict = Depends(require_admin)):
+    tenant_id = get_tenant_id(admin)
+    
     # Get current week's start
     today = datetime.now(timezone.utc)
     week_start = (today - timedelta(days=today.weekday())).strftime("%Y-%m-%d")
     
-    # Total hours this week
+    # Total hours this week (for this tenant)
     week_timesheets = await db.timesheets.find({
+        "tenant_id": tenant_id,
         "clock_in_at": {"$gte": week_start},
         "total_minutes": {"$ne": None}
     }).to_list(10000)
@@ -2024,20 +2027,33 @@ async def get_admin_dashboard_stats(admin: dict = Depends(require_admin)):
     total_minutes = sum(ts.get("total_minutes", 0) for ts in week_timesheets)
     total_hours = round(total_minutes / 60, 1)
     
-    # Active employees (currently clocked in)
-    active_count = await db.timesheets.count_documents({"clock_out_at": None})
+    # Active employees (currently clocked in) for this tenant
+    active_count = await db.timesheets.count_documents({
+        "tenant_id": tenant_id,
+        "clock_out_at": None
+    })
     
-    # Pending correction requests
-    pending_corrections = await db.correction_requests.count_documents({"status": "PENDING"})
+    # Pending correction requests for this tenant
+    pending_corrections = await db.correction_requests.count_documents({
+        "tenant_id": tenant_id,
+        "status": "PENDING"
+    })
     
-    # Pending leave requests
-    pending_leave_requests = await db.leave_requests.count_documents({"status": "PENDING"})
+    # Pending leave requests for this tenant
+    pending_leave_requests = await db.leave_requests.count_documents({
+        "tenant_id": tenant_id,
+        "status": "PENDING"
+    })
     
     # Total pending requests (corrections + leave)
     total_pending_requests = pending_corrections + pending_leave_requests
     
-    # Total employees
-    total_employees = await db.users.count_documents({"role": "EMPLOYEE", "is_active": True})
+    # Total employees for this tenant
+    total_employees = await db.users.count_documents({
+        "role": "EMPLOYEE",
+        "is_active": True,
+        "tenant_id": tenant_id
+    })
     
     return {
         "total_hours_this_week": total_hours,
