@@ -389,8 +389,9 @@ export const TutorialHelpButton = ({ onClick }) => (
 );
 
 // Function to reset tutorial (for replay)
-export const resetTutorial = () => {
-  localStorage.removeItem(STORAGE_KEY);
+export const resetTutorial = (tenantSlug = 'default') => {
+  const storageKey = getStorageKey(tenantSlug);
+  localStorage.removeItem(storageKey);
 };
 
 export default SpotlightTutorial;
