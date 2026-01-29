@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import { useTenant } from '../../context/TenantContext';
 import { Button } from '../../components/ui/Button';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 
@@ -30,6 +31,7 @@ const API = `${BACKEND_URL}/api`;
 const PerformanceInsights = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { tenant, getTenantName } = useTenant();
   const profileDropdownRef = useRef(null);
   
   const [period, setPeriod] = useState(30);
