@@ -1,0 +1,734 @@
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Building2, 
+  Plus, 
+  Edit2, 
+  Trash2, 
+  Users, 
+  X, 
+  Check,
+  Copy,
+  Eye,
+  EyeOff,
+  Upload,
+  Palette
+} from 'lucide-react';
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
+import AdminSidebar from '../../components/admin/AdminSidebar';
+import { Button } from '../../components/ui/Button';
+
+const API = process.env.REACT_APP_BACKEND_URL;
+
+const TenantManagement = () => {
+  const { user, token } = useAuth();
+  const [tenants, setTenants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState(null);
+  const [showAdminCode, setShowAdminCode] = useState({});
+  
+  const [formData, setFormData] = useState({
+    slug: '',
+    name: '',
+    primary_color: '#1a1a1a',
+    secondary_color: '#D4AF37',
+    email: '',
+    phone: '',
+    address: ''
+  });
+  
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    fetchTenants();
+  }, []);
+
+  const fetchTenants = async () => {
+    try {
+      const response = await axios.get(`${API}/api/super-admin/tenants`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setTenants(response.data);
+    } catch (err) {
+      setError('Failed to load tenants');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Auto-generate slug from name
+    if (name === 'name' && !showEditModal) {
+      const slug = value.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+      setFormData({ ...formData, name: value, slug });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setError('Logo file must be less than 2MB');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoFile(reader.result);
+        setLogoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      slug: '',
+      name: '',
+      primary_color: '#1a1a1a',
+      secondary_color: '#D4AF37',
+      email: '',
+      phone: '',
+      address: ''
+    });
+    setLogoFile(null);
+    setLogoPreview(null);
+    setError('');
+  };
+
+  const handleCreateTenant = async (e) => {
+    e.preventDefault();
+    setError('');
+    
+    try {
+      // Create tenant
+      const response = await axios.post(`${API}/api/super-admin/tenants`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const newTenant = response.data;
+      
+      // Upload logo if provided
+      if (logoFile) {
+        await axios.post(`${API}/api/super-admin/tenants/${newTenant.id}/upload-logo`, 
+          { logo: logoFile },
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+      }
+      
+      setSuccess('Tenant created successfully!');
+      setShowCreateModal(false);
+      resetForm();
+      fetchTenants();
+      
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to create tenant');
+    }
+  };
+
+  const handleUpdateTenant = async (e) => {
+    e.preventDefault();
+    setError('');
+    
+    try {
+      await axios.put(`${API}/api/super-admin/tenants/${selectedTenant.id}`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Upload logo if changed
+      if (logoFile && logoFile !== selectedTenant.logo_url) {
+        await axios.post(`${API}/api/super-admin/tenants/${selectedTenant.id}/upload-logo`, 
+          { logo: logoFile },
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+      }
+      
+      setSuccess('Tenant updated successfully!');
+      setShowEditModal(false);
+      resetForm();
+      fetchTenants();
+      
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to update tenant');
+    }
+  };
+
+  const handleDeleteTenant = async (tenant) => {
+    if (!window.confirm(`Are you sure you want to delete "${tenant.name}"? This will permanently delete all users, timesheets, and data associated with this tenant.`)) {
+      return;
+    }
+    
+    try {
+      await axios.delete(`${API}/api/super-admin/tenants/${tenant.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setSuccess('Tenant deleted successfully!');
+      fetchTenants();
+      
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to delete tenant');
+    }
+  };
+
+  const viewTenantDetails = async (tenant) => {
+    try {
+      const response = await axios.get(`${API}/api/super-admin/tenants/${tenant.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSelectedTenant(response.data);
+      setShowDetailsModal(true);
+    } catch (err) {
+      setError('Failed to load tenant details');
+    }
+  };
+
+  const openEditModal = (tenant) => {
+    setSelectedTenant(tenant);
+    setFormData({
+      slug: tenant.slug,
+      name: tenant.name,
+      primary_color: tenant.primary_color || '#1a1a1a',
+      secondary_color: tenant.secondary_color || '#D4AF37',
+      email: tenant.email || '',
+      phone: tenant.phone || '',
+      address: tenant.address || ''
+    });
+    setLogoPreview(tenant.logo_url);
+    setShowEditModal(true);
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    setSuccess('Copied to clipboard!');
+    setTimeout(() => setSuccess(''), 2000);
+  };
+
+  // Check if user is super admin
+  if (user?.role !== 'SUPER_ADMIN') {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <AdminSidebar />
+        <div className="flex-1 p-8">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+            <h2 className="text-xl font-bold text-red-600">Access Denied</h2>
+            <p className="text-gray-600 mt-2">Only Super Admins can access this page.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+      <AdminSidebar />
+      
+      <main className="flex-1 p-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-brand-dark">Tenant Management</h1>
+            <p className="text-gray-600 mt-1">Manage companies using AurborBloom</p>
+          </div>
+          <Button
+            onClick={() => {
+              resetForm();
+              setShowCreateModal(true);
+            }}
+            className="flex items-center gap-2"
+            data-testid="create-tenant-btn"
+          >
+            <Plus className="w-5 h-5" />
+            Add New Tenant
+          </Button>
+        </div>
+
+        {/* Success/Error Messages */}
+        <AnimatePresence>
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 flex items-center gap-3"
+            >
+              <Check className="w-5 h-5 text-green-500" />
+              <p className="text-green-700">{success}</p>
+            </motion.div>
+          )}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3"
+            >
+              <X className="w-5 h-5 text-red-500" />
+              <p className="text-red-700">{error}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Tenants Grid */}
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="w-8 h-8 border-2 border-brand-black border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-gray-500 mt-4">Loading tenants...</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {tenants.map((tenant) => (
+              <motion.div
+                key={tenant.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+              >
+                {/* Header with color */}
+                <div 
+                  className="h-3"
+                  style={{ backgroundColor: tenant.primary_color }}
+                />
+                
+                <div className="p-6">
+                  <div className="flex items-start gap-4 mb-4">
+                    {tenant.logo_url ? (
+                      <img 
+                        src={tenant.logo_url} 
+                        alt={tenant.name}
+                        className="w-12 h-12 object-contain rounded-lg"
+                      />
+                    ) : (
+                      <div 
+                        className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl font-bold"
+                        style={{ backgroundColor: tenant.primary_color }}
+                      >
+                        {tenant.name.charAt(0)}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-brand-dark truncate">{tenant.name}</h3>
+                      <p className="text-sm text-gray-500">{tenant.slug}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                    <Users className="w-4 h-4" />
+                    <span>Click to view details</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 pt-4 border-t">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => viewTenantDetails(tenant)}
+                      className="flex-1"
+                      data-testid={`view-tenant-${tenant.slug}`}
+                    >
+                      <Eye className="w-4 h-4 mr-1" />
+                      View
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditModal(tenant)}
+                      data-testid={`edit-tenant-${tenant.slug}`}
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                    {tenant.slug !== 'aurborbloom' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteTenant(tenant)}
+                        className="text-red-500 hover:text-red-600 hover:border-red-300"
+                        data-testid={`delete-tenant-${tenant.slug}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* Create/Edit Modal */}
+        <AnimatePresence>
+          {(showCreateModal || showEditModal) && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => {
+                setShowCreateModal(false);
+                setShowEditModal(false);
+                resetForm();
+              }}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6 border-b">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-brand-dark">
+                      {showEditModal ? 'Edit Tenant' : 'Create New Tenant'}
+                    </h2>
+                    <button
+                      onClick={() => {
+                        setShowCreateModal(false);
+                        setShowEditModal(false);
+                        resetForm();
+                      }}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+                
+                <form onSubmit={showEditModal ? handleUpdateTenant : handleCreateTenant} className="p-6 space-y-4">
+                  {error && (
+                    <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+                      {error}
+                    </div>
+                  )}
+                  
+                  {/* Logo Upload */}
+                  <div>
+                    <label className="block text-sm font-medium text-brand-dark mb-2">
+                      Company Logo
+                    </label>
+                    <div className="flex items-center gap-4">
+                      {logoPreview ? (
+                        <img 
+                          src={logoPreview} 
+                          alt="Preview" 
+                          className="w-16 h-16 object-contain rounded-lg border"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
+                          <Building2 className="w-6 h-6 text-gray-400" />
+                        </div>
+                      )}
+                      <label className="cursor-pointer">
+                        <span className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-2">
+                          <Upload className="w-4 h-4" />
+                          Upload Logo
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoChange}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Max 2MB. PNG, JPG, or SVG.</p>
+                  </div>
+                  
+                  {/* Company Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-brand-dark mb-2">
+                      Company Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
+                      placeholder="e.g., Perfect Solutions"
+                      required
+                    />
+                  </div>
+                  
+                  {/* Slug (URL identifier) */}
+                  <div>
+                    <label className="block text-sm font-medium text-brand-dark mb-2">
+                      URL Identifier *
+                    </label>
+                    <input
+                      type="text"
+                      name="slug"
+                      value={formData.slug}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
+                      placeholder="e.g., perfect-solutions"
+                      pattern="^[a-z0-9-]+$"
+                      disabled={showEditModal}
+                      required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Lowercase letters, numbers, and hyphens only.</p>
+                  </div>
+                  
+                  {/* Colors */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-brand-dark mb-2">
+                        <Palette className="w-4 h-4 inline mr-1" />
+                        Primary Color
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          name="primary_color"
+                          value={formData.primary_color}
+                          onChange={handleInputChange}
+                          className="w-10 h-10 rounded-lg cursor-pointer border-0"
+                        />
+                        <input
+                          type="text"
+                          value={formData.primary_color}
+                          onChange={(e) => setFormData({...formData, primary_color: e.target.value})}
+                          className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-brand-dark mb-2">
+                        <Palette className="w-4 h-4 inline mr-1" />
+                        Accent Color
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          name="secondary_color"
+                          value={formData.secondary_color}
+                          onChange={handleInputChange}
+                          className="w-10 h-10 rounded-lg cursor-pointer border-0"
+                        />
+                        <input
+                          type="text"
+                          value={formData.secondary_color}
+                          onChange={(e) => setFormData({...formData, secondary_color: e.target.value})}
+                          className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Contact Info */}
+                  <div>
+                    <label className="block text-sm font-medium text-brand-dark mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
+                      placeholder="contact@company.com"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-brand-dark mb-2">
+                      Phone
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
+                      placeholder="+1 (555) 123-4567"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-brand-dark mb-2">
+                      Address
+                    </label>
+                    <textarea
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
+                      placeholder="123 Business St, City, State"
+                      rows={2}
+                    />
+                  </div>
+                  
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setShowCreateModal(false);
+                        setShowEditModal(false);
+                        resetForm();
+                      }}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" className="flex-1">
+                      {showEditModal ? 'Update Tenant' : 'Create Tenant'}
+                    </Button>
+                  </div>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Details Modal */}
+        <AnimatePresence>
+          {showDetailsModal && selectedTenant && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setShowDetailsModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white rounded-2xl w-full max-w-lg"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div 
+                  className="h-3 rounded-t-2xl"
+                  style={{ backgroundColor: selectedTenant.primary_color }}
+                />
+                
+                <div className="p-6">
+                  <div className="flex items-start gap-4 mb-6">
+                    {selectedTenant.logo_url ? (
+                      <img 
+                        src={selectedTenant.logo_url} 
+                        alt={selectedTenant.name}
+                        className="w-16 h-16 object-contain rounded-lg"
+                      />
+                    ) : (
+                      <div 
+                        className="w-16 h-16 rounded-lg flex items-center justify-center text-white text-2xl font-bold"
+                        style={{ backgroundColor: selectedTenant.primary_color }}
+                      >
+                        {selectedTenant.name.charAt(0)}
+                      </div>
+                    )}
+                    <div>
+                      <h2 className="text-xl font-bold text-brand-dark">{selectedTenant.name}</h2>
+                      <p className="text-gray-500">{selectedTenant.slug}</p>
+                    </div>
+                    <button
+                      onClick={() => setShowDetailsModal(false)}
+                      className="ml-auto p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  {/* Stats */}
+                  {selectedTenant.stats && (
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="bg-gray-50 rounded-xl p-4 text-center">
+                        <p className="text-2xl font-bold text-brand-dark">{selectedTenant.stats.admin_count}</p>
+                        <p className="text-sm text-gray-500">Admins</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-4 text-center">
+                        <p className="text-2xl font-bold text-brand-dark">{selectedTenant.stats.employee_count}</p>
+                        <p className="text-sm text-gray-500">Employees</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-4 text-center">
+                        <p className="text-2xl font-bold text-brand-dark">{selectedTenant.stats.total_users}</p>
+                        <p className="text-sm text-gray-500">Total Users</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Admin Signup Code */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                    <label className="block text-sm font-medium text-amber-800 mb-2">
+                      Admin Signup Code
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 bg-white px-3 py-2 rounded-lg text-sm font-mono border">
+                        {showAdminCode[selectedTenant.id] 
+                          ? selectedTenant.admin_signup_code 
+                          : '••••••••••••••••'}
+                      </code>
+                      <button
+                        onClick={() => setShowAdminCode({
+                          ...showAdminCode, 
+                          [selectedTenant.id]: !showAdminCode[selectedTenant.id]
+                        })}
+                        className="p-2 hover:bg-amber-100 rounded-lg transition-colors"
+                      >
+                        {showAdminCode[selectedTenant.id] ? (
+                          <EyeOff className="w-5 h-5 text-amber-700" />
+                        ) : (
+                          <Eye className="w-5 h-5 text-amber-700" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => copyToClipboard(selectedTenant.admin_signup_code)}
+                        className="p-2 hover:bg-amber-100 rounded-lg transition-colors"
+                      >
+                        <Copy className="w-5 h-5 text-amber-700" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-amber-600 mt-2">
+                      Share this code with the company admin to create their account.
+                    </p>
+                  </div>
+                  
+                  {/* Contact Info */}
+                  <div className="space-y-2 text-sm">
+                    {selectedTenant.email && (
+                      <p className="text-gray-600">
+                        <span className="font-medium">Email:</span> {selectedTenant.email}
+                      </p>
+                    )}
+                    {selectedTenant.phone && (
+                      <p className="text-gray-600">
+                        <span className="font-medium">Phone:</span> {selectedTenant.phone}
+                      </p>
+                    )}
+                    {selectedTenant.address && (
+                      <p className="text-gray-600">
+                        <span className="font-medium">Address:</span> {selectedTenant.address}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+    </div>
+  );
+};
+
+export default TenantManagement;
