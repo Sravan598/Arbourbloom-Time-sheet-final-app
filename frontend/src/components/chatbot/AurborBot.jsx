@@ -234,14 +234,24 @@ const AurborBot = () => {
                 }
               }}
               data-testid="corbot-drag-handle"
-              className={`flex items-center justify-between px-4 py-3 bg-gradient-to-r from-brand-black to-gray-700
+              style={{ background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}cc 100%)` }}
+              className={`flex items-center justify-between px-4 py-3
                          select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
             >
               <div className="flex items-center gap-2 pointer-events-none">
-                <div className="bg-white/95 rounded px-1.5 py-0.5 flex items-center">
-                  <img src={ARBORBLOOM_LOGO} alt="AurborBloom" className="h-4 w-auto" />
-                </div>
-                <h2 className="font-semibold text-white text-lg">AurborBot</h2>
+                {tenant?.logo_url ? (
+                  <div className="bg-white/95 rounded px-1.5 py-0.5 flex items-center">
+                    <img src={tenant.logo_url} alt={getTenantName()} className="h-4 w-auto object-contain" />
+                  </div>
+                ) : (
+                  <div 
+                    className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: primaryColor }}
+                  >
+                    {getTenantName().charAt(0)}
+                  </div>
+                )}
+                <h2 className="font-semibold text-white text-lg">{getBotName()}</h2>
                 <span className="text-xs text-white/70 bg-white/20 px-2 py-0.5 rounded-full">FAQ</span>
               </div>
               <div className="flex items-center gap-1">
