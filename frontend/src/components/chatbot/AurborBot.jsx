@@ -18,17 +18,25 @@ const AurborBot = () => {
   
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      type: 'bot',
-      text: `Hi! 👋 I'm ${getBotName()}, your HR assistant. Ask me anything about the app - time tracking, timesheets, leave requests, support tickets, and more!`
-    }
-  ]);
+  const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const dragControls = useDragControls();
+  const hasInitializedRef = useRef(false);
+  
+  // Initialize welcome message when tenant is loaded
+  useEffect(() => {
+    if (!hasInitializedRef.current || messages.length === 0) {
+      const botName = getBotName();
+      setMessages([{
+        type: 'bot',
+        text: `Hi! 👋 I'm ${botName}, your HR assistant. Ask me anything about the app - time tracking, timesheets, leave requests, support tickets, and more!`
+      }]);
+      hasInitializedRef.current = true;
+    }
+  }, [tenant]);
   
   // Track if user has dragged (to show at saved position)
   const [isDragging, setIsDragging] = useState(false);
