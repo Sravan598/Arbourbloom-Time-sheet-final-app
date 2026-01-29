@@ -153,10 +153,19 @@ const Login = () => {
                 alt="AurborBloom" 
                 className="h-12 mx-auto mb-4"
               />
+            ) : (
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <div 
+                  className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl font-bold"
+                  style={{ backgroundColor: selectedTenant?.primary_color || '#1a1a1a' }}
+                >
+                  {selectedTenant?.name?.charAt(0) || 'C'}
+                </div>
+              </div>
             )}
           </Link>
           <h1 className="text-2xl font-bold text-brand-dark">Welcome Back</h1>
-          <p className="text-gray-600 mt-2">Sign in to access your dashboard</p>
+          <p className="text-gray-600 mt-2">Sign in to {selectedTenant?.name || 'your dashboard'}</p>
         </div>
 
         {/* Card */}
