@@ -4369,6 +4369,7 @@ async def export_performance_pdf(
     
     # Leave analysis
     leave_requests = await db.leave_requests.find({
+        "tenant_id": tenant_id,
         "status": "APPROVED",
         "start_date": {"$gte": start_date.strftime("%Y-%m-%d")}
     }, {"_id": 0}).to_list(1000)
