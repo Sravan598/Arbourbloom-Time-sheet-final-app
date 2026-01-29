@@ -1186,8 +1186,14 @@ def deserialize_datetime(obj, fields):
 # ============== AUTH ROUTES ==============
 @api_router.post("/auth/signup", response_model=TokenResponse)
 async def signup(user_data: UserCreate):
-    # Check if email already exists
-    existing_user = await db.users.find_one({"email": user_data.email.lower()})
+    # Determine tenant_id - default to aurborbloom
+    tenant_id = user_data.tenant_id or DEFAULT_TENANT_SLUG
+    
+    # Check if email already exists within the tenant
+    existing_user = await db.users.find_one({
+        "email": user_data.email.lower(),
+        "tenant_id": tenant_id
+    })
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
@@ -1196,8 +1202,19 @@ async def signup(user_data: UserCreate):
     invitation = None
     
     if user_data.role == UserRole.ADMIN:
-        admin_code = os.environ.get('ADMIN_INVITE_CODE', 'ARBORBLOOM-ADMIN-2025')
-        if user_data.admin_invite_code != admin_code:
+        # Check tenant-specific admin code first
+        tenant = await db.tenants.find_one({"slug": tenant_id}, {"_id": 0})
+        valid_code = False
+        
+        if tenant and tenant.get("admin_signup_code") == user_data.admin_invite_code:
+            valid_code = True
+        else:
+            # Fall back to global admin code for default tenant
+            admin_code = os.environ.get('ADMIN_INVITE_CODE', 'ARBORBLOOM-ADMIN-2025')
+            if user_data.admin_invite_code == admin_code:
+                valid_code = True
+        
+        if not valid_code:
             raise HTTPException(status_code=403, detail="Invalid admin invite code")
         role = UserRole.ADMIN
     else:
@@ -1205,14 +1222,22 @@ async def signup(user_data: UserCreate):
         if not user_data.employee_invite_code:
             raise HTTPException(status_code=403, detail="Employee invitation code is required")
         
-        # Validate invitation code
-        invitation = await db.invitations.find_one({
+        # Validate invitation code (check tenant if provided)
+        invitation_query = {
             "code": user_data.employee_invite_code.upper(),
             "status": "pending"
-        }, {"_id": 0})
+        }
+        if tenant_id:
+            invitation_query["tenant_id"] = tenant_id
+        
+        invitation = await db.invitations.find_one(invitation_query, {"_id": 0})
         
         if not invitation:
             raise HTTPException(status_code=403, detail="Invalid or expired invitation code")
+        
+        # Use invitation's tenant_id if not provided
+        if not user_data.tenant_id and invitation.get("tenant_id"):
+            tenant_id = invitation["tenant_id"]
         
         # Check if invitation has expired
         expires_at = invitation.get("expires_at")
@@ -1231,11 +1256,12 @@ async def signup(user_data: UserCreate):
         if invitation.get("email") and invitation["email"].lower() != user_data.email.lower():
             raise HTTPException(status_code=403, detail="This invitation was sent to a different email address")
     
-    # Create user
+    # Create user with tenant_id
     user = UserBase(
         name=user_data.name,
         email=user_data.email.lower(),
-        role=role
+        role=role,
+        tenant_id=tenant_id
     )
     
     user_doc = user.model_dump()
@@ -1258,8 +1284,8 @@ async def signup(user_data: UserCreate):
             }}
         )
     
-    # Create token
-    token = create_token(user.id, user.email, user.role.value)
+    # Create token with tenant_id
+    token = create_token(user.id, user.email, user.role.value, tenant_id)
     
     return TokenResponse(
         access_token=token,
