@@ -1291,6 +1291,7 @@ async def signup(user_data: UserCreate):
         access_token=token,
         user=UserResponse(
             id=user.id,
+            tenant_id=tenant_id,
             name=user.name,
             email=user.email,
             role=user.role,
