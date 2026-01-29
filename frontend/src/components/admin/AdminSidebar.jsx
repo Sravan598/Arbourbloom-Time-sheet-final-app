@@ -8,15 +8,18 @@ import {
   FolderKanban,
   Users,
   Calendar,
-  Settings,
   CalendarDays,
   ExternalLink,
   DollarSign,
-  Ticket
+  Ticket,
+  Building2
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const AdminSidebar = () => {
   const location = useLocation();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   
   const navItems = [
     { 
@@ -71,6 +74,16 @@ const AdminSidebar = () => {
       external: true
     }
   ];
+
+  // Add tenant management for super admins
+  if (isSuperAdmin) {
+    navItems.splice(2, 0, {
+      path: '/admin/tenants',
+      label: 'Tenant Management',
+      icon: Building2,
+      superAdminOnly: true
+    });
+  }
 
   const isActive = (path) => {
     return location.pathname === path;
