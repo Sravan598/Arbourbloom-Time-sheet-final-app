@@ -2890,17 +2890,76 @@ async def get_time_summary(
 
 # ============== PDF EXPORT ROUTES ==============
 
-def create_pdf_header_with_logo(elements: list, styles, subtitle_text: str = ""):
-    """Create a centered PDF header with the AurborBloom logo and optional subtitle"""
-    # Add logo centered
-    if LOGO_PATH.exists():
-        # Get original image dimensions to preserve aspect ratio
+async def get_tenant_for_pdf(tenant_id: str):
+    """Get tenant info for PDF branding"""
+    if not tenant_id:
+        return None
+    tenant = await db.tenants.find_one({"slug": tenant_id}, {"_id": 0})
+    return tenant
+
+def create_pdf_header_with_logo(elements: list, styles, subtitle_text: str = "", tenant_info: dict = None):
+    """Create a centered PDF header with the tenant logo and optional subtitle"""
+    
+    # Use tenant info if provided
+    tenant_name = tenant_info.get("name", "AurborBloom") if tenant_info else "AurborBloom"
+    tenant_primary_color = tenant_info.get("primary_color", "#1a1a1a") if tenant_info else "#1a1a1a"
+    tenant_logo_base64 = tenant_info.get("logo_url") if tenant_info else None
+    
+    # Try to use tenant logo first
+    if tenant_logo_base64 and tenant_logo_base64.startswith("data:image"):
+        try:
+            # Decode base64 image
+            import base64
+            header, data = tenant_logo_base64.split(",", 1)
+            image_data = base64.b64decode(data)
+            logo_buffer = io.BytesIO(image_data)
+            
+            from PIL import Image as PILImage
+            with PILImage.open(logo_buffer) as img:
+                orig_width, orig_height = img.size
+                aspect_ratio = orig_width / orig_height
+            
+            logo_buffer.seek(0)
+            desired_width = 2.0 * inch
+            calculated_height = desired_width / aspect_ratio
+            
+            logo = Image(logo_buffer, width=desired_width, height=calculated_height)
+            logo.hAlign = 'CENTER'
+            elements.append(logo)
+            elements.append(Spacer(1, 15))
+        except Exception as e:
+            print(f"Error loading tenant logo: {e}")
+            # Fall back to default logo or text
+            if LOGO_PATH.exists():
+                from PIL import Image as PILImage
+                with PILImage.open(str(LOGO_PATH)) as img:
+                    orig_width, orig_height = img.size
+                    aspect_ratio = orig_width / orig_height
+                
+                desired_width = 2.0 * inch
+                calculated_height = desired_width / aspect_ratio
+                
+                logo = Image(str(LOGO_PATH), width=desired_width, height=calculated_height)
+                logo.hAlign = 'CENTER'
+                elements.append(logo)
+                elements.append(Spacer(1, 15))
+            else:
+                title_style = ParagraphStyle(
+                    'FallbackTitle',
+                    parent=styles['Heading1'],
+                    fontSize=24,
+                    textColor=colors.HexColor(tenant_primary_color),
+                    spaceAfter=10,
+                    alignment=TA_CENTER
+                )
+                elements.append(Paragraph(tenant_name, title_style))
+    elif LOGO_PATH.exists():
+        # Use default logo
         from PIL import Image as PILImage
         with PILImage.open(str(LOGO_PATH)) as img:
             orig_width, orig_height = img.size
             aspect_ratio = orig_width / orig_height
         
-        # Set desired width and calculate height to maintain aspect ratio
         desired_width = 2.0 * inch
         calculated_height = desired_width / aspect_ratio
         
@@ -2909,16 +2968,16 @@ def create_pdf_header_with_logo(elements: list, styles, subtitle_text: str = "")
         elements.append(logo)
         elements.append(Spacer(1, 15))
     else:
-        # Fallback to text if logo not found
+        # Fallback to text
         title_style = ParagraphStyle(
             'FallbackTitle',
             parent=styles['Heading1'],
             fontSize=24,
-            textColor=colors.HexColor('#C41E3A'),
+            textColor=colors.HexColor(tenant_primary_color),
             spaceAfter=10,
             alignment=TA_CENTER
         )
-        elements.append(Paragraph("AurborBloom", title_style))
+        elements.append(Paragraph(tenant_name, title_style))
     
     # Add subtitle if provided
     if subtitle_text:
