@@ -130,6 +130,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     token,
+    tenant,
     loading,
     error,
     login,
@@ -138,8 +139,10 @@ export const AuthProvider = ({ children }) => {
     clearError,
     setUser,
     setToken,
+    setTenant,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'ADMIN',
+    isSuperAdmin: user?.role === 'SUPER_ADMIN',
     isEmployee: user?.role === 'EMPLOYEE',
   };
 
