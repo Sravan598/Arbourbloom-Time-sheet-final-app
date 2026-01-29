@@ -210,6 +210,14 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/admin/tenants" 
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <TenantManagement />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Catch all - redirect to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
