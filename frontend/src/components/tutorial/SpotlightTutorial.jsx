@@ -339,11 +339,14 @@ const SpotlightTutorial = ({ forceShow = false, onComplete, tenantName = 'Your C
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-8 w-96 text-center"
               style={{ zIndex: 10001 }}
             >
-              <div className="w-16 h-16 bg-brand-gold/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <HelpCircle className="w-8 h-8 text-brand-gold" />
+              <div 
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{ backgroundColor: `${tenantColor}20` }}
+              >
+                <HelpCircle className="w-8 h-8" style={{ color: tenantColor }} />
               </div>
               <h2 className="text-2xl font-bold text-brand-dark mb-2">
-                Welcome to AurborBloom! 👋
+                Welcome to {tenantName}! 👋
               </h2>
               <p className="text-gray-600 mb-6">
                 Let&apos;s take a quick tour to help you get started with your dashboard.
@@ -358,7 +361,8 @@ const SpotlightTutorial = ({ forceShow = false, onComplete, tenantName = 'Your C
                 </button>
                 <button
                   onClick={() => setIsReady(true)}
-                  className="flex-1 px-4 py-2 bg-brand-black text-white rounded-lg hover:bg-brand-black/90 transition-colors font-medium"
+                  className="flex-1 px-4 py-2 text-white rounded-lg transition-colors font-medium"
+                  style={{ backgroundColor: tenantColor }}
                   data-testid="tutorial-start"
                 >
                   Start Tour
