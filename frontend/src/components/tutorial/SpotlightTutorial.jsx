@@ -54,9 +54,10 @@ const TUTORIAL_STEPS = [
   }
 ];
 
-const STORAGE_KEY = 'aurborbloom_tutorial_completed';
+// Storage key includes tenant for isolation
+const getStorageKey = (tenantSlug) => `${tenantSlug || 'default'}_tutorial_completed`;
 
-const SpotlightTutorial = ({ forceShow = false, onComplete }) => {
+const SpotlightTutorial = ({ forceShow = false, onComplete, tenantName = 'Your Company', tenantColor = '#1a1a1a' }) => {
   const [isActive, setIsActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState(null);
