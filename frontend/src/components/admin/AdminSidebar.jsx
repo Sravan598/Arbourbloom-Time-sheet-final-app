@@ -146,11 +146,19 @@ const AdminSidebar = () => {
         </div>
         
         {/* Admin Badge */}
-        <div className="mt-6 p-4 bg-purple-50 rounded-xl">
+        <div className={`mt-6 p-4 rounded-xl ${isSuperAdmin ? 'bg-amber-50' : 'bg-purple-50'}`}>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">Admin</span>
+            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+              isSuperAdmin 
+                ? 'bg-amber-100 text-amber-700' 
+                : 'bg-purple-100 text-purple-700'
+            }`}>
+              {isSuperAdmin ? 'Super Admin' : 'Admin'}
+            </span>
           </div>
-          <p className="text-xs text-purple-600">Full access to all features</p>
+          <p className={`text-xs ${isSuperAdmin ? 'text-amber-600' : 'text-purple-600'}`}>
+            {isSuperAdmin ? 'Full system access' : 'Full access to all features'}
+          </p>
         </div>
       </nav>
     </aside>
