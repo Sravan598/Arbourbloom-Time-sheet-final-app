@@ -676,7 +676,10 @@ const EmployeeDashboard = () => {
       {/* Spotlight Tutorial */}
       <SpotlightTutorial 
         forceShow={showTutorial} 
-        onComplete={() => setShowTutorial(false)} 
+        onComplete={() => setShowTutorial(false)}
+        tenantName={getTenantName()}
+        tenantColor={tenant.primary_color}
+        tenantSlug={tenant.slug}
       />
     </div>
   );
