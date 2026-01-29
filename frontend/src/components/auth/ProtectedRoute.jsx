@@ -22,8 +22,13 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   if (requiredRole && user?.role !== requiredRole) {
+    // SUPER_ADMIN can access ADMIN routes
+    if (requiredRole === 'ADMIN' && user?.role === 'SUPER_ADMIN') {
+      return children;
+    }
+    
     // Redirect to appropriate dashboard based on role
-    if (user?.role === 'ADMIN') {
+    if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
       return <Navigate to="/admin/dashboard" replace />;
     } else if (user?.role === 'EMPLOYEE') {
       return <Navigate to="/employee/dashboard" replace />;
