@@ -3277,8 +3277,13 @@ async def export_timesheet_pdf(
         tenant_info=tenant_info
     )
     
-    # Create filename
-    filename = f"timesheet_{current_user.get('name', 'employee').replace(' ', '_')}_{week_start.strftime('%Y%m%d')}.pdf"
+    # Create filename with tenant name
+    tenant_name = tenant_info.get("name", "").replace(" ", "_") if tenant_info else ""
+    user_name = current_user.get('name', 'employee').replace(' ', '_')
+    if tenant_name:
+        filename = f"{tenant_name}_Timesheet_{user_name}_{week_start.strftime('%Y%m%d')}.pdf"
+    else:
+        filename = f"Timesheet_{user_name}_{week_start.strftime('%Y%m%d')}.pdf"
     
     return StreamingResponse(
         io.BytesIO(pdf_bytes),
