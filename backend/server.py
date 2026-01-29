@@ -78,7 +78,8 @@ logger = logging.getLogger(__name__)
 
 # ============== ENUMS ==============
 class UserRole(str, Enum):
-    ADMIN = "ADMIN"
+    SUPER_ADMIN = "SUPER_ADMIN"  # Can manage all tenants
+    ADMIN = "ADMIN"  # Can manage their tenant
     EMPLOYEE = "EMPLOYEE"
 
 
