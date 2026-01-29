@@ -42,6 +42,7 @@ const breakTypes = [
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { tenant, getTenantName } = useTenant();
   const profileDropdownRef = useRef(null);
   
   const [currentShift, setCurrentShift] = useState(null);
