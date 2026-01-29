@@ -140,9 +140,9 @@ const AurborBot = () => {
   };
 
   const quickQuestions = [
-    'What is AurborBloom?',
     'How do I track time?',
-    'How does AurborChat work?',
+    'How do I request leave?',
+    'How do I submit a ticket?',
     'What can admins do?'
   ];
 
@@ -155,6 +155,9 @@ const AurborBot = () => {
       setIsTyping(false);
     }, 500);
   };
+  
+  // Get tenant-specific colors
+  const primaryColor = tenant?.primary_color || '#1a1a1a';
 
   return (
     <>
@@ -178,15 +181,20 @@ const AurborBot = () => {
               // Use ref for immediate check to avoid stale closure
               if (!isDraggingRef.current) setIsOpen(true);
             }}
-            style={getBaseStyle()}
+            style={{
+              ...getBaseStyle(),
+              background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}cc 100%)`
+            }}
             className={`fixed z-50 w-14 h-14 rounded-full shadow-lg
-                       bg-gradient-to-r from-brand-black to-gray-700 hover:from-gray-700 hover:to-gray-800
                        flex items-center justify-center group
-                       ${isDragging ? 'cursor-grabbing shadow-2xl ring-2 ring-brand-black/30' : 'cursor-grab'}`}
+                       ${isDragging ? 'cursor-grabbing shadow-2xl ring-2 ring-opacity-30' : 'cursor-grab'}`}
           >
             <Bot className="w-6 h-6 text-white pointer-events-none" />
             {!isDragging && (
-              <span className="absolute inset-0 rounded-full bg-brand-black animate-ping opacity-25" />
+              <span 
+                className="absolute inset-0 rounded-full animate-ping opacity-25" 
+                style={{ backgroundColor: primaryColor }}
+              />
             )}
           </motion.button>
         )}
@@ -216,7 +224,7 @@ const AurborBot = () => {
             style={getBaseStyle()}
             className={`fixed w-[360px] bg-white rounded-2xl overflow-hidden border border-gray-200 z-50
                        flex flex-col shadow-xl
-                       ${isDragging ? 'shadow-2xl ring-2 ring-brand-black/20' : ''}`}
+                       ${isDragging ? 'shadow-2xl ring-2 ring-opacity-20' : ''}`}
           >
             {/* Header - Drag Handle */}
             <div
