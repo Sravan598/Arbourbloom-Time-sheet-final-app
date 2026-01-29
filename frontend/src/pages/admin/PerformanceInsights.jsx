@@ -108,11 +108,12 @@ const PerformanceInsights = () => {
         responseType: 'blob'
       });
       
-      // Create download link
+      // Create download link with tenant name
+      const tenantName = getTenantName().replace(/\s+/g, '_');
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `AurborBloom_Performance_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+      link.setAttribute('download', `${tenantName}_Performance_Report_${new Date().toISOString().split('T')[0]}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
