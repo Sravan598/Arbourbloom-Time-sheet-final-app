@@ -5194,6 +5194,43 @@ async def ensure_default_channels():
 @app.on_event("startup")
 async def startup_event():
     await ensure_default_channels()
+    await initialize_default_tenant()
+
+
+async def initialize_default_tenant():
+    """Initialize the default AurborBloom tenant and migrate existing data"""
+    # Check if default tenant exists
+    default_tenant = await db.tenants.find_one({"slug": DEFAULT_TENANT_SLUG})
+    
+    if not default_tenant:
+        # Create default tenant
+        tenant = Tenant(
+            slug=DEFAULT_TENANT_SLUG,
+            name="AurborBloom",
+            primary_color="#1a1a1a",
+            secondary_color="#D4AF37",
+            admin_signup_code=os.environ.get('ADMIN_INVITE_CODE', 'ARBORBLOOM-ADMIN-2025'),
+            settings=TenantSettings()
+        )
+        
+        doc = serialize_datetime(tenant.model_dump())
+        await db.tenants.insert_one(doc)
+        print(f"✅ Created default tenant: {DEFAULT_TENANT_SLUG}")
+    
+    # Migrate existing data to default tenant (add tenant_id where missing)
+    collections_to_migrate = [
+        "users", "timesheets", "tickets", "leave_requests", 
+        "invitations", "announcements", "holidays", "projects"
+    ]
+    
+    for collection_name in collections_to_migrate:
+        collection = db[collection_name]
+        result = await collection.update_many(
+            {"tenant_id": {"$exists": False}},
+            {"$set": {"tenant_id": DEFAULT_TENANT_SLUG}}
+        )
+        if result.modified_count > 0:
+            print(f"✅ Migrated {result.modified_count} documents in {collection_name} to default tenant")
 
 
 # Channel Routes
