@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import { useTenant } from '../../context/TenantContext';
 import { Button } from '../../components/ui/Button';
 import WeeklyProgressSection from '../../components/employee/WeeklyProgressSection';
 import AnnouncementsSection from '../../components/employee/AnnouncementsSection';
