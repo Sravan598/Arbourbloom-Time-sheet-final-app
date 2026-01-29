@@ -1276,10 +1276,18 @@ async def signup(user_data: UserCreate):
 
 @api_router.post("/auth/login", response_model=TokenResponse)
 async def login(credentials: UserLogin):
-    user = await db.users.find_one({"email": credentials.email.lower()}, {"_id": 0})
+    # For super admin, allow login without tenant_id check
+    user = await db.users.find_one({
+        "email": credentials.email.lower()
+    }, {"_id": 0})
     
     if not user:
         raise HTTPException(status_code=401, detail="No account found with this email address")
+    
+    # Check if user belongs to the selected tenant (unless super admin)
+    user_tenant = user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    if user.get("role") != UserRole.SUPER_ADMIN.value and user_tenant != credentials.tenant_id:
+        raise HTTPException(status_code=401, detail="No account found for this company")
     
     if not verify_password(credentials.password, user.get("password_hash", "")):
         raise HTTPException(status_code=401, detail="Incorrect password. Please try again")
@@ -1287,8 +1295,8 @@ async def login(credentials: UserLogin):
     if not user.get("is_active", True):
         raise HTTPException(status_code=403, detail="Account is deactivated. Please contact administrator.")
     
-    # Create token
-    token = create_token(user["id"], user["email"], user["role"])
+    # Create token with tenant_id
+    token = create_token(user["id"], user["email"], user["role"], user_tenant)
     
     # Parse created_at
     created_at = user["created_at"]
@@ -1299,6 +1307,7 @@ async def login(credentials: UserLogin):
         access_token=token,
         user=UserResponse(
             id=user["id"],
+            tenant_id=user_tenant,
             name=user["name"],
             email=user["email"],
             role=user["role"],
