@@ -2904,6 +2904,9 @@ def create_pdf_header_with_logo(elements: list, styles, subtitle_text: str = "",
     tenant_name = tenant_info.get("name", "AurborBloom") if tenant_info else "AurborBloom"
     tenant_primary_color = tenant_info.get("primary_color", "#1a1a1a") if tenant_info else "#1a1a1a"
     tenant_logo_base64 = tenant_info.get("logo_url") if tenant_info else None
+    tenant_slug = tenant_info.get("slug", "aurborbloom") if tenant_info else "aurborbloom"
+    
+    logo_added = False
     
     # Try to use tenant logo first
     if tenant_logo_base64 and tenant_logo_base64.startswith("data:image"):
@@ -2927,48 +2930,31 @@ def create_pdf_header_with_logo(elements: list, styles, subtitle_text: str = "",
             logo.hAlign = 'CENTER'
             elements.append(logo)
             elements.append(Spacer(1, 15))
+            logo_added = True
         except Exception as e:
             print(f"Error loading tenant logo: {e}")
-            # Fall back to default logo or text
-            if LOGO_PATH.exists():
-                from PIL import Image as PILImage
-                with PILImage.open(str(LOGO_PATH)) as img:
-                    orig_width, orig_height = img.size
-                    aspect_ratio = orig_width / orig_height
-                
-                desired_width = 2.0 * inch
-                calculated_height = desired_width / aspect_ratio
-                
-                logo = Image(str(LOGO_PATH), width=desired_width, height=calculated_height)
-                logo.hAlign = 'CENTER'
-                elements.append(logo)
-                elements.append(Spacer(1, 15))
-            else:
-                title_style = ParagraphStyle(
-                    'FallbackTitle',
-                    parent=styles['Heading1'],
-                    fontSize=24,
-                    textColor=colors.HexColor(tenant_primary_color),
-                    spaceAfter=10,
-                    alignment=TA_CENTER
-                )
-                elements.append(Paragraph(tenant_name, title_style))
-    elif LOGO_PATH.exists():
-        # Use default logo
-        from PIL import Image as PILImage
-        with PILImage.open(str(LOGO_PATH)) as img:
-            orig_width, orig_height = img.size
-            aspect_ratio = orig_width / orig_height
-        
-        desired_width = 2.0 * inch
-        calculated_height = desired_width / aspect_ratio
-        
-        logo = Image(str(LOGO_PATH), width=desired_width, height=calculated_height)
-        logo.hAlign = 'CENTER'
-        elements.append(logo)
-        elements.append(Spacer(1, 15))
-    else:
-        # Fallback to text
+    
+    # Only use default AurborBloom logo if this IS the AurborBloom tenant
+    if not logo_added and tenant_slug == "aurborbloom" and LOGO_PATH.exists():
+        try:
+            from PIL import Image as PILImage
+            with PILImage.open(str(LOGO_PATH)) as img:
+                orig_width, orig_height = img.size
+                aspect_ratio = orig_width / orig_height
+            
+            desired_width = 2.0 * inch
+            calculated_height = desired_width / aspect_ratio
+            
+            logo = Image(str(LOGO_PATH), width=desired_width, height=calculated_height)
+            logo.hAlign = 'CENTER'
+            elements.append(logo)
+            elements.append(Spacer(1, 15))
+            logo_added = True
+        except Exception as e:
+            print(f"Error loading default logo: {e}")
+    
+    # Fallback to tenant name text (for non-AurborBloom tenants without logo)
+    if not logo_added:
         title_style = ParagraphStyle(
             'FallbackTitle',
             parent=styles['Heading1'],
