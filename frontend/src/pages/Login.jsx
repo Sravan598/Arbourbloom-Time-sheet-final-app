@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, AlertCircle, User, Shield } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, User, Shield, Building2, ChevronDown, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
+
+const API = process.env.REACT_APP_BACKEND_URL;
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,6 +17,40 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState('');
+  
+  // Multi-tenant state
+  const [tenants, setTenants] = useState([]);
+  const [selectedTenant, setSelectedTenant] = useState(null);
+  const [showTenantDropdown, setShowTenantDropdown] = useState(false);
+  const [tenantsLoading, setTenantsLoading] = useState(true);
+
+  // Fetch available tenants on mount
+  useEffect(() => {
+    const fetchTenants = async () => {
+      try {
+        const response = await axios.get(`${API}/api/tenants/public`);
+        setTenants(response.data);
+        // Auto-select first tenant (or find default)
+        if (response.data.length > 0) {
+          const defaultTenant = response.data.find(t => t.slug === 'aurborbloom') || response.data[0];
+          setSelectedTenant(defaultTenant);
+        }
+      } catch (err) {
+        console.error('Failed to fetch tenants:', err);
+        // Set default tenant on error
+        setSelectedTenant({
+          slug: 'aurborbloom',
+          name: 'AurborBloom',
+          logo_url: null,
+          primary_color: '#1a1a1a'
+        });
+      } finally {
+        setTenantsLoading(false);
+      }
+    };
+    
+    fetchTenants();
+  }, []);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -21,7 +58,7 @@ const Login = () => {
       const from = location.state?.from?.pathname;
       if (from) {
         navigate(from, { replace: true });
-      } else if (user.role === 'ADMIN') {
+      } else if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
         navigate('/admin/dashboard', { replace: true });
       } else {
         navigate('/employee/dashboard', { replace: true });
@@ -45,23 +82,34 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (!selectedTenant) {
+      setLocalError('Please select a company');
+      return;
+    }
+    
     setIsLoading(true);
     setLocalError('');
 
     try {
-      const result = await login(formData.email, formData.password);
+      const result = await login(formData.email, formData.password, selectedTenant.slug);
       
       if (result.success) {
         const userRole = result.user.role;
         
-        // Check if user is logging in with correct tab
-        if (activeTab !== userRole) {
-          setLocalError(`This account is registered as ${userRole}. Please use the ${userRole} login tab.`);
+        // Check if user is logging in with correct tab (allow SUPER_ADMIN on Admin tab)
+        if (activeTab === 'EMPLOYEE' && userRole !== 'EMPLOYEE') {
+          setLocalError(`This account is registered as ${userRole}. Please use the Admin login tab.`);
           setIsLoading(false);
           return;
         }
         
-        if (userRole === 'ADMIN') {
+        if (activeTab === 'ADMIN' && userRole === 'EMPLOYEE') {
+          setLocalError(`This account is registered as Employee. Please use the Employee login tab.`);
+          setIsLoading(false);
+          return;
+        }
+        
+        if (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') {
           navigate('/admin/dashboard');
         } else {
           navigate('/employee/dashboard');
@@ -76,6 +124,12 @@ const Login = () => {
     }
   };
 
+  const selectTenant = (tenant) => {
+    setSelectedTenant(tenant);
+    setShowTenantDropdown(false);
+    setLocalError('');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center px-4">
       <motion.div
@@ -84,14 +138,22 @@ const Login = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        {/* Logo */}
+        {/* Logo - Show selected tenant logo or default */}
         <div className="text-center mb-8">
           <Link to="/">
-            <img 
-              src="/aurborbloom_logo.png" 
-              alt="AurborBloom" 
-              className="h-12 mx-auto mb-4"
-            />
+            {selectedTenant?.logo_url ? (
+              <img 
+                src={selectedTenant.logo_url} 
+                alt={selectedTenant.name} 
+                className="h-12 mx-auto mb-4 object-contain"
+              />
+            ) : (
+              <img 
+                src="/aurborbloom_logo.png" 
+                alt="AurborBloom" 
+                className="h-12 mx-auto mb-4"
+              />
+            )}
           </Link>
           <h1 className="text-2xl font-bold text-brand-dark">Welcome Back</h1>
           <p className="text-gray-600 mt-2">Sign in to access your dashboard</p>
@@ -99,6 +161,80 @@ const Login = () => {
 
         {/* Card */}
         <div className="bg-white rounded-3xl shadow-xl p-8">
+          {/* Tenant Selector */}
+          {tenants.length > 1 && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-brand-dark mb-2">
+                Select Company
+              </label>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowTenantDropdown(!showTenantDropdown)}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-gray-200 hover:border-gray-300 focus:ring-2 focus:ring-brand-black focus:border-transparent transition-all bg-white"
+                  data-testid="tenant-selector"
+                >
+                  <div className="flex items-center gap-3">
+                    {selectedTenant?.logo_url ? (
+                      <img 
+                        src={selectedTenant.logo_url} 
+                        alt="" 
+                        className="w-6 h-6 object-contain rounded"
+                      />
+                    ) : (
+                      <Building2 className="w-5 h-5 text-gray-400" />
+                    )}
+                    <span className={selectedTenant ? 'text-brand-dark' : 'text-gray-400'}>
+                      {selectedTenant ? selectedTenant.name : 'Select a company'}
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showTenantDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                
+                <AnimatePresence>
+                  {showTenantDropdown && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute z-20 w-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden"
+                    >
+                      {tenants.map((tenant) => (
+                        <button
+                          key={tenant.slug}
+                          onClick={() => selectTenant(tenant)}
+                          className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
+                            selectedTenant?.slug === tenant.slug ? 'bg-gray-50' : ''
+                          }`}
+                          data-testid={`tenant-option-${tenant.slug}`}
+                        >
+                          {tenant.logo_url ? (
+                            <img 
+                              src={tenant.logo_url} 
+                              alt="" 
+                              className="w-6 h-6 object-contain rounded"
+                            />
+                          ) : (
+                            <div 
+                              className="w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold"
+                              style={{ backgroundColor: tenant.primary_color }}
+                            >
+                              {tenant.name.charAt(0)}
+                            </div>
+                          )}
+                          <span className="flex-1 text-left text-brand-dark">{tenant.name}</span>
+                          {selectedTenant?.slug === tenant.slug && (
+                            <Check className="w-5 h-5 text-green-500" />
+                          )}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          )}
+
           {/* Role Tabs */}
           <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
             <button
@@ -199,7 +335,7 @@ const Login = () => {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || tenantsLoading}
               className="w-full inline-flex items-center justify-center font-semibold rounded-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gradient-to-r from-brand-black to-brand-black-dark text-white hover:shadow-lg hover:shadow-brand-black/30 focus:ring-brand-black px-6 py-3 text-base disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="login-submit"
             >
