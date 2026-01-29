@@ -90,12 +90,24 @@ const EmployeeSidebar = () => {
               alt={getTenantName()} 
               className="h-10 object-contain"
             />
-          ) : (
+          ) : tenant.slug === 'aurborbloom' ? (
             <img 
               src="/aurborbloom_logo.png" 
               alt="AurborBloom" 
               className="h-10"
             />
+          ) : (
+            <div className="flex items-center gap-2">
+              <div 
+                className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xl font-bold"
+                style={{ backgroundColor: tenant.primary_color }}
+              >
+                {getTenantName().charAt(0)}
+              </div>
+              <span className="font-bold text-lg" style={{ color: tenant.primary_color }}>
+                {getTenantName()}
+              </span>
+            </div>
           )}
         </Link>
       </div>
