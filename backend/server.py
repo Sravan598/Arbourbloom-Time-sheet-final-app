@@ -2051,7 +2051,12 @@ async def get_admin_dashboard_stats(admin: dict = Depends(require_admin)):
 
 @api_router.get("/admin/employees", response_model=List[UserResponse])
 async def get_all_employees(admin: dict = Depends(require_admin)):
-    users = await db.users.find({"role": "EMPLOYEE"}, {"_id": 0, "password_hash": 0}).to_list(1000)
+    tenant_id = get_tenant_id(admin)
+    
+    users = await db.users.find({
+        "role": "EMPLOYEE",
+        "tenant_id": tenant_id
+    }, {"_id": 0, "password_hash": 0}).to_list(1000)
     
     for user in users:
         if isinstance(user.get("created_at"), str):
