@@ -1137,15 +1137,27 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
 
 async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
-    if current_user.get("role") != UserRole.ADMIN:
+    if current_user.get("role") not in [UserRole.ADMIN, UserRole.ADMIN.value, UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN.value]:
         raise HTTPException(status_code=403, detail="Admin access required")
     return current_user
 
 
+async def require_super_admin(current_user: dict = Depends(get_current_user)) -> dict:
+    """Only super admins can manage tenants"""
+    if current_user.get("role") not in [UserRole.SUPER_ADMIN, UserRole.SUPER_ADMIN.value]:
+        raise HTTPException(status_code=403, detail="Super Admin access required")
+    return current_user
+
+
 async def require_employee(current_user: dict = Depends(get_current_user)) -> dict:
-    if current_user.get("role") != UserRole.EMPLOYEE:
+    if current_user.get("role") not in [UserRole.EMPLOYEE, UserRole.EMPLOYEE.value]:
         raise HTTPException(status_code=403, detail="Employee access required")
     return current_user
+
+
+def get_tenant_id(current_user: dict) -> str:
+    """Extract tenant_id from current user"""
+    return current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
 
 
 def serialize_datetime(obj):
