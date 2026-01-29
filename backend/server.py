@@ -3276,13 +3276,18 @@ async def export_timesheet_pdf(
         }
     }, {"_id": 0}).to_list(200)
     
+    # Get tenant info for PDF branding
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    tenant_info = await get_tenant_for_pdf(tenant_id)
+    
     # Generate PDF
     pdf_bytes = generate_timesheet_pdf(
         user_data=current_user,
         timesheets=timesheets,
         breaks=breaks,
         week_start=week_start,
-        week_end=week_end
+        week_end=week_end,
+        tenant_info=tenant_info
     )
     
     # Create filename
