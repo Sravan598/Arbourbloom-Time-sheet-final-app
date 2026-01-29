@@ -225,6 +225,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </div>
+    </TenantProvider>
     </AuthProvider>
   );
 }
