@@ -1310,6 +1310,196 @@ async def login(credentials: UserLogin):
 
 # ============== GOOGLE OAUTH ENDPOINTS ==============
 
+# ============== TENANT MANAGEMENT ENDPOINTS ==============
+
+@api_router.get("/tenants/public", response_model=List[TenantPublicInfo])
+async def get_public_tenants():
+    """Get list of active tenants for login dropdown (public endpoint)"""
+    tenants = await db.tenants.find(
+        {"is_active": True},
+        {"_id": 0, "slug": 1, "name": 1, "logo_url": 1, "primary_color": 1}
+    ).sort("name", 1).to_list(100)
+    
+    return tenants
+
+
+@api_router.get("/tenants/{slug}/public", response_model=TenantPublicInfo)
+async def get_tenant_public_info(slug: str):
+    """Get public info for a specific tenant (for branding)"""
+    tenant = await db.tenants.find_one(
+        {"slug": slug.lower(), "is_active": True},
+        {"_id": 0, "slug": 1, "name": 1, "logo_url": 1, "primary_color": 1}
+    )
+    
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    return tenant
+
+
+@api_router.get("/super-admin/tenants", response_model=List[TenantResponse])
+async def get_all_tenants(super_admin: dict = Depends(require_super_admin)):
+    """Get all tenants (super admin only)"""
+    tenants = await db.tenants.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    for tenant in tenants:
+        if isinstance(tenant.get("created_at"), str):
+            tenant["created_at"] = datetime.fromisoformat(tenant["created_at"])
+    
+    return tenants
+
+
+@api_router.post("/super-admin/tenants", response_model=TenantResponse)
+async def create_tenant(
+    tenant_data: TenantCreate,
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Create a new tenant (super admin only)"""
+    # Check if slug already exists
+    existing = await db.tenants.find_one({"slug": tenant_data.slug.lower()})
+    if existing:
+        raise HTTPException(status_code=400, detail="Tenant slug already exists")
+    
+    # Generate unique admin signup code for this tenant
+    import random
+    import string
+    admin_code = f"{tenant_data.slug.upper()}-ADMIN-{''.join(random.choices(string.digits, k=4))}"
+    
+    tenant = Tenant(
+        slug=tenant_data.slug.lower(),
+        name=tenant_data.name,
+        logo_url=tenant_data.logo_url,
+        primary_color=tenant_data.primary_color or "#1a1a1a",
+        secondary_color=tenant_data.secondary_color or "#D4AF37",
+        email=tenant_data.email,
+        phone=tenant_data.phone,
+        address=tenant_data.address,
+        admin_signup_code=admin_code,
+        settings=TenantSettings(),
+        created_by=super_admin["id"]
+    )
+    
+    doc = serialize_datetime(tenant.model_dump())
+    await db.tenants.insert_one(doc)
+    
+    return TenantResponse(
+        id=tenant.id,
+        slug=tenant.slug,
+        name=tenant.name,
+        logo_url=tenant.logo_url,
+        primary_color=tenant.primary_color,
+        secondary_color=tenant.secondary_color,
+        email=tenant.email,
+        phone=tenant.phone,
+        address=tenant.address,
+        is_active=tenant.is_active,
+        created_at=tenant.created_at
+    )
+
+
+@api_router.get("/super-admin/tenants/{tenant_id}")
+async def get_tenant_details(
+    tenant_id: str,
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Get full tenant details including admin code (super admin only)"""
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    # Get tenant stats
+    employee_count = await db.users.count_documents({"tenant_id": tenant["slug"], "role": "EMPLOYEE"})
+    admin_count = await db.users.count_documents({"tenant_id": tenant["slug"], "role": "ADMIN"})
+    
+    tenant["stats"] = {
+        "employee_count": employee_count,
+        "admin_count": admin_count,
+        "total_users": employee_count + admin_count
+    }
+    
+    return tenant
+
+
+@api_router.put("/super-admin/tenants/{tenant_id}", response_model=TenantResponse)
+async def update_tenant(
+    tenant_id: str,
+    tenant_data: TenantUpdate,
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Update a tenant (super admin only)"""
+    existing = await db.tenants.find_one({"id": tenant_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    update_fields = {k: v for k, v in tenant_data.model_dump().items() if v is not None}
+    
+    if update_fields:
+        if "settings" in update_fields and update_fields["settings"]:
+            update_fields["settings"] = update_fields["settings"].model_dump() if hasattr(update_fields["settings"], "model_dump") else update_fields["settings"]
+        await db.tenants.update_one({"id": tenant_id}, {"$set": update_fields})
+    
+    updated = await db.tenants.find_one({"id": tenant_id}, {"_id": 0})
+    if isinstance(updated.get("created_at"), str):
+        updated["created_at"] = datetime.fromisoformat(updated["created_at"])
+    
+    return TenantResponse(**updated)
+
+
+@api_router.delete("/super-admin/tenants/{tenant_id}")
+async def delete_tenant(
+    tenant_id: str,
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Delete a tenant and all its data (super admin only) - USE WITH CAUTION"""
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    if tenant["slug"] == DEFAULT_TENANT_SLUG:
+        raise HTTPException(status_code=400, detail="Cannot delete the default tenant")
+    
+    tenant_slug = tenant["slug"]
+    
+    # Delete all tenant data
+    await db.users.delete_many({"tenant_id": tenant_slug})
+    await db.timesheets.delete_many({"tenant_id": tenant_slug})
+    await db.tickets.delete_many({"tenant_id": tenant_slug})
+    await db.leave_requests.delete_many({"tenant_id": tenant_slug})
+    await db.invitations.delete_many({"tenant_id": tenant_slug})
+    await db.announcements.delete_many({"tenant_id": tenant_slug})
+    await db.holidays.delete_many({"tenant_id": tenant_slug})
+    await db.projects.delete_many({"tenant_id": tenant_slug})
+    await db.tenants.delete_one({"id": tenant_id})
+    
+    return {"message": f"Tenant '{tenant['name']}' and all associated data deleted successfully"}
+
+
+@api_router.post("/super-admin/tenants/{tenant_id}/upload-logo")
+async def upload_tenant_logo(
+    tenant_id: str,
+    request: Request,
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Upload a logo for a tenant (super admin only)"""
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    body = await request.json()
+    logo_data = body.get("logo")
+    
+    if not logo_data:
+        raise HTTPException(status_code=400, detail="Logo data is required")
+    
+    # Validate it's a base64 image
+    if not logo_data.startswith("data:image"):
+        raise HTTPException(status_code=400, detail="Invalid image format. Must be base64 encoded.")
+    
+    await db.tenants.update_one({"id": tenant_id}, {"$set": {"logo_url": logo_data}})
+    
+    return {"message": "Logo uploaded successfully", "logo_url": logo_data}
+
+
 @api_router.post("/auth/google/session")
 async def process_google_session(request: Request):
     """
