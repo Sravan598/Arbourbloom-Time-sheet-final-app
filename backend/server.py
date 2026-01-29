@@ -340,6 +340,7 @@ class UserResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
     id: str
+    tenant_id: Optional[str] = DEFAULT_TENANT_SLUG
     name: str
     email: str
     role: UserRole
