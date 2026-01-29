@@ -58,14 +58,20 @@ export const AuthProvider = ({ children }) => {
     verifyToken();
   }, [verifyToken]);
 
-  const login = async (email, password) => {
+  const login = async (email, password, tenantId = DEFAULT_TENANT) => {
     try {
       setError(null);
-      const response = await axios.post(`${API}/auth/login`, { email, password });
+      const response = await axios.post(`${API}/auth/login`, { 
+        email, 
+        password,
+        tenant_id: tenantId 
+      });
       const { access_token, user: userData } = response.data;
       
       localStorage.setItem('cortracker_token', access_token);
+      localStorage.setItem('cortracker_tenant', tenantId);
       setToken(access_token);
+      setTenant(tenantId);
       setUser(userData);
       
       return { success: true, user: userData };
@@ -76,10 +82,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signup = async (name, email, password, role = 'EMPLOYEE', adminInviteCode = null, employeeInviteCode = null) => {
+  const signup = async (name, email, password, role = 'EMPLOYEE', adminInviteCode = null, employeeInviteCode = null, tenantId = DEFAULT_TENANT) => {
     try {
       setError(null);
-      const payload = { name, email, password, role };
+      const payload = { 
+        name, 
+        email, 
+        password, 
+        role,
+        tenant_id: tenantId
+      };
       if (adminInviteCode) {
         payload.admin_invite_code = adminInviteCode;
       }
@@ -91,7 +103,9 @@ export const AuthProvider = ({ children }) => {
       const { access_token, user: userData } = response.data;
       
       localStorage.setItem('cortracker_token', access_token);
+      localStorage.setItem('cortracker_tenant', tenantId);
       setToken(access_token);
+      setTenant(tenantId);
       setUser(userData);
       
       return { success: true, user: userData };
@@ -104,7 +118,9 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('cortracker_token');
+    localStorage.removeItem('cortracker_tenant');
     setToken(null);
+    setTenant(DEFAULT_TENANT);
     setUser(null);
     delete axios.defaults.headers.common['Authorization'];
   };
