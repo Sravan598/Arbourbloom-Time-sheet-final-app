@@ -2095,16 +2095,22 @@ async def create_invitation(
     admin: dict = Depends(require_admin)
 ):
     """Create a new employee invitation (admin only)"""
-    # Check if email already has a pending invitation
+    tenant_id = get_tenant_id(admin)
+    
+    # Check if email already has a pending invitation for this tenant
     existing = await db.invitations.find_one({
         "email": invitation_data.email.lower(),
-        "status": "pending"
+        "status": "pending",
+        "tenant_id": tenant_id
     })
     if existing:
         raise HTTPException(status_code=400, detail="A pending invitation already exists for this email")
     
-    # Check if email is already registered
-    existing_user = await db.users.find_one({"email": invitation_data.email.lower()})
+    # Check if email is already registered in this tenant
+    existing_user = await db.users.find_one({
+        "email": invitation_data.email.lower(),
+        "tenant_id": tenant_id
+    })
     if existing_user:
         raise HTTPException(status_code=400, detail="This email is already registered")
     
@@ -2115,6 +2121,7 @@ async def create_invitation(
     
     invitation = {
         "id": str(uuid.uuid4()),
+        "tenant_id": tenant_id,
         "email": invitation_data.email.lower(),
         "code": code,
         "department": invitation_data.department,
@@ -2143,8 +2150,10 @@ async def get_all_invitations(
     status: Optional[str] = None,
     admin: dict = Depends(require_admin)
 ):
-    """Get all invitations (admin only)"""
-    query = {}
+    """Get all invitations for the current tenant (admin only)"""
+    tenant_id = get_tenant_id(admin)
+    
+    query = {"tenant_id": tenant_id}
     if status:
         query["status"] = status
     
