@@ -4233,23 +4233,30 @@ async def export_performance_pdf(
     admin: dict = Depends(require_admin)
 ):
     """Export Performance Insights report as PDF"""
+    tenant_id = get_tenant_id(admin)
+    
     now = datetime.now(timezone.utc)
     start_date = now - timedelta(days=days)
+    
+    # Get tenant info for PDF branding
+    tenant_info = await get_tenant_for_pdf(tenant_id)
     
     # Fetch all performance data
     # Overview metrics
     previous_start = start_date - timedelta(days=days)
-    employees = await db.users.find({"role": "EMPLOYEE"}, {"_id": 0}).to_list(1000)
+    employees = await db.users.find({"role": "EMPLOYEE", "tenant_id": tenant_id}, {"_id": 0}).to_list(1000)
     total_employees = len(employees)
     employee_map = {e["id"]: e for e in employees}
     
-    # Get timesheets
+    # Get timesheets for this tenant
     current_timesheets = await db.timesheets.find({
+        "tenant_id": tenant_id,
         "clock_in_at": {"$gte": start_date.isoformat()},
         "clock_out_at": {"$ne": None}
     }, {"_id": 0}).to_list(10000)
     
     previous_timesheets = await db.timesheets.find({
+        "tenant_id": tenant_id,
         "clock_in_at": {"$gte": previous_start.isoformat(), "$lt": start_date.isoformat()},
         "clock_out_at": {"$ne": None}
     }, {"_id": 0}).to_list(10000)
