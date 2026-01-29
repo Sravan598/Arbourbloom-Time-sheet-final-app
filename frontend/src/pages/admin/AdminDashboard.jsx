@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import { useTenant } from '../../context/TenantContext';
 import { Button } from '../../components/ui/Button';
 import AdminTeamProgressSection from '../../components/admin/AdminTeamProgressSection';
 import AdminAnnouncementsSection from '../../components/admin/AdminAnnouncementsSection';
