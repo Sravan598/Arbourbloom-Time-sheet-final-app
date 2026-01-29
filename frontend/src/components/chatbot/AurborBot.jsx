@@ -12,8 +12,8 @@ const AurborBot = () => {
   
   // Get tenant-specific bot name
   const getBotName = () => {
-    if (isDefaultTenant()) return 'AurborBot';
-    return `${getTenantName()} Assistant`;
+    if (!tenant || tenant.slug === 'aurborbloom') return 'AurborBot';
+    return `${tenant.name || 'Your'} Assistant`;
   };
   
   const [isOpen, setIsOpen] = useState(false);
@@ -24,19 +24,20 @@ const AurborBot = () => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const dragControls = useDragControls();
-  const hasInitializedRef = useRef(false);
+  const prevTenantSlug = useRef(null);
   
-  // Initialize welcome message when tenant is loaded
+  // Initialize/update welcome message when tenant changes
   useEffect(() => {
-    if (!hasInitializedRef.current || messages.length === 0) {
+    // Only update if tenant actually changed or first load
+    if (tenant && tenant.slug !== prevTenantSlug.current) {
+      prevTenantSlug.current = tenant.slug;
       const botName = getBotName();
       setMessages([{
         type: 'bot',
         text: `Hi! 👋 I'm ${botName}, your HR assistant. Ask me anything about the app - time tracking, timesheets, leave requests, support tickets, and more!`
       }]);
-      hasInitializedRef.current = true;
     }
-  }, [tenant]);
+  }, [tenant?.slug]);
   
   // Track if user has dragged (to show at saved position)
   const [isDragging, setIsDragging] = useState(false);
