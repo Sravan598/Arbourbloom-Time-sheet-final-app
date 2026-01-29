@@ -1189,7 +1189,7 @@ async def signup(user_data: UserCreate):
     # Determine tenant_id - default to aurborbloom
     tenant_id = user_data.tenant_id or DEFAULT_TENANT_SLUG
     
-    # Check if email already exists within the tenant
+    # Check if email already exists within the tenant (or globally for super admin)
     existing_user = await db.users.find_one({
         "email": user_data.email.lower(),
         "tenant_id": tenant_id
@@ -1201,7 +1201,12 @@ async def signup(user_data: UserCreate):
     role = UserRole.EMPLOYEE
     invitation = None
     
-    if user_data.role == UserRole.ADMIN:
+    # Check for Super Admin signup code first
+    super_admin_code = os.environ.get('SUPER_ADMIN_CODE', 'AURBORBLOOM-SUPER-2025')
+    if user_data.admin_invite_code == super_admin_code:
+        role = UserRole.SUPER_ADMIN
+        tenant_id = DEFAULT_TENANT_SLUG  # Super admin always belongs to default tenant
+    elif user_data.role == UserRole.ADMIN:
         # Check tenant-specific admin code first
         tenant = await db.tenants.find_one({"slug": tenant_id}, {"_id": 0})
         valid_code = False
