@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { TenantProvider } from './context/TenantContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import CursorSpotlight from './components/ui/CursorSpotlight';
 import { AurborChat } from './components/chat';
