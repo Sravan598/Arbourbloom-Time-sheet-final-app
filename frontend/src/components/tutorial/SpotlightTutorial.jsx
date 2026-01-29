@@ -161,7 +161,7 @@ const SpotlightTutorial = ({ forceShow = false, onComplete, tenantName = 'Your C
   };
 
   const handleComplete = () => {
-    localStorage.setItem(STORAGE_KEY, 'true');
+    localStorage.setItem(storageKey, 'true');
     setIsActive(false);
     setCurrentStep(0);
     onComplete?.();
