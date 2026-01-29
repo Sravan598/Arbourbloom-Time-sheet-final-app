@@ -6,6 +6,9 @@ const API = `${BACKEND_URL}/api`;
 
 const AuthContext = createContext(null);
 
+// Default tenant
+const DEFAULT_TENANT = 'aurborbloom';
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -17,6 +20,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('cortracker_token'));
+  const [tenant, setTenant] = useState(localStorage.getItem('cortracker_tenant') || DEFAULT_TENANT);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
