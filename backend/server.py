@@ -260,6 +260,7 @@ class UserBase(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str = DEFAULT_TENANT_SLUG  # Multi-tenancy support
     name: str
     email: EmailStr
     role: UserRole = UserRole.EMPLOYEE
@@ -297,6 +298,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=6)
     role: Optional[UserRole] = UserRole.EMPLOYEE
+    tenant_id: Optional[str] = None  # Will be set from login context
     admin_invite_code: Optional[str] = None
     employee_invite_code: Optional[str] = None  # New field for employee invitation
 
@@ -304,6 +306,7 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+    tenant_id: str = DEFAULT_TENANT_SLUG  # Required for multi-tenant login
 
 
 # ============== INVITATION MODELS ==============
