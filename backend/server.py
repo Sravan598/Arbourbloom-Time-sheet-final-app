@@ -4389,6 +4389,9 @@ async def export_performance_pdf(
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
     styles = getSampleStyleSheet()
     
+    # Get tenant primary color for styling
+    tenant_primary = tenant_info.get("primary_color", "#1a1a1a") if tenant_info else "#1a1a1a"
+    
     # Custom styles
     subtitle_style = ParagraphStyle(
         'CustomSubtitle',
@@ -4405,7 +4408,7 @@ async def export_performance_pdf(
         fontSize=14,
         spaceBefore=20,
         spaceAfter=10,
-        textColor=colors.HexColor('#C41E3A')
+        textColor=colors.HexColor(tenant_primary)
     )
     
     normal_style = ParagraphStyle(
@@ -4417,8 +4420,8 @@ async def export_performance_pdf(
     
     elements = []
     
-    # Header with Logo
-    create_pdf_header_with_logo(elements, styles, "PERFORMANCE INSIGHTS REPORT")
+    # Header with Logo (tenant-aware)
+    create_pdf_header_with_logo(elements, styles, "PERFORMANCE INSIGHTS REPORT", tenant_info)
     
     period_text = f"Period: {start_date.strftime('%b %d, %Y')} - {now.strftime('%b %d, %Y')}"
     generated_text = f"Generated: {now.strftime('%B %d, %Y at %I:%M %p')}"
