@@ -71,7 +71,7 @@ const EmployeeDashboard = () => {
   const [showTutorial, setShowTutorial] = useState(false);
 
   const handleStartTour = () => {
-    resetTutorial();
+    resetTutorial(tenant.slug);
     setShowTutorial(true);
   };
 
