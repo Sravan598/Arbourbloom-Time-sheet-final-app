@@ -11,9 +11,11 @@ import {
   ExternalLink,
   Ticket
 } from 'lucide-react';
+import { useTenant } from '../../context/TenantContext';
 
 const EmployeeSidebar = () => {
   const location = useLocation();
+  const { tenant, getTenantLogo, getTenantName } = useTenant();
   
   const navItems = [
     { 
@@ -70,16 +72,31 @@ const EmployeeSidebar = () => {
     return location.pathname === path;
   };
 
+  // Dynamic colors based on tenant
+  const primaryColor = tenant.primary_color || '#1a1a1a';
+  const activeStyles = {
+    backgroundColor: `${primaryColor}15`,
+    color: primaryColor,
+  };
+
   return (
     <aside className="w-64 bg-white shadow-lg fixed left-0 top-0 bottom-0 z-40">
-      {/* Logo */}
+      {/* Logo - Dynamic based on tenant */}
       <div className="p-6 border-b border-gray-100">
         <Link to="/employee/dashboard" className="flex items-center gap-3">
-          <img 
-            src="/aurborbloom_logo.png" 
-            alt="AurborBloom" 
-            className="h-10"
-          />
+          {tenant.logo_url ? (
+            <img 
+              src={tenant.logo_url} 
+              alt={getTenantName()} 
+              className="h-10 object-contain"
+            />
+          ) : (
+            <img 
+              src="/aurborbloom_logo.png" 
+              alt="AurborBloom" 
+              className="h-10"
+            />
+          )}
         </Link>
       </div>
       
@@ -114,9 +131,10 @@ const EmployeeSidebar = () => {
                 key={item.path}
                 to={item.path}
                 data-tour={item.tourId}
+                style={active ? activeStyles : {}}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                   active 
-                    ? 'bg-brand-black/10 text-brand-black font-medium' 
+                    ? 'font-medium' 
                     : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
