@@ -28,6 +28,7 @@ import Employees from './pages/admin/Employees';
 import LeaveRequests from './pages/admin/LeaveRequests';
 import AdminTickets from './pages/admin/Tickets';
 import AdminCalendar from './pages/admin/Calendar';
+import TenantManagement from './pages/admin/TenantManagement';
 
 import './App.css';
 
