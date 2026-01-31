@@ -262,6 +262,20 @@ Backend refactored from 7000+ line monolith to modular structure:
     - `/app/frontend/src/context/TenantContext.jsx` - isFeatureEnabled() helper
     - `/app/frontend/src/components/admin/AdminSidebar.jsx` - Feature-filtered navigation
     - `/app/frontend/src/components/employee/EmployeeSidebar.jsx` - Feature-filtered navigation
+- ✅ **Perfect Solutions Landing Page** - Custom white-label landing page
+  - Full landing page at `/perfectsolutions` route
+  - Company branding, services section, HRMS portal preview, about section, contact info
+  - Data sourced from https://www.perfectgroupus.com/
+  - Employee Portal button links to login with tenant preselected
+  - Key files:
+    - `/app/frontend/src/pages/tenant/PerfectSolutionsHome.jsx` - Full landing page
+    - `/app/frontend/src/App.js` - Route configuration
+- ✅ **Domain-Based Auto-Routing** - Automatic tenant detection
+  - Login page auto-selects tenant from URL parameter `?tenant=perfectsolutions`
+  - Tenant selection persists when navigating from tenant landing page
+  - Key files:
+    - `/app/frontend/src/utils/tenantRouter.js` - Tenant routing utilities
+    - `/app/frontend/src/pages/Login.jsx` - Updated tenant preselection logic
 
 ### January 22, 2025
 - ✅ **Application Documentation Completed** - Comprehensive documentation created
