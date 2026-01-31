@@ -15,58 +15,74 @@ import { useTenant } from '../../context/TenantContext';
 
 const EmployeeSidebar = () => {
   const location = useLocation();
-  const { tenant, getTenantLogo, getTenantName } = useTenant();
+  const { tenant, getTenantLogo, getTenantName, isFeatureEnabled } = useTenant();
   
-  const navItems = [
+  // Define all nav items with feature keys
+  const allNavItems = [
     { 
       path: '/employee/dashboard', 
       label: 'Dashboard', 
       icon: Home,
-      tourId: 'sidebar-dashboard'
+      tourId: 'sidebar-dashboard',
+      alwaysShow: true
     },
     { 
       path: '/employee/timesheet', 
       label: 'My Timesheet', 
       icon: FileText,
-      tourId: 'sidebar-timesheet'
+      tourId: 'sidebar-timesheet',
+      featureKey: 'timesheets'
     },
     { 
       path: '/employee/projects', 
       label: 'My Projects', 
       icon: FolderKanban,
-      tourId: 'sidebar-projects'
+      tourId: 'sidebar-projects',
+      featureKey: 'projects'
     },
     { 
       path: '/employee/documents', 
       label: 'Documents', 
       icon: Folder,
-      tourId: 'sidebar-documents'
+      tourId: 'sidebar-documents',
+      featureKey: 'documents'
     },
     { 
       path: '/employee/leave', 
       label: 'Leave / PTO', 
       icon: Calendar,
-      tourId: 'sidebar-leave'
+      tourId: 'sidebar-leave',
+      featureKey: 'leave'
     },
     { 
       path: '/employee/tickets', 
       label: 'Support Tickets', 
       icon: Ticket,
-      tourId: 'sidebar-tickets'
+      tourId: 'sidebar-tickets',
+      featureKey: 'tickets'
     },
     { 
       path: '/employee/calendar', 
       label: 'Calendar', 
       icon: CalendarDays,
-      tourId: 'sidebar-calendar'
+      tourId: 'sidebar-calendar',
+      featureKey: 'calendar'
     },
     { 
       path: 'https://workforcenow.adp.com', 
       label: 'Payroll', 
       icon: DollarSign,
-      external: true
+      external: true,
+      alwaysShow: true
     }
   ];
+
+  // Filter nav items based on enabled features
+  const navItems = allNavItems.filter(item => {
+    if (item.alwaysShow) return true;
+    if (item.featureKey && !isFeatureEnabled(item.featureKey)) return false;
+    return true;
+  });
 
   const isActive = (path) => {
     return location.pathname === path;
