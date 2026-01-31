@@ -64,7 +64,7 @@ const formatFileSize = (bytes) => {
 
 const Documents = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, getLogoutRedirectUrl } = useAuth();
   const fileInputRef = useRef(null);
   const profileDropdownRef = useRef(null);
   
