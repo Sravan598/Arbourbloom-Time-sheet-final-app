@@ -111,11 +111,22 @@ class AnnouncementPriority(str, Enum):
 
 # ============== TENANT MODELS ==============
 
+class FeatureToggle(BaseModel):
+    """Individual feature toggle with display info"""
+    key: str
+    label: str
+    description: str
+    enabled: bool = True
+    icon: str = "Settings"
+
+
 class TenantSettings(BaseModel):
     """Configurable settings per tenant"""
     departments: List[str] = ["General", "Engineering", "HR", "Sales", "Marketing", "Finance"]
     leave_types_enabled: List[str] = ["VACATION", "SICK", "PERSONAL", "UNPAID"]
     features_enabled: List[str] = ["timesheets", "tickets", "leave", "calendar", "projects", "chat"]
+    # Feature toggles with more detail
+    feature_toggles: Optional[Dict[str, bool]] = None
 
 
 class Tenant(BaseModel):
