@@ -31,8 +31,8 @@ import AdminTickets from './pages/admin/Tickets';
 import AdminCalendar from './pages/admin/Calendar';
 import TenantManagement from './pages/admin/TenantManagement';
 
-// Tenant-specific landing pages (lazy loaded)
-const PerfectSolutionsHome = React.lazy(() => import('./pages/tenant/PerfectSolutionsHome'));
+// Tenant-specific pages (lazy loaded)
+const TenantLanding = React.lazy(() => import('./pages/tenant/TenantLanding'));
 const TenantLogin = React.lazy(() => import('./pages/tenant/TenantLogin'));
 const TenantSignup = React.lazy(() => import('./pages/tenant/TenantSignup'));
 
