@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, User, Shield } from 'lucide-react';
@@ -6,6 +6,54 @@ import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL;
+
+// Component to remove white background from logo using canvas
+const TransparentLogo = ({ src, alt, className }) => {
+  const canvasRef = useRef(null);
+  const [processedSrc, setProcessedSrc] = useState(null);
+
+  useEffect(() => {
+    if (!src) return;
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      
+      // Remove white/near-white pixels (make them transparent)
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        
+        // If pixel is white or near-white, make it transparent
+        if (r > 240 && g > 240 && b > 240) {
+          data[i + 3] = 0; // Set alpha to 0
+        }
+      }
+      
+      ctx.putImageData(imageData, 0, 0);
+      setProcessedSrc(canvas.toDataURL('image/png'));
+    };
+    
+    img.src = src;
+  }, [src]);
+
+  if (!processedSrc) {
+    return <div className={className} />;
+  }
+
+  return <img src={processedSrc} alt={alt} className={`${className} object-contain`} />;
+};
 
 const TenantLogin = () => {
   const navigate = useNavigate();
