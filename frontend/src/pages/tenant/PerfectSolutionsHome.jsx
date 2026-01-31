@@ -469,7 +469,7 @@ const PerfectSolutionsHome = () => {
               Get In Touch
             </h2>
             <p className="text-lg text-gray-600">
-              Have questions? We'd love to hear from you.
+              Have questions? We&apos;d love to hear from you.
             </p>
           </motion.div>
 
