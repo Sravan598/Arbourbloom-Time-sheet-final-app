@@ -168,8 +168,9 @@ const Projects = () => {
   };
 
   const handleLogout = () => {
+    const logoutUrl = getLogoutRedirectUrl();
     logout();
-    navigate('/login');
+    navigate(logoutUrl);
   };
 
   const filteredProjects = projects
