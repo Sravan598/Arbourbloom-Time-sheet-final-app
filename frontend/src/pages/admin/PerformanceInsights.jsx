@@ -97,8 +97,9 @@ const PerformanceInsights = () => {
   }, [fetchData]);
 
   const handleLogout = () => {
+    const logoutUrl = getLogoutRedirectUrl();
     logout();
-    navigate('/login');
+    navigate(logoutUrl);
   };
 
   const handleExportPDF = async () => {
