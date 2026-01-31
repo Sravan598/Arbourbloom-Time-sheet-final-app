@@ -129,7 +129,7 @@ const TenantLogin = () => {
             <img 
               src={tenant.logo_url} 
               alt={tenant.name} 
-              className="h-16 object-contain mb-8 brightness-0 invert"
+              className="h-16 object-contain mb-8"
             />
           ) : (
             <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-3xl font-bold mb-8">
