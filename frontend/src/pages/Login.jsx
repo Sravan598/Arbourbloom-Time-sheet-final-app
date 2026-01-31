@@ -30,8 +30,25 @@ const Login = () => {
       try {
         const response = await axios.get(`${API}/api/tenants/public`);
         setTenants(response.data);
-        // Auto-select first tenant (or find default)
-        if (response.data.length > 0) {
+        
+        // Check for tenant preselection from URL params or referrer
+        const urlParams = new URLSearchParams(location.search);
+        const preselectedSlug = urlParams.get('tenant');
+        const referrerPath = location.state?.from?.pathname || '';
+        
+        // Try to find preselected tenant
+        let targetTenant = null;
+        
+        if (preselectedSlug) {
+          targetTenant = response.data.find(t => t.slug === preselectedSlug);
+        } else if (referrerPath.includes('perfectsolutions')) {
+          targetTenant = response.data.find(t => t.slug === 'perfectsolutions');
+        }
+        
+        // Auto-select tenant
+        if (targetTenant) {
+          setSelectedTenant(targetTenant);
+        } else if (response.data.length > 0) {
           const defaultTenant = response.data.find(t => t.slug === 'aurborbloom') || response.data[0];
           setSelectedTenant(defaultTenant);
         }
@@ -50,7 +67,7 @@ const Login = () => {
     };
     
     fetchTenants();
-  }, []);
+  }, [location.search, location.state]);
 
   // Redirect if already authenticated
   useEffect(() => {
