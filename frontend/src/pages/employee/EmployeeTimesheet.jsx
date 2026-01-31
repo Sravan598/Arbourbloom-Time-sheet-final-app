@@ -28,7 +28,7 @@ const API = `${BACKEND_URL}/api`;
 
 const EmployeeTimesheet = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, getLogoutRedirectUrl } = useAuth();
   const profileDropdownRef = useRef(null);
   
   const [timesheets, setTimesheets] = useState([]);
