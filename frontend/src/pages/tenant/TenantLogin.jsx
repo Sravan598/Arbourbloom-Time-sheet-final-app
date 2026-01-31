@@ -125,14 +125,14 @@ const TenantLogin = () => {
         </div>
         
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
-          {/* Logo with compact white card */}
+          {/* Logo with glass transparent card */}
           {tenant?.logo_url ? (
             <div className="mb-8">
-              <div className="inline-flex items-center px-4 py-3 bg-white rounded-xl">
+              <div className="inline-flex items-center px-4 py-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
                 <img 
                   src={tenant.logo_url} 
                   alt={tenant.name} 
-                  className="h-10 object-contain"
+                  className="h-10 object-contain brightness-0 invert"
                 />
               </div>
             </div>
