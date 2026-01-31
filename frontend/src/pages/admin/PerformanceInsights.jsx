@@ -30,7 +30,7 @@ const API = `${BACKEND_URL}/api`;
 
 const PerformanceInsights = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, getLogoutRedirectUrl } = useAuth();
   const { tenant, getTenantName } = useTenant();
   const profileDropdownRef = useRef(null);
   
