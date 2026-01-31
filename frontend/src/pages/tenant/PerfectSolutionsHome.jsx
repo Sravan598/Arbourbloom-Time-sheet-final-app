@@ -318,7 +318,7 @@ const PerfectSolutionsHome = () => {
               </div>
               
               <Link
-                to="/login"
+                to="/login?tenant=perfectsolutions"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-900 font-medium rounded-xl hover:bg-blue-50 transition-colors"
               >
                 Access Employee Portal
