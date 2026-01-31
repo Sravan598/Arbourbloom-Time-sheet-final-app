@@ -149,7 +149,7 @@ const TenantSignup = () => {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Company Not Found</h1>
           <p className="text-gray-600 mb-6">
-            The company "{tenantSlug}" doesn't exist or is no longer active.
+            The company &quot;{tenantSlug}&quot; doesn&apos;t exist or is no longer active.
           </p>
           <Link
             to="/"
