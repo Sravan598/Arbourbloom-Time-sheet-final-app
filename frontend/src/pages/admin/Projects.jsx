@@ -31,7 +31,7 @@ const projectColors = [
 
 const Projects = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, getLogoutRedirectUrl } = useAuth();
   const profileDropdownRef = useRef(null);
 
   const [projects, setProjects] = useState([]);
