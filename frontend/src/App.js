@@ -81,6 +81,16 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             
+            {/* Tenant-specific landing pages */}
+            <Route 
+              path="/perfectsolutions" 
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <PerfectSolutionsHome />
+                </Suspense>
+              } 
+            />
+            
             {/* Profile Route (Both Employee and Admin) */}
             <Route 
               path="/profile" 
