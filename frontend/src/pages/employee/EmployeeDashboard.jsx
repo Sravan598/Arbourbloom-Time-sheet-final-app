@@ -277,8 +277,9 @@ const EmployeeDashboard = () => {
   };
 
   const handleLogout = () => {
+    const logoutUrl = getLogoutRedirectUrl();
     logout();
-    navigate('/login');
+    navigate(logoutUrl);
   };
 
   if (isLoading) {
