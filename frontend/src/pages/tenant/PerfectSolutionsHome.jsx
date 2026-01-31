@@ -189,7 +189,7 @@ const PerfectSolutionsHome = () => {
                   <ArrowRight className="w-5 h-5" />
                 </a>
                 <Link
-                  to="/login"
+                  to="/login?tenant=perfectsolutions"
                   className="inline-flex items-center gap-2 px-6 py-3 border-2 font-medium rounded-xl transition-all hover:bg-gray-50"
                   style={{ borderColor: primaryColor, color: primaryColor }}
                 >
