@@ -179,17 +179,19 @@ const TenantLogin = () => {
         </div>
         
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
-          {/* Logo - render without white background */}
+          {/* Logo with glass effect */}
           {tenant?.logo_url ? (
             <div className="mb-8">
-              <TransparentLogo 
-                src={tenant.logo_url} 
-                alt={tenant.name}
-                className="h-16"
-              />
+              <div className="inline-flex items-center px-6 py-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+                <TransparentLogo 
+                  src={tenant.logo_url} 
+                  alt={tenant.name}
+                  className="h-14"
+                />
+              </div>
             </div>
           ) : (
-            <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-3xl font-bold mb-8">
+            <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-3xl font-bold mb-8 border border-white/20">
               {tenant?.name?.charAt(0) || 'C'}
             </div>
           )}
