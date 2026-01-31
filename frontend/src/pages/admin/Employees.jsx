@@ -184,8 +184,9 @@ const Employees = () => {
   };
 
   const handleLogout = () => {
+    const logoutUrl = getLogoutRedirectUrl();
     logout();
-    navigate('/login');
+    navigate(logoutUrl);
   };
 
   const filteredEmployees = employees.filter(emp =>
