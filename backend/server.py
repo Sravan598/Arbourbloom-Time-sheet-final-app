@@ -1378,7 +1378,7 @@ async def get_public_tenants():
     """Get list of active tenants for login dropdown (public endpoint)"""
     tenants = await db.tenants.find(
         {"is_active": True},
-        {"_id": 0, "slug": 1, "name": 1, "logo_url": 1, "primary_color": 1}
+        {"_id": 0, "slug": 1, "name": 1, "logo_url": 1, "primary_color": 1, "settings": 1}
     ).sort("name", 1).to_list(100)
     
     return tenants
@@ -1389,7 +1389,7 @@ async def get_tenant_public_info(slug: str):
     """Get public info for a specific tenant (for branding)"""
     tenant = await db.tenants.find_one(
         {"slug": slug.lower(), "is_active": True},
-        {"_id": 0, "slug": 1, "name": 1, "logo_url": 1, "primary_color": 1}
+        {"_id": 0, "slug": 1, "name": 1, "logo_url": 1, "primary_color": 1, "settings": 1}
     )
     
     if not tenant:
