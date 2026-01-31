@@ -185,7 +185,7 @@ const TenantLogin = () => {
               <TransparentLogo 
                 src={tenant.logo_url} 
                 alt={tenant.name}
-                className="h-12"
+                className="h-16"
               />
             </div>
           ) : (
