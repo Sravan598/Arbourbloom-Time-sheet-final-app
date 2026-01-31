@@ -33,6 +33,8 @@ import TenantManagement from './pages/admin/TenantManagement';
 
 // Tenant-specific landing pages (lazy loaded)
 const PerfectSolutionsHome = React.lazy(() => import('./pages/tenant/PerfectSolutionsHome'));
+const TenantLogin = React.lazy(() => import('./pages/tenant/TenantLogin'));
+const TenantSignup = React.lazy(() => import('./pages/tenant/TenantSignup'));
 
 import './App.css';
 
