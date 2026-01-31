@@ -350,7 +350,7 @@ const PerfectSolutionsHome = () => {
                   <div className="space-y-4">
                     <div className="bg-slate-700/50 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-blue-300 text-sm">Today's Hours</span>
+                        <span className="text-blue-300 text-sm">Today&apos;s Hours</span>
                         <span className="text-white font-medium">7h 45m</span>
                       </div>
                       <div className="w-full bg-slate-600 rounded-full h-2">
