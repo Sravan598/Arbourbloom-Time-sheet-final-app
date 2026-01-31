@@ -233,6 +233,36 @@ Backend refactored from 7000+ line monolith to modular structure:
 
 ## Change Log
 
+### January 31, 2025
+- ✅ **Custom Domain Mapping (CNAME)** - Allow tenants to use custom domains
+  - Super Admin can configure custom domain for each tenant (e.g., hr.perfectsolutions.com)
+  - DNS verification workflow with CNAME and TXT record instructions
+  - Verification status indicator (pending/verified) on tenant cards
+  - Lookup tenant by custom domain API for domain-based routing
+  - API Endpoints:
+    - `POST /api/super-admin/tenants/{id}/custom-domain` - Set custom domain
+    - `POST /api/super-admin/tenants/{id}/verify-domain` - Verify DNS configuration
+    - `DELETE /api/super-admin/tenants/{id}/custom-domain` - Remove domain
+    - `GET /api/tenants/by-domain/{domain}` - Lookup tenant by domain
+  - Key files:
+    - `/app/backend/server.py` - Custom domain API endpoints
+    - `/app/frontend/src/pages/admin/TenantManagement.jsx` - Domain configuration modal
+- ✅ **Tenant-Specific Feature Toggles** - Enable/disable modules per tenant
+  - 8 toggleable features: Timesheets, Tickets, Leave, Calendar, Projects, Chat, Documents, Performance
+  - Super Admin UI modal to toggle features on/off per tenant
+  - Sidebar navigation dynamically filters based on enabled features
+  - Feature toggles persist in tenant settings
+  - API Endpoints:
+    - `GET /api/super-admin/features` - List all available features
+    - `GET /api/super-admin/tenants/{id}/features` - Get tenant's feature settings
+    - `PUT /api/super-admin/tenants/{id}/features` - Update tenant's enabled features
+  - Key files:
+    - `/app/backend/server.py` - Feature toggle API endpoints (AVAILABLE_FEATURES constant)
+    - `/app/frontend/src/pages/admin/TenantManagement.jsx` - Feature toggle modal
+    - `/app/frontend/src/context/TenantContext.jsx` - isFeatureEnabled() helper
+    - `/app/frontend/src/components/admin/AdminSidebar.jsx` - Feature-filtered navigation
+    - `/app/frontend/src/components/employee/EmployeeSidebar.jsx` - Feature-filtered navigation
+
 ### January 22, 2025
 - ✅ **Application Documentation Completed** - Comprehensive documentation created
   - `ADMIN_GUIDE.md` (403 lines) - Full admin user guide
