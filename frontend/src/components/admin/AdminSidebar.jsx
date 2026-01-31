@@ -20,64 +20,82 @@ import { useTenant } from '../../context/TenantContext';
 const AdminSidebar = () => {
   const location = useLocation();
   const { user } = useAuth();
-  const { tenant, getTenantLogo, getTenantName } = useTenant();
+  const { tenant, getTenantLogo, getTenantName, isFeatureEnabled } = useTenant();
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   
-  const navItems = [
+  // Define nav items with feature keys
+  const allNavItems = [
     { 
       path: '/admin/dashboard', 
       label: 'Dashboard', 
-      icon: Home 
+      icon: Home,
+      alwaysShow: true // Dashboard is always visible
     },
     { 
       path: '/admin/employees', 
       label: 'Employees', 
-      icon: Users 
+      icon: Users,
+      alwaysShow: true // Employees is core functionality
     },
     { 
       path: '/admin/performance', 
       label: 'Performance Insights', 
-      icon: BarChart3 
+      icon: BarChart3,
+      featureKey: 'performance'
     },
     { 
       path: '/admin/timesheets', 
       label: 'All Timesheets', 
-      icon: FileText 
+      icon: FileText,
+      featureKey: 'timesheets'
     },
     { 
       path: '/admin/projects', 
       label: 'Projects', 
-      icon: FolderKanban 
+      icon: FolderKanban,
+      featureKey: 'projects'
     },
     { 
       path: '/admin/employee-docs', 
       label: 'Employee Docs', 
-      icon: Folder 
+      icon: Folder,
+      featureKey: 'documents'
     },
     { 
       path: '/admin/leave-requests', 
       label: 'Leave Requests', 
-      icon: Calendar 
+      icon: Calendar,
+      featureKey: 'leave'
     },
     { 
       path: '/admin/tickets', 
       label: 'Support Tickets', 
-      icon: Ticket 
+      icon: Ticket,
+      featureKey: 'tickets'
     },
     { 
       path: '/admin/calendar', 
       label: 'Calendar', 
-      icon: CalendarDays 
+      icon: CalendarDays,
+      featureKey: 'calendar'
     },
     { 
       path: 'https://workforcenow.adp.com', 
       label: 'Payroll', 
       icon: DollarSign,
-      external: true
+      external: true,
+      alwaysShow: true
     }
   ];
 
-  // Add tenant management for super admins
+  // Filter nav items based on enabled features
+  const navItems = allNavItems.filter(item => {
+    if (item.alwaysShow) return true;
+    if (item.featureKey && !isFeatureEnabled(item.featureKey)) return false;
+    return true;
+  });
+
+  // Add tenant management for super admins (always at position 2)
   if (isSuperAdmin) {
     navItems.splice(2, 0, {
       path: '/admin/tenants',
