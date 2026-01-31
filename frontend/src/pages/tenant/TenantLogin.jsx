@@ -295,7 +295,7 @@ const TenantLogin = () => {
 
             {/* Signup Link */}
             <p className="text-center text-sm text-gray-500 mt-6">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link 
                 to={`/${tenantSlug}/signup`}
                 className="font-medium hover:underline"
