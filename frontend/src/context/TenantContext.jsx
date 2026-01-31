@@ -11,6 +11,9 @@ const DEFAULT_BRANDING = {
   logo_url: null,
   primary_color: '#1a1a1a',
   secondary_color: '#D4AF37',
+  settings: {
+    features_enabled: ['timesheets', 'tickets', 'leave', 'calendar', 'projects', 'chat', 'documents', 'performance']
+  }
 };
 
 const TenantContext = createContext(null);
@@ -80,6 +83,17 @@ export const TenantProvider = ({ children }) => {
     '--tenant-primary-hover': `${tenantInfo.primary_color}dd`,
   };
 
+  // Get enabled features
+  const getEnabledFeatures = () => {
+    return tenantInfo.settings?.features_enabled || DEFAULT_BRANDING.settings.features_enabled;
+  };
+
+  // Check if a feature is enabled
+  const isFeatureEnabled = (featureKey) => {
+    const enabledFeatures = getEnabledFeatures();
+    return enabledFeatures.includes(featureKey);
+  };
+
   const value = {
     tenant: tenantInfo,
     loading,
@@ -90,6 +104,9 @@ export const TenantProvider = ({ children }) => {
     getPrimaryColor: () => tenantInfo.primary_color,
     getSecondaryColor: () => tenantInfo.secondary_color,
     isDefaultTenant: () => tenantInfo.slug === 'aurborbloom',
+    // Feature toggles
+    getEnabledFeatures,
+    isFeatureEnabled,
   };
 
   return (
