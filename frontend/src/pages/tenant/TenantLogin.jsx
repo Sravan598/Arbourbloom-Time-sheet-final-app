@@ -125,14 +125,15 @@ const TenantLogin = () => {
         </div>
         
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
-          {/* Logo - inverted for dark background */}
+          {/* Logo in frosted glass card */}
           {tenant?.logo_url ? (
-            <img 
-              src={tenant.logo_url} 
-              alt={tenant.name} 
-              className="h-12 object-contain mb-8"
-              style={{ filter: 'brightness(0) invert(1)' }}
-            />
+            <div className="mb-8 inline-block px-5 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 shadow-lg">
+              <img 
+                src={tenant.logo_url} 
+                alt={tenant.name} 
+                className="h-10 object-contain"
+              />
+            </div>
           ) : (
             <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-3xl font-bold mb-8">
               {tenant?.name?.charAt(0) || 'C'}
