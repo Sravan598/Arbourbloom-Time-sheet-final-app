@@ -139,6 +139,11 @@ class Tenant(BaseModel):
     primary_color: str = "#1a1a1a"  # Brand color
     secondary_color: str = "#D4AF37"  # Accent color
     
+    # Custom domain mapping (CNAME)
+    custom_domain: Optional[str] = None  # e.g., "hr.perfectsolutions.com"
+    custom_domain_verified: bool = False  # Whether DNS is properly configured
+    custom_domain_verification_token: Optional[str] = None  # For DNS TXT record verification
+    
     # Contact info
     email: Optional[str] = None
     phone: Optional[str] = None
