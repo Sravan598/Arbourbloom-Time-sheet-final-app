@@ -195,6 +195,9 @@ class TenantResponse(BaseModel):
     phone: Optional[str] = None
     address: Optional[str] = None
     is_active: bool
+    custom_domain: Optional[str] = None
+    custom_domain_verified: bool = False
+    settings: Optional[TenantSettings] = None
     created_at: datetime
 
 
@@ -204,6 +207,7 @@ class TenantPublicInfo(BaseModel):
     name: str
     logo_url: Optional[str] = None
     primary_color: str
+    settings: Optional[TenantSettings] = None
 
 
 # Default tenant slug
