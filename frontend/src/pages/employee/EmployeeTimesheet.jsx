@@ -199,8 +199,9 @@ const EmployeeTimesheet = () => {
   };
 
   const handleLogout = () => {
+    const logoutUrl = getLogoutRedirectUrl();
     logout();
-    navigate('/login');
+    navigate(logoutUrl);
   };
 
   return (
