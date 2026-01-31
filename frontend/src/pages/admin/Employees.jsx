@@ -31,7 +31,7 @@ const API = `${BACKEND_URL}/api`;
 
 const Employees = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, getLogoutRedirectUrl } = useAuth();
   const profileDropdownRef = useRef(null);
 
   const [employees, setEmployees] = useState([]);
