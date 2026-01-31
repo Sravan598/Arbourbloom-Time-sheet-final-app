@@ -125,14 +125,16 @@ const TenantLogin = () => {
         </div>
         
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
-          {/* Logo with background removal for dark theme */}
+          {/* Logo with compact white card */}
           {tenant?.logo_url ? (
-            <div className="mb-8 p-4 bg-white rounded-xl inline-block">
-              <img 
-                src={tenant.logo_url} 
-                alt={tenant.name} 
-                className="h-12 object-contain"
-              />
+            <div className="mb-8">
+              <div className="inline-flex items-center px-4 py-3 bg-white rounded-xl">
+                <img 
+                  src={tenant.logo_url} 
+                  alt={tenant.name} 
+                  className="h-10 object-contain"
+                />
+              </div>
             </div>
           ) : (
             <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-3xl font-bold mb-8">
