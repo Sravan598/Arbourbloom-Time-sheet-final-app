@@ -125,17 +125,13 @@ const TenantLogin = () => {
         </div>
         
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
-          {tenant?.logo_url ? (
-            <img 
-              src={tenant.logo_url} 
-              alt={tenant.name} 
-              className="h-16 object-contain mb-8 mix-blend-lighten"
-            />
-          ) : (
-            <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-3xl font-bold mb-8">
-              {tenant?.name?.charAt(0) || 'C'}
+          {/* Logo - Use text fallback for dark backgrounds to avoid white box issue */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center text-2xl font-bold">
+              P
             </div>
-          )}
+            <span className="text-2xl font-bold">Perfect Solutions</span>
+          </div>
           
           <h1 className="text-4xl font-bold mb-4">
             Welcome to {tenant?.name}
