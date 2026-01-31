@@ -7,9 +7,8 @@ import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-// Component to remove white background from logo using canvas
+// Component to remove white background from logo using canvas (high quality)
 const TransparentLogo = ({ src, alt, className }) => {
-  const canvasRef = useRef(null);
   const [processedSrc, setProcessedSrc] = useState(null);
 
   useEffect(() => {
@@ -22,9 +21,16 @@ const TransparentLogo = ({ src, alt, className }) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
+      // Use higher resolution for clarity
+      const scale = 2;
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      
+      // Enable image smoothing for better quality
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
@@ -36,13 +42,13 @@ const TransparentLogo = ({ src, alt, className }) => {
         const b = data[i + 2];
         
         // If pixel is white or near-white, make it transparent
-        if (r > 240 && g > 240 && b > 240) {
+        if (r > 245 && g > 245 && b > 245) {
           data[i + 3] = 0; // Set alpha to 0
         }
       }
       
       ctx.putImageData(imageData, 0, 0);
-      setProcessedSrc(canvas.toDataURL('image/png'));
+      setProcessedSrc(canvas.toDataURL('image/png', 1.0));
     };
     
     img.src = src;
@@ -52,7 +58,7 @@ const TransparentLogo = ({ src, alt, className }) => {
     return <div className={className} />;
   }
 
-  return <img src={processedSrc} alt={alt} className={`${className} object-contain`} />;
+  return <img src={processedSrc} alt={alt} className={`${className} object-contain`} style={{ imageRendering: 'auto' }} />;
 };
 
 const TenantLogin = () => {
