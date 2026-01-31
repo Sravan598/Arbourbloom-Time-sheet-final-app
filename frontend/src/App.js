@@ -88,7 +88,7 @@ function App() {
               path="/:tenantSlug" 
               element={
                 <Suspense fallback={<LoadingFallback />}>
-                  <PerfectSolutionsHome />
+                  <TenantLanding />
                 </Suspense>
               } 
             />
