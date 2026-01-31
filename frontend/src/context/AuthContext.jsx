@@ -152,6 +152,7 @@ export const AuthProvider = ({ children }) => {
     login,
     signup,
     logout,
+    getLogoutRedirectUrl,
     clearError,
     setUser,
     setToken,
