@@ -125,13 +125,14 @@ const TenantLogin = () => {
         </div>
         
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
-          {/* Logo with white background removed using mix-blend-screen */}
+          {/* Logo with white background removed */}
           {tenant?.logo_url ? (
             <div className="mb-8">
               <img 
                 src={tenant.logo_url} 
                 alt={tenant.name} 
-                className="h-12 object-contain mix-blend-screen"
+                className="h-12 object-contain"
+                style={{ mixBlendMode: 'lighten' }}
               />
             </div>
           ) : (
