@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { TenantProvider } from './context/TenantContext';
@@ -30,6 +30,9 @@ import LeaveRequests from './pages/admin/LeaveRequests';
 import AdminTickets from './pages/admin/Tickets';
 import AdminCalendar from './pages/admin/Calendar';
 import TenantManagement from './pages/admin/TenantManagement';
+
+// Tenant-specific landing pages (lazy loaded)
+const PerfectSolutionsHome = React.lazy(() => import('./pages/tenant/PerfectSolutionsHome'));
 
 import './App.css';
 
