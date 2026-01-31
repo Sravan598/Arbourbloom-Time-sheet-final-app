@@ -205,17 +205,17 @@ AurborBloom is a comprehensive Human Resource Management System (HRMS) built wit
 ### P1 - Medium Priority
 1. In-App Calendar (ON HOLD per user request)
 2. Calendar Integration Phase 2 (Two-Way OAuth Sync) - ON HOLD
+3. **HR Chatbot AI Integration**: Intelligent AI chatbot using OpenAI or Gemini
 
 ### P2 - Medium Priority
 1. Shift Scheduling module
 2. Advanced Payroll Export (CSV/Excel for ADP)
+3. **Ticketing System Enhancements**: Email notifications, canned responses, satisfaction ratings
+4. **Usage Analytics Dashboard**: Super Admin view of usage statistics per tenant
 
 ### P3 - Future
-1. AI Integration (HR Chatbot using Emergent LLM Key or Groq free tier) - **Ready to discuss**
-2. White-Labeling support (env-based branding)
-3. Email Notifications for Ticketing System (Resend free tier - ON HOLD)
-4. Onboarding & Offboarding Module
-5. Performance & Feedback Module
+1. Onboarding & Offboarding Module
+2. Performance & Feedback Module
 
 ## Refactoring Status ✅ COMPLETE (January 2025)
 Backend refactored from 7000+ line monolith to modular structure:
