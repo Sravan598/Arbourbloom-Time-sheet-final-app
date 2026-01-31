@@ -12,7 +12,23 @@ import {
   Eye,
   EyeOff,
   Upload,
-  Palette
+  Palette,
+  Globe,
+  Settings,
+  ToggleLeft,
+  ToggleRight,
+  RefreshCw,
+  ExternalLink,
+  CheckCircle,
+  AlertCircle,
+  FileText,
+  Ticket,
+  Calendar,
+  CalendarDays,
+  FolderKanban,
+  MessageCircle,
+  Folder,
+  BarChart3
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
@@ -21,6 +37,18 @@ import { Button } from '../../components/ui/Button';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
+// Feature icon mapping
+const FEATURE_ICONS = {
+  timesheets: FileText,
+  tickets: Ticket,
+  leave: Calendar,
+  calendar: CalendarDays,
+  projects: FolderKanban,
+  chat: MessageCircle,
+  documents: Folder,
+  performance: BarChart3
+};
+
 const TenantManagement = () => {
   const { user, token } = useAuth();
   const [tenants, setTenants] = useState([]);
@@ -28,8 +56,15 @@ const TenantManagement = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showFeaturesModal, setShowFeaturesModal] = useState(false);
+  const [showDomainModal, setShowDomainModal] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState(null);
   const [showAdminCode, setShowAdminCode] = useState({});
+  const [featuresList, setFeaturesList] = useState([]);
+  const [savingFeatures, setSavingFeatures] = useState(false);
+  const [domainLoading, setDomainLoading] = useState(false);
+  const [domainData, setDomainData] = useState({ domain: '' });
+  const [domainInstructions, setDomainInstructions] = useState(null);
   
   const [formData, setFormData] = useState({
     slug: '',
@@ -217,6 +252,118 @@ const TenantManagement = () => {
     setShowEditModal(true);
   };
 
+  // Feature Toggles
+  const openFeaturesModal = async (tenant) => {
+    setSelectedTenant(tenant);
+    try {
+      const response = await axios.get(`${API}/api/super-admin/tenants/${tenant.id}/features`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFeaturesList(response.data.features);
+      setShowFeaturesModal(true);
+    } catch (err) {
+      setError('Failed to load features');
+    }
+  };
+
+  const toggleFeature = (featureKey) => {
+    setFeaturesList(featuresList.map(f => 
+      f.key === featureKey ? { ...f, enabled: !f.enabled } : f
+    ));
+  };
+
+  const saveFeatures = async () => {
+    setSavingFeatures(true);
+    try {
+      const enabledFeatures = featuresList.filter(f => f.enabled).map(f => f.key);
+      await axios.put(`${API}/api/super-admin/tenants/${selectedTenant.id}/features`, 
+        { features_enabled: enabledFeatures },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      setSuccess('Features updated successfully!');
+      setShowFeaturesModal(false);
+      fetchTenants();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to update features');
+    } finally {
+      setSavingFeatures(false);
+    }
+  };
+
+  // Custom Domain
+  const openDomainModal = (tenant) => {
+    setSelectedTenant(tenant);
+    setDomainData({ domain: tenant.custom_domain || '' });
+    setDomainInstructions(null);
+    setShowDomainModal(true);
+  };
+
+  const setCustomDomain = async () => {
+    if (!domainData.domain.trim()) {
+      setError('Please enter a domain');
+      return;
+    }
+    setDomainLoading(true);
+    try {
+      const response = await axios.post(
+        `${API}/api/super-admin/tenants/${selectedTenant.id}/custom-domain`,
+        { domain: domainData.domain },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      setDomainInstructions(response.data.instructions);
+      setSuccess('Domain configured! Follow the instructions below.');
+      fetchTenants();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to set domain');
+    } finally {
+      setDomainLoading(false);
+    }
+  };
+
+  const verifyDomain = async () => {
+    setDomainLoading(true);
+    try {
+      const response = await axios.post(
+        `${API}/api/super-admin/tenants/${selectedTenant.id}/verify-domain`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      if (response.data.verified) {
+        setSuccess('Domain verified successfully!');
+        setShowDomainModal(false);
+        fetchTenants();
+      } else {
+        setError(response.data.message);
+      }
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Verification failed');
+    } finally {
+      setDomainLoading(false);
+    }
+  };
+
+  const removeDomain = async () => {
+    if (!window.confirm('Are you sure you want to remove the custom domain?')) return;
+    setDomainLoading(true);
+    try {
+      await axios.delete(
+        `${API}/api/super-admin/tenants/${selectedTenant.id}/custom-domain`,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      setSuccess('Domain removed successfully!');
+      setShowDomainModal(false);
+      fetchTenants();
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to remove domain');
+    } finally {
+      setDomainLoading(false);
+    }
+  };
+
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     setSuccess('Copied to clipboard!');
@@ -228,7 +375,7 @@ const TenantManagement = () => {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <AdminSidebar />
-        <div className="flex-1 p-8">
+        <div className="flex-1 p-8 ml-64">
           <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
             <h2 className="text-xl font-bold text-red-600">Access Denied</h2>
             <p className="text-gray-600 mt-2">Only Super Admins can access this page.</p>
@@ -242,7 +389,7 @@ const TenantManagement = () => {
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
       
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-8 ml-64">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -284,6 +431,9 @@ const TenantManagement = () => {
             >
               <X className="w-5 h-5 text-red-500" />
               <p className="text-red-700">{error}</p>
+              <button onClick={() => setError('')} className="ml-auto">
+                <X className="w-4 h-4" />
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -331,21 +481,56 @@ const TenantManagement = () => {
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                    <Users className="w-4 h-4" />
-                    <span>Click to view details</span>
+                  {/* Domain Status */}
+                  <div className="flex items-center gap-2 text-sm mb-3">
+                    <Globe className="w-4 h-4 text-gray-400" />
+                    {tenant.custom_domain ? (
+                      <span className={`flex items-center gap-1 ${tenant.custom_domain_verified ? 'text-green-600' : 'text-amber-600'}`}>
+                        {tenant.custom_domain}
+                        {tenant.custom_domain_verified ? (
+                          <CheckCircle className="w-3 h-3" />
+                        ) : (
+                          <AlertCircle className="w-3 h-3" />
+                        )}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">No custom domain</span>
+                    )}
                   </div>
                   
-                  <div className="flex items-center gap-2 pt-4 border-t">
+                  {/* Feature count */}
+                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                    <Settings className="w-4 h-4" />
+                    <span>{tenant.settings?.features_enabled?.length || 0} features enabled</span>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 pt-4 border-t">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => viewTenantDetails(tenant)}
-                      className="flex-1"
                       data-testid={`view-tenant-${tenant.slug}`}
                     >
                       <Eye className="w-4 h-4 mr-1" />
-                      View
+                      Details
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openFeaturesModal(tenant)}
+                      data-testid={`features-tenant-${tenant.slug}`}
+                    >
+                      <Settings className="w-4 h-4 mr-1" />
+                      Features
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openDomainModal(tenant)}
+                      data-testid={`domain-tenant-${tenant.slug}`}
+                    >
+                      <Globe className="w-4 h-4 mr-1" />
+                      Domain
                     </Button>
                     <Button
                       variant="outline"
@@ -413,12 +598,6 @@ const TenantManagement = () => {
                 </div>
                 
                 <form onSubmit={showEditModal ? handleUpdateTenant : handleCreateTenant} className="p-6 space-y-4">
-                  {error && (
-                    <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
-                      {error}
-                    </div>
-                  )}
-                  
                   {/* Logo Upload */}
                   <div>
                     <label className="block text-sm font-medium text-brand-dark mb-2">
@@ -720,6 +899,247 @@ const TenantManagement = () => {
                         <span className="font-medium">Address:</span> {selectedTenant.address}
                       </p>
                     )}
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Features Toggle Modal */}
+        <AnimatePresence>
+          {showFeaturesModal && selectedTenant && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setShowFeaturesModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6 border-b">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold text-brand-dark">Feature Toggles</h2>
+                      <p className="text-sm text-gray-500 mt-1">{selectedTenant.name}</p>
+                    </div>
+                    <button
+                      onClick={() => setShowFeaturesModal(false)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="p-6">
+                  <p className="text-sm text-gray-600 mb-4">
+                    Enable or disable modules for this tenant. Disabled features will not appear in their navigation.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    {featuresList.map((feature) => {
+                      const Icon = FEATURE_ICONS[feature.key] || Settings;
+                      return (
+                        <div
+                          key={feature.key}
+                          className={`flex items-center justify-between p-4 rounded-xl border transition-colors cursor-pointer ${
+                            feature.enabled ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                          }`}
+                          onClick={() => toggleFeature(feature.key)}
+                          data-testid={`toggle-feature-${feature.key}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                              feature.enabled ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500'
+                            }`}>
+                              <Icon className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-brand-dark">{feature.label}</p>
+                              <p className="text-xs text-gray-500">{feature.description}</p>
+                            </div>
+                          </div>
+                          {feature.enabled ? (
+                            <ToggleRight className="w-8 h-8 text-green-500" />
+                          ) : (
+                            <ToggleLeft className="w-8 h-8 text-gray-400" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  <div className="flex gap-3 pt-6 mt-6 border-t">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowFeaturesModal(false)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={saveFeatures}
+                      disabled={savingFeatures}
+                      className="flex-1"
+                    >
+                      {savingFeatures ? (
+                        <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        <Check className="w-4 h-4 mr-2" />
+                      )}
+                      Save Changes
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Custom Domain Modal */}
+        <AnimatePresence>
+          {showDomainModal && selectedTenant && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setShowDomainModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6 border-b">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold text-brand-dark">Custom Domain</h2>
+                      <p className="text-sm text-gray-500 mt-1">{selectedTenant.name}</p>
+                    </div>
+                    <button
+                      onClick={() => setShowDomainModal(false)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="p-6">
+                  {selectedTenant.custom_domain ? (
+                    <div className="mb-6">
+                      <div className={`p-4 rounded-xl border ${
+                        selectedTenant.custom_domain_verified 
+                          ? 'bg-green-50 border-green-200' 
+                          : 'bg-amber-50 border-amber-200'
+                      }`}>
+                        <div className="flex items-center gap-3 mb-2">
+                          {selectedTenant.custom_domain_verified ? (
+                            <CheckCircle className="w-5 h-5 text-green-500" />
+                          ) : (
+                            <AlertCircle className="w-5 h-5 text-amber-500" />
+                          )}
+                          <span className="font-medium">
+                            {selectedTenant.custom_domain_verified ? 'Domain Verified' : 'Pending Verification'}
+                          </span>
+                        </div>
+                        <p className="text-lg font-mono">{selectedTenant.custom_domain}</p>
+                      </div>
+                      
+                      <div className="flex gap-3 mt-4">
+                        {!selectedTenant.custom_domain_verified && (
+                          <Button
+                            onClick={verifyDomain}
+                            disabled={domainLoading}
+                            className="flex-1"
+                          >
+                            {domainLoading ? (
+                              <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                            ) : (
+                              <RefreshCw className="w-4 h-4 mr-2" />
+                            )}
+                            Verify Domain
+                          </Button>
+                        )}
+                        <Button
+                          variant="outline"
+                          onClick={removeDomain}
+                          disabled={domainLoading}
+                          className="text-red-500 hover:text-red-600"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-brand-dark mb-2">
+                        Enter Custom Domain
+                      </label>
+                      <input
+                        type="text"
+                        value={domainData.domain}
+                        onChange={(e) => setDomainData({ domain: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-black focus:border-transparent"
+                        placeholder="hr.yourcompany.com"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Enter your custom domain (e.g., hr.perfectsolutions.com)
+                      </p>
+                      
+                      <Button
+                        onClick={setCustomDomain}
+                        disabled={domainLoading || !domainData.domain}
+                        className="w-full mt-4"
+                      >
+                        {domainLoading ? (
+                          <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                        ) : (
+                          <Globe className="w-4 h-4 mr-2" />
+                        )}
+                        Configure Domain
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {domainInstructions && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-4">
+                      <h4 className="font-medium text-blue-800 mb-3">DNS Configuration Instructions</h4>
+                      <div className="space-y-3 text-sm">
+                        <div>
+                          <p className="font-medium text-blue-700">Step 1:</p>
+                          <p className="text-blue-600">{domainInstructions.step1}</p>
+                        </div>
+                        <div>
+                          <p className="font-medium text-blue-700">Step 2:</p>
+                          <p className="text-blue-600">{domainInstructions.step2}</p>
+                        </div>
+                        <div>
+                          <p className="font-medium text-blue-700">Step 3:</p>
+                          <p className="text-blue-600">{domainInstructions.step3}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="bg-gray-50 rounded-xl p-4 mt-4">
+                    <h4 className="font-medium text-gray-700 mb-2">How it works</h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li>• Users can access the app via your custom domain</li>
+                      <li>• The app will automatically detect the tenant</li>
+                      <li>• DNS changes may take up to 48 hours to propagate</li>
+                    </ul>
                   </div>
                 </div>
               </motion.div>
