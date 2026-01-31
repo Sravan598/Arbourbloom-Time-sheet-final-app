@@ -83,12 +83,28 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             
-            {/* Tenant-specific landing pages */}
+            {/* Tenant-specific routes (isolated login/signup per tenant) */}
             <Route 
-              path="/perfectsolutions" 
+              path="/:tenantSlug" 
               element={
                 <Suspense fallback={<LoadingFallback />}>
                   <PerfectSolutionsHome />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/:tenantSlug/login" 
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <TenantLogin />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/:tenantSlug/signup" 
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <TenantSignup />
                 </Suspense>
               } 
             />
