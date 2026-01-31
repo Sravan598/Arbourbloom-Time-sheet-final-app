@@ -116,13 +116,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = (redirectTo = null) => {
+    // Get tenant slug before clearing - for tenant-isolated redirect
+    const currentTenant = localStorage.getItem('cortracker_tenant');
+    
     localStorage.removeItem('cortracker_token');
     localStorage.removeItem('cortracker_tenant');
     setToken(null);
     setTenant(DEFAULT_TENANT);
     setUser(null);
     delete axios.defaults.headers.common['Authorization'];
+    
+    // Return the tenant slug so components can redirect appropriately
+    return currentTenant;
+  };
+
+  // Get the logout URL for current tenant
+  const getLogoutRedirectUrl = () => {
+    const currentTenant = tenant || localStorage.getItem('cortracker_tenant');
+    // If tenant is not default aurborbloom, redirect to tenant-specific login
+    if (currentTenant && currentTenant !== DEFAULT_TENANT) {
+      return `/${currentTenant}/login`;
+    }
+    return '/login';
   };
 
   const clearError = () => setError(null);
