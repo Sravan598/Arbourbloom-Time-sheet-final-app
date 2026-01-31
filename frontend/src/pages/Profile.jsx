@@ -40,7 +40,7 @@ const API = `${BACKEND_URL}/api`;
 const Profile = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, logout, updateUser } = useAuth();
+  const { user, logout, updateUser, getLogoutRedirectUrl } = useAuth();
   const fileInputRef = useRef(null);
   
   // Check for tab parameter in URL
