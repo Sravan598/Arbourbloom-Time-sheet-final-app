@@ -44,7 +44,7 @@ const formatFileSize = (bytes) => {
 
 const EmployeeDocs = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, getLogoutRedirectUrl } = useAuth();
   const profileDropdownRef = useRef(null);
 
   const [employees, setEmployees] = useState([]);
