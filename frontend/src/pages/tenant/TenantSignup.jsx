@@ -6,6 +6,56 @@ import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
+// Component to remove white background from logo
+const TransparentLogo = ({ src, alt, className }) => {
+  const [processedSrc, setProcessedSrc] = useState(null);
+
+  useEffect(() => {
+    if (!src) return;
+    
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      
+      // Remove white/near-white pixels (make them transparent)
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        
+        // If pixel is white or near-white, make it transparent
+        if (r > 245 && g > 245 && b > 245) {
+          data[i + 3] = 0; // Set alpha to 0
+        }
+      }
+      
+      ctx.putImageData(imageData, 0, 0);
+      setProcessedSrc(canvas.toDataURL('image/png', 1.0));
+    };
+    
+    img.src = src;
+  }, [src]);
+
+  if (!processedSrc) {
+    return <div className={className} />;
+  }
+
+  return <img src={processedSrc} alt={alt} className={`${className} object-contain`} style={{ imageRendering: 'auto' }} />;
+};
+
 const TenantSignup = () => {
   const navigate = useNavigate();
   const { tenantSlug } = useParams();
