@@ -135,9 +135,19 @@ const KnowviaTechHome = () => {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="pt-20 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      {/* Hero Section - Yellow Theme */}
+      <section className="pt-20 relative overflow-hidden" style={{ backgroundColor: '#F9DC5C' }}>
+        {/* Wavy Background Pattern */}
+        <div className="absolute inset-0 overflow-hidden">
+          <svg className="absolute w-full h-full" viewBox="0 0 1440 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M-50 200 Q 200 100, 400 200 T 800 200 T 1200 200 T 1600 200" stroke="rgba(255,255,255,0.4)" strokeWidth="2" fill="none"/>
+            <path d="M-50 300 Q 200 200, 400 300 T 800 300 T 1200 300 T 1600 300" stroke="rgba(255,255,255,0.3)" strokeWidth="2" fill="none"/>
+            <path d="M-50 400 Q 200 300, 400 400 T 800 400 T 1200 400 T 1600 400" stroke="rgba(255,255,255,0.2)" strokeWidth="2" fill="none"/>
+            <path d="M-50 500 Q 200 400, 400 500 T 800 500 T 1200 500 T 1600 500" stroke="rgba(255,255,255,0.15)" strokeWidth="2" fill="none"/>
+          </svg>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
@@ -147,21 +157,21 @@ const KnowviaTechHome = () => {
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
                 Code Your Future with Industry-Ready Skills
               </h1>
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+              <p className="text-lg text-gray-800 mb-8 leading-relaxed">
                 Master in-demand technologies like .NET Full Stack, Generative AI, and Mobile App Development 
                 through hands-on projects and expert mentorship. Join thousands of learners building real-world 
                 applications and landing their dream tech jobs.
               </p>
               
-              {/* Course Tags */}
+              {/* Course Tags - White badges */}
               <div className="flex flex-wrap gap-3 mb-8">
-                <span className="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-medium">
+                <span className="bg-white text-gray-900 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
                   .NET Full-stack Development
                 </span>
-                <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
+                <span className="bg-white text-gray-900 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
                   Generative AI
                 </span>
-                <span className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+                <span className="bg-white text-gray-900 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
                   Mobile App Development
                 </span>
               </div>
@@ -173,17 +183,65 @@ const KnowviaTechHome = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="relative"
             >
-              <div className="grid grid-cols-2 gap-4">
+              {/* Main student image */}
+              <div className="relative">
                 <img 
-                  src={images.hero1}
-                  alt="Professional developer" 
-                  className="rounded-2xl shadow-lg w-full h-64 object-cover"
+                  src="https://images.unsplash.com/photo-1651796704084-a115817945b2?w=500&q=80"
+                  alt="Student learning with laptop" 
+                  className="rounded-2xl shadow-2xl w-full h-96 object-cover"
                 />
-                <img 
-                  src={images.coding}
-                  alt="Coding workspace" 
-                  className="rounded-2xl shadow-lg w-full h-64 object-cover mt-8"
-                />
+                
+                {/* Floating video call cards */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.5 }}
+                  className="absolute -left-8 top-8 bg-white rounded-xl shadow-lg p-2 w-32"
+                >
+                  <img 
+                    src="https://images.unsplash.com/photo-1714079761488-e0c9b9ac4138?w=200&q=80"
+                    alt="Instructor 1" 
+                    className="rounded-lg w-full h-20 object-cover"
+                  />
+                  <div className="flex items-center justify-center mt-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+                    <span className="text-xs text-gray-600">Live</span>
+                  </div>
+                </motion.div>
+                
+                <motion.div 
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7, duration: 0.5 }}
+                  className="absolute -right-4 top-4 bg-white rounded-xl shadow-lg p-2 w-28"
+                >
+                  <img 
+                    src="https://images.unsplash.com/photo-1702669010463-3f2088abc0e9?w=200&q=80"
+                    alt="Instructor 2" 
+                    className="rounded-lg w-full h-16 object-cover"
+                  />
+                  <div className="flex items-center justify-center mt-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+                    <span className="text-xs text-gray-600">Live</span>
+                  </div>
+                </motion.div>
+                
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.9, duration: 0.5 }}
+                  className="absolute -right-8 bottom-16 bg-white rounded-xl shadow-lg p-2 w-32"
+                >
+                  <img 
+                    src="https://images.unsplash.com/photo-1608280200244-fae9946df695?w=200&q=80"
+                    alt="Instructor 3" 
+                    className="rounded-lg w-full h-20 object-cover"
+                  />
+                  <div className="flex items-center justify-center mt-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+                    <span className="text-xs text-gray-600">Live</span>
+                  </div>
+                </motion.div>
               </div>
             </motion.div>
           </div>
