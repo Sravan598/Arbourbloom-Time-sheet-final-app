@@ -6959,8 +6959,9 @@ async def create_tenant_indexes():
             ("announcements", [("tenant_id", 1), ("created_at", -1)]),
             ("holidays", [("tenant_id", 1)]),
             ("leave_types", [("tenant_id", 1), ("is_active", 1)]),
-            ("audit_logs", [("tenant_id", 1), ("created_at", -1)]),
-            ("audit_logs", [("event_type", 1), ("created_at", -1)]),
+            ("security_audit_logs", [("tenant_id", 1), ("created_at", -1)]),
+            ("security_audit_logs", [("event_type", 1), ("created_at", -1)]),
+            ("security_audit_logs", [("severity", 1), ("created_at", -1)]),
         ]
         
         for collection_name, index_keys in index_configs:
