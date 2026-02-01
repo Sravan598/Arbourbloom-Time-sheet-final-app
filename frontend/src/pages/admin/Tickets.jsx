@@ -6,7 +6,7 @@ import {
   Ticket, Search, Clock, AlertTriangle, CheckCircle, 
   MessageSquare, User, Users, ChevronDown, X,
   RefreshCw, Send, FileText, Image as ImageIcon, Paperclip,
-  GripVertical
+  GripVertical, Download
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
