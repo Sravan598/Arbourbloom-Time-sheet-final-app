@@ -157,9 +157,9 @@ const TenantSignup = () => {
       };
       
       if (activeTab === 'EMPLOYEE') {
-        payload.invitation_code = formData.inviteCode;
+        payload.employee_invite_code = formData.inviteCode;
       } else {
-        payload.admin_code = formData.adminCode;
+        payload.admin_invite_code = formData.adminCode;
       }
       
       await axios.post(`${API}/api/auth/signup`, payload);
