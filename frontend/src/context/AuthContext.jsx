@@ -120,6 +120,11 @@ export const AuthProvider = ({ children }) => {
     // Get tenant slug before clearing - for tenant-isolated redirect
     const currentTenant = localStorage.getItem('cortracker_tenant');
     
+    // Store tenant temporarily in sessionStorage for ProtectedRoute to use
+    if (currentTenant && currentTenant !== 'aurborbloom') {
+      sessionStorage.setItem('logout_redirect_tenant', currentTenant);
+    }
+    
     localStorage.removeItem('cortracker_token');
     localStorage.removeItem('cortracker_tenant');
     setToken(null);
