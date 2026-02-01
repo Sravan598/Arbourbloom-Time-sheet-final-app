@@ -36,7 +36,7 @@ if not ENCRYPTION_KEY:
 
 # Rate Limiting
 RATE_LIMIT_WINDOW = 60  # seconds
-RATE_LIMIT_MAX_REQUESTS = 100  # requests per window per tenant
+RATE_LIMIT_MAX_REQUESTS = 500  # requests per window per tenant
 
 # File Upload
 MAX_FILE_SIZE = 25 * 1024 * 1024  # 25MB per file
