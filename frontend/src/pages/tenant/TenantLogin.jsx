@@ -93,19 +93,31 @@ const TenantLogin = () => {
     
     if (tenantSlug) {
       fetchTenant();
+      
+      // Clear any previous session data when visiting a login page
+      // This ensures switching between tenants works correctly
+      sessionStorage.removeItem('logout_redirect_tenant');
     }
   }, [tenantSlug]);
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated AND same tenant
   useEffect(() => {
     if (isAuthenticated && user) {
-      if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
-        navigate('/admin/dashboard', { replace: true });
-      } else {
-        navigate('/employee/dashboard', { replace: true });
+      // Check if user belongs to the same tenant they're trying to login to
+      const userTenant = user.tenant_id || localStorage.getItem('cortracker_tenant');
+      
+      if (userTenant === tenantSlug || user.role === 'SUPER_ADMIN') {
+        // User is authenticated for this tenant, redirect to dashboard
+        if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+          navigate('/admin/dashboard', { replace: true });
+        } else {
+          navigate('/employee/dashboard', { replace: true });
+        }
       }
+      // If user is authenticated for a DIFFERENT tenant, don't redirect
+      // Let them login to this tenant (they'll need to enter credentials)
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, navigate, tenantSlug]);
 
   useEffect(() => {
     clearError();
