@@ -11,3 +11,7 @@ from .announcement import *
 from .document import *
 from .calendar import *
 from .status import *
+from .tenant import *
+from .security import *
+from .webhook import *
+from .ssl import *

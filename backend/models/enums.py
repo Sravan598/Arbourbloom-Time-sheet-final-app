@@ -2,7 +2,8 @@ from enum import Enum
 
 
 class UserRole(str, Enum):
-    ADMIN = "ADMIN"
+    SUPER_ADMIN = "SUPER_ADMIN"  # Can manage all tenants
+    ADMIN = "ADMIN"  # Can manage their tenant
     EMPLOYEE = "EMPLOYEE"
 
 
@@ -15,7 +16,15 @@ class CorrectionStatus(str, Enum):
 class LeaveStatus(str, Enum):
     PENDING = "PENDING"
     APPROVED = "APPROVED"
-    REJECTED = "REJECTED"
+    DENIED = "DENIED"
+    REJECTED = "REJECTED"  # Alias for DENIED
+
+
+class LeaveType(str, Enum):
+    VACATION = "VACATION"
+    SICK = "SICK"
+    PERSONAL = "PERSONAL"
+    UNPAID = "UNPAID"
 
 
 class AnnouncementPriority(str, Enum):
@@ -29,10 +38,13 @@ class ProjectStatus(str, Enum):
     ACTIVE = "ACTIVE"
     ON_HOLD = "ON_HOLD"
     COMPLETED = "COMPLETED"
+    ARCHIVED = "ARCHIVED"
     CANCELLED = "CANCELLED"
 
 
 class BreakStatus(str, Enum):
+    ACTIVE = "ACTIVE"
+    COMPLETED = "COMPLETED"
     ON_BREAK = "ON_BREAK"
     WORKING = "WORKING"
 
@@ -46,10 +58,13 @@ class NotificationType(str, Enum):
     LEAVE_REQUEST = "LEAVE_REQUEST"
     LEAVE_APPROVED = "LEAVE_APPROVED"
     LEAVE_REJECTED = "LEAVE_REJECTED"
+    LEAVE_DENIED = "LEAVE_DENIED"
     TIMESHEET_APPROVED = "TIMESHEET_APPROVED"
     ANNOUNCEMENT = "ANNOUNCEMENT"
     TICKET_CREATED = "TICKET_CREATED"
+    TICKET_ASSIGNED = "TICKET_ASSIGNED"
     TICKET_UPDATED = "TICKET_UPDATED"
+    TICKET_RESOLVED = "TICKET_RESOLVED"
     TICKET_COMMENT = "TICKET_COMMENT"
 
 
@@ -76,3 +91,10 @@ class TicketStatus(str, Enum):
     WAITING_ON_USER = "WAITING_ON_USER"
     RESOLVED = "RESOLVED"
     CLOSED = "CLOSED"
+
+
+class InvitationStatus(str, Enum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    EXPIRED = "expired"
+    REVOKED = "revoked"
