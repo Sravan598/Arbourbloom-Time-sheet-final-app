@@ -1649,7 +1649,7 @@ async def get_audit_logs(
     limit: int = 100,
     super_admin: dict = Depends(require_super_admin)
 ):
-    """Get audit logs across all tenants (super admin only)"""
+    """Get security audit logs across all tenants (super admin only)"""
     query = {}
     
     if tenant_id:
@@ -1661,7 +1661,7 @@ async def get_audit_logs(
     if user_email:
         query["user_email"] = {"$regex": user_email, "$options": "i"}
     
-    logs = await db.audit_logs.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    logs = await db.security_audit_logs.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
     
     for log in logs:
         if isinstance(log.get("created_at"), str):
@@ -1675,7 +1675,7 @@ async def get_audit_log_stats(
     tenant_id: Optional[str] = None,
     super_admin: dict = Depends(require_super_admin)
 ):
-    """Get audit log statistics (super admin only)"""
+    """Get security audit log statistics (super admin only)"""
     match_stage = {}
     if tenant_id:
         match_stage["tenant_id"] = tenant_id
@@ -1690,7 +1690,7 @@ async def get_audit_log_stats(
         {"$sort": {"count": -1}}
     ]
     
-    event_counts = await db.audit_logs.aggregate(pipeline).to_list(50)
+    event_counts = await db.security_audit_logs.aggregate(pipeline).to_list(50)
     
     # Get counts by severity
     severity_pipeline = [
@@ -1701,10 +1701,10 @@ async def get_audit_log_stats(
         }}
     ]
     
-    severity_counts = await db.audit_logs.aggregate(severity_pipeline).to_list(10)
+    severity_counts = await db.security_audit_logs.aggregate(severity_pipeline).to_list(10)
     
     # Get recent critical events
-    critical_events = await db.audit_logs.find(
+    critical_events = await db.security_audit_logs.find(
         {"severity": "CRITICAL", **match_stage},
         {"_id": 0}
     ).sort("created_at", -1).limit(10).to_list(10)
@@ -1717,7 +1717,7 @@ async def get_audit_log_stats(
         "by_event_type": {item["_id"]: item["count"] for item in event_counts},
         "by_severity": {item["_id"]: item["count"] for item in severity_counts},
         "recent_critical_events": critical_events,
-        "total_logs": await db.audit_logs.count_documents(match_stage)
+        "total_logs": await db.security_audit_logs.count_documents(match_stage)
     }
 
 
@@ -1732,7 +1732,7 @@ async def get_security_alerts(
     alerts = []
     
     # Check for cross-tenant attempts in last 24h
-    cross_tenant_count = await db.audit_logs.count_documents({
+    cross_tenant_count = await db.security_audit_logs.count_documents({
         "event_type": "CROSS_TENANT_ATTEMPT",
         "created_at": {"$gte": last_24h}
     })
@@ -1766,7 +1766,7 @@ async def get_security_alerts(
         }
     ]
     
-    suspicious_ips = await db.audit_logs.aggregate(failed_login_pipeline).to_list(20)
+    suspicious_ips = await db.security_audit_logs.aggregate(failed_login_pipeline).to_list(20)
     
     for ip_data in suspicious_ips:
         alerts.append({
@@ -1780,7 +1780,7 @@ async def get_security_alerts(
         })
     
     # Check for deactivated account login attempts
-    deactivated_attempts = await db.audit_logs.count_documents({
+    deactivated_attempts = await db.security_audit_logs.count_documents({
         "event_type": "LOGIN_FAILED",
         "details.reason": "Account deactivated",
         "created_at": {"$gte": last_24h}
