@@ -174,7 +174,7 @@ const Projects = () => {
       ? `/${storedTenant}/login` 
       : '/login';
     logout();
-    navigate(logoutUrl);
+    window.location.href = logoutUrl;
   };
 
   const filteredProjects = projects

@@ -283,7 +283,7 @@ const EmployeeDashboard = () => {
       ? `/${storedTenant}/login` 
       : '/login';
     logout();
-    navigate(logoutUrl);
+    window.location.href = logoutUrl;
   };
 
   if (isLoading) {

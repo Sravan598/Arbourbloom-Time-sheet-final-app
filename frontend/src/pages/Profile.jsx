@@ -277,7 +277,7 @@ const Profile = () => {
       ? `/${storedTenant}/login` 
       : '/login';
     logout();
-    navigate(logoutUrl);
+    window.location.href = logoutUrl;
   };
 
   const tabs = [

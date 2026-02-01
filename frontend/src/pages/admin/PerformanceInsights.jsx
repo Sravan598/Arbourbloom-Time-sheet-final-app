@@ -103,7 +103,7 @@ const PerformanceInsights = () => {
       ? `/${storedTenant}/login` 
       : '/login';
     logout();
-    navigate(logoutUrl);
+    window.location.href = logoutUrl;
   };
 
   const handleExportPDF = async () => {

@@ -296,7 +296,7 @@ const Documents = () => {
       ? `/${storedTenant}/login` 
       : '/login';
     logout();
-    navigate(logoutUrl);
+    window.location.href = logoutUrl;
   };
 
   const filteredDocuments = documents.filter(doc =>
