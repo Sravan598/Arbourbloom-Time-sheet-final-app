@@ -141,11 +141,12 @@ export const AuthProvider = ({ children }) => {
     const storedTenant = localStorage.getItem('cortracker_tenant');
     const currentTenant = storedTenant || tenant;
     
-    // If tenant is not default aurborbloom, redirect to tenant-specific login
-    if (currentTenant && currentTenant !== 'aurborbloom') {
+    // All tenants (including aurborbloom) now have isolated login pages
+    if (currentTenant) {
       return `/${currentTenant}/login`;
     }
-    return '/login';
+    // Fallback to aurborbloom tenant login
+    return '/aurborbloom/login';
   };
 
   const clearError = () => setError(null);
