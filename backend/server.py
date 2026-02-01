@@ -9900,6 +9900,7 @@ async def create_ticket(
     )
     
     ticket_doc = ticket.model_dump()
+    ticket_doc["tenant_id"] = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)  # CRITICAL: Add tenant_id
     ticket_doc["created_at"] = ticket_doc["created_at"].isoformat()
     ticket_doc["updated_at"] = ticket_doc["updated_at"].isoformat()
     ticket_doc["sla_due_at"] = ticket_doc["sla_due_at"].isoformat() if ticket_doc["sla_due_at"] else None
