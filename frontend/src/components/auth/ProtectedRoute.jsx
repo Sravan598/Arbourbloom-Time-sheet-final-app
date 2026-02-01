@@ -18,8 +18,13 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   if (!isAuthenticated) {
-    // Get tenant from localStorage for redirect (may still be set during logout)
-    const storedTenant = localStorage.getItem('cortracker_tenant');
+    // Check for tenant in multiple places (localStorage may be cleared during logout)
+    const storedTenant = localStorage.getItem('cortracker_tenant') 
+      || sessionStorage.getItem('logout_redirect_tenant');
+    
+    // Clear the temporary session storage
+    sessionStorage.removeItem('logout_redirect_tenant');
+    
     const loginPath = storedTenant && storedTenant !== 'aurborbloom' 
       ? `/${storedTenant}/login` 
       : '/login';
