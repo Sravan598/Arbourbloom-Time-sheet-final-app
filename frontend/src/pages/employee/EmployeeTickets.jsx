@@ -406,6 +406,14 @@ const EmployeeTickets = () => {
           </div>
           <div className="flex items-center gap-4">
             <button
+              onClick={exportToPDF}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              data-testid="export-my-tickets-pdf-btn"
+            >
+              <Download className="w-4 h-4" />
+              Export PDF
+            </button>
+            <button
               onClick={() => { setShowNewTicket(true); setSelectedTicket(null); }}
               className="flex items-center gap-2 px-4 py-2 bg-brand-black text-white rounded-lg hover:bg-gray-800 transition-colors"
               data-testid="create-ticket-btn"
