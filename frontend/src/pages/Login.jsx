@@ -46,8 +46,7 @@ const Login = () => {
   useEffect(() => {
     clearError();
     setLocalError('');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+  }, [clearError]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
