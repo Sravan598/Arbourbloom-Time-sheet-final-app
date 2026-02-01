@@ -233,6 +233,21 @@ Backend refactored from 7000+ line monolith to modular structure:
 
 ## Change Log
 
+### February 1, 2025
+- ✅ **Complete AurborBloom Tenant Isolation (P0)** - Full white-label experience for all tenants
+  - **Isolated Login Pages**: Both AurborBloom and Perfect Solutions now have fully isolated login pages
+  - **No Tenant Dropdown**: Neither tenant sees a dropdown with other companies
+  - **Automatic Redirects**: `/login` → `/aurborbloom/login`, `/signup` → `/aurborbloom/signup`
+  - **Super Admin Portal**: Reserved login at `/login?superadmin=true` for system administrators
+  - **Tenant-Aware Logout**: All logout flows redirect to `/{tenant}/login` instead of shared `/login`
+  - **Marketing Page CTAs**: All CTA buttons on main page point to `/aurborbloom/login` and `/aurborbloom/signup`
+  - Key files modified:
+    - `/app/frontend/src/pages/Login.jsx` - Super Admin-only login with redirect logic
+    - `/app/frontend/src/pages/Signup.jsx` - Redirects to `/aurborbloom/signup`
+    - `/app/frontend/src/context/AuthContext.jsx` - Updated `getLogoutRedirectUrl()` for all tenants
+    - `/app/frontend/src/components/auth/ProtectedRoute.jsx` - Updated redirect logic
+  - **12/12 frontend tests passed (100%)**
+
 ### January 31, 2025
 - ✅ **Custom Domain Mapping (CNAME)** - Allow tenants to use custom domains
   - Super Admin can configure custom domain for each tenant (e.g., hr.perfectsolutions.com)
