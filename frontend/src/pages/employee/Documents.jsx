@@ -92,7 +92,24 @@ const Documents = () => {
   });
   const [viewingDocument, setViewingDocument] = useState(null);
   const [activeSection, setActiveSection] = useState('documents'); // documents, settings
+  const [tenant, setTenant] = useState(null);
   
+  // Fetch tenant info
+  useEffect(() => {
+    const fetchTenant = async () => {
+      try {
+        const storedTenant = localStorage.getItem('tenant_slug');
+        if (storedTenant) {
+          const response = await axios.get(`${API}/tenants/${storedTenant}/public`);
+          setTenant(response.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch tenant:', err);
+      }
+    };
+    fetchTenant();
+  }, []);
+
   // Fetch profile
   useEffect(() => {
     const fetchProfile = async () => {
