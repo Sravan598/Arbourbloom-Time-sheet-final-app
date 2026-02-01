@@ -489,17 +489,21 @@ const Documents = () => {
               <img 
                 src={tenant.logo_url} 
                 alt={tenant.name} 
-                className="h-8 object-contain"
+                className="h-10 object-contain"
               />
             ) : (
-              <div 
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
-                style={{ backgroundColor: tenant?.primary_color || '#1a1a1a' }}
-              >
-                {tenant?.name?.charAt(0) || 'C'}
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-xl font-bold"
+                  style={{ backgroundColor: tenant?.primary_color || '#1E3A8A' }}
+                >
+                  {tenant?.name?.charAt(0) || 'P'}
+                </div>
+                <span className="font-bold text-lg" style={{ color: tenant?.primary_color || '#1E3A8A' }}>
+                  {tenant?.name || 'Perfect Solutions'}
+                </span>
               </div>
             )}
-            <span className="font-semibold text-gray-900">{tenant?.name || 'Company'}</span>
           </Link>
         </div>
         
