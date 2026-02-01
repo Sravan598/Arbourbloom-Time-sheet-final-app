@@ -1808,14 +1808,24 @@ async def signup(user_data: UserCreate):
 
 @api_router.post("/auth/login", response_model=TokenResponse)
 async def login(credentials: UserLogin, request: Request):
-    # For super admin, allow login without tenant_id check
-    user = await db.users.find_one({
-        "email": credentials.email.lower()
-    }, {"_id": 0})
-    
     # Get request metadata for audit logging
     ip_address = request.client.host if request.client else None
     user_agent = request.headers.get("user-agent", "")
+    
+    # First try to find user by email only (for super admin check)
+    user_by_email = await db.users.find_one({
+        "email": credentials.email.lower()
+    }, {"_id": 0})
+    
+    # If user is super admin, allow login regardless of tenant
+    if user_by_email and user_by_email.get("role") == UserRole.SUPER_ADMIN.value:
+        user = user_by_email
+    else:
+        # For regular users, find by email AND tenant_id
+        user = await db.users.find_one({
+            "email": credentials.email.lower(),
+            "tenant_id": credentials.tenant_id
+        }, {"_id": 0})
     
     if not user:
         # Log failed login attempt
@@ -1825,28 +1835,8 @@ async def login(credentials: UserLogin, request: Request):
             user_email=credentials.email,
             ip_address=ip_address,
             user_agent=user_agent,
-            details={"reason": "User not found"},
+            details={"reason": "User not found for this tenant"},
             severity="WARNING"
-        )
-        raise HTTPException(status_code=401, detail="No account found with this email address")
-    
-    # Check if user belongs to the selected tenant (unless super admin)
-    user_tenant = user.get("tenant_id", DEFAULT_TENANT_SLUG)
-    if user.get("role") != UserRole.SUPER_ADMIN.value and user_tenant != credentials.tenant_id:
-        # Log cross-tenant access attempt (potential security issue)
-        await log_audit_event(
-            event_type=AuditEventType.CROSS_TENANT_ATTEMPT,
-            tenant_id=credentials.tenant_id or "unknown",
-            user_id=user["id"],
-            user_email=credentials.email,
-            ip_address=ip_address,
-            user_agent=user_agent,
-            details={
-                "attempted_tenant": credentials.tenant_id,
-                "actual_tenant": user_tenant,
-                "reason": "User tried to login to wrong tenant"
-            },
-            severity="CRITICAL"
         )
         raise HTTPException(status_code=401, detail="No account found for this company")
     
@@ -1854,7 +1844,7 @@ async def login(credentials: UserLogin, request: Request):
         # Log failed password attempt
         await log_audit_event(
             event_type=AuditEventType.LOGIN_FAILED,
-            tenant_id=user_tenant,
+            tenant_id=user.get("tenant_id", credentials.tenant_id),
             user_id=user["id"],
             user_email=credentials.email,
             ip_address=ip_address,
