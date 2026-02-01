@@ -58,6 +58,14 @@ const Employees = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Password Reset Modal
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [employeeToReset, setEmployeeToReset] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Fetch profile data
   useEffect(() => {
