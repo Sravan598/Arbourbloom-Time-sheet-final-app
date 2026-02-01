@@ -463,11 +463,21 @@ const Documents = () => {
       <aside className="w-64 bg-white shadow-lg fixed left-0 top-0 bottom-0 z-40">
         <div className="p-6 border-b border-gray-100">
           <Link to="/employee/dashboard" className="flex items-center gap-3">
-            <img 
-              src="/aurborbloom_logo.png" 
-              alt="AurborBloom" 
-              className="h-8"
-            />
+            {tenant?.logo_url ? (
+              <img 
+                src={tenant.logo_url} 
+                alt={tenant.name} 
+                className="h-8 object-contain"
+              />
+            ) : (
+              <div 
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+                style={{ backgroundColor: tenant?.primary_color || '#1a1a1a' }}
+              >
+                {tenant?.name?.charAt(0) || 'C'}
+              </div>
+            )}
+            <span className="font-semibold text-gray-900">{tenant?.name || 'Company'}</span>
           </Link>
         </div>
         
