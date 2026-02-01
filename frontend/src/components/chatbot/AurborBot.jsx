@@ -322,9 +322,24 @@ const AurborBot = () => {
                   </div>
                 )}
                 <h2 className="font-semibold text-white text-lg">{getBotName()}</h2>
-                <span className="text-xs text-white/70 bg-white/20 px-2 py-0.5 rounded-full">FAQ</span>
+                {useAI && isAuthenticated ? (
+                  <span className="text-xs text-white/90 bg-gradient-to-r from-purple-500/80 to-pink-500/80 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" />
+                    AI
+                  </span>
+                ) : (
+                  <span className="text-xs text-white/70 bg-white/20 px-2 py-0.5 rounded-full">FAQ</span>
+                )}
               </div>
               <div className="flex items-center gap-1">
+                <button
+                  onClick={handleNewChat}
+                  className="p-1.5 hover:bg-white/10 rounded-full transition-colors pointer-events-auto"
+                  title="New conversation"
+                  data-testid="corbot-new-chat-button"
+                >
+                  <RefreshCw className="w-4 h-4 text-white" />
+                </button>
                 <button
                   onClick={() => setIsMinimized(!isMinimized)}
                   className="p-1.5 hover:bg-white/10 rounded-full transition-colors pointer-events-auto"
