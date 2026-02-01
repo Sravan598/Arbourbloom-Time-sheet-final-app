@@ -3962,6 +3962,56 @@ async def delete_employee(
     return {"message": f"Employee '{employee.get('name')}' and all associated data deleted successfully"}
 
 
+class PasswordResetRequest(BaseModel):
+    new_password: str = Field(..., min_length=6, description="New password (min 6 characters)")
+
+
+@api_router.post("/admin/employees/{employee_id}/reset-password")
+async def reset_employee_password(
+    employee_id: str,
+    reset_data: PasswordResetRequest,
+    admin: dict = Depends(require_admin)
+):
+    """Reset an employee's password (admin only)"""
+    tenant_id = get_tenant_id(admin)
+    
+    # Check employee exists and belongs to same tenant
+    employee = await db.users.find_one({
+        "id": employee_id, 
+        "tenant_id": tenant_id,
+        "role": "EMPLOYEE"
+    }, {"_id": 0, "name": 1, "email": 1})
+    
+    if not employee:
+        raise HTTPException(status_code=404, detail="Employee not found")
+    
+    # Hash the new password
+    new_password_hash = hash_password(reset_data.new_password)
+    
+    # Update password
+    await db.users.update_one(
+        {"id": employee_id},
+        {"$set": {"password_hash": new_password_hash}}
+    )
+    
+    # Log the action for security audit
+    await log_audit_event(
+        event_type=AuditEventType.PASSWORD_CHANGE,
+        tenant_id=tenant_id,
+        user_id=admin.get("id"),
+        user_email=admin.get("email"),
+        resource_type="user",
+        resource_id=employee_id,
+        details={"action": "admin_reset", "target_email": employee.get("email")},
+        severity="INFO"
+    )
+    
+    return {
+        "message": f"Password reset successfully for {employee.get('name')}",
+        "employee_email": employee.get("email")
+    }
+
+
 # ============== INVITATION ENDPOINTS ==============
 
 @api_router.post("/admin/invitations", response_model=InvitationResponse)
