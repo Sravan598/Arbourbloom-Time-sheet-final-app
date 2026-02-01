@@ -25,9 +25,10 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     // Clear the temporary session storage
     sessionStorage.removeItem('logout_redirect_tenant');
     
-    const loginPath = storedTenant && storedTenant !== 'aurborbloom' 
+    // All tenants (including aurborbloom) now use isolated login pages
+    const loginPath = storedTenant 
       ? `/${storedTenant}/login` 
-      : '/login';
+      : '/aurborbloom/login';
     return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
