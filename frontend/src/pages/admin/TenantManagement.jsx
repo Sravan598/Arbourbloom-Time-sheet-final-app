@@ -1094,6 +1094,74 @@ const TenantManagement = () => {
                         <p className="text-lg font-mono">{selectedTenant.custom_domain}</p>
                       </div>
                       
+                      {/* DNS Status Details */}
+                      {!selectedTenant.custom_domain_verified && domainStatus?.dns_checks && (
+                        <div className="mt-4 bg-gray-50 rounded-xl p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-medium text-gray-700">DNS Check Results</h4>
+                            <button
+                              onClick={fetchDomainStatus}
+                              disabled={checkingDns}
+                              className="text-sm text-brand-black hover:underline flex items-center gap-1"
+                            >
+                              <RefreshCw className={`w-3 h-3 ${checkingDns ? 'animate-spin' : ''}`} />
+                              Refresh
+                            </button>
+                          </div>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center justify-between p-2 bg-white rounded-lg">
+                              <span className="text-gray-600">CNAME Record</span>
+                              <span className={`flex items-center gap-1 ${
+                                domainStatus.dns_checks.cname_record?.status === 'found' 
+                                  ? 'text-green-600' 
+                                  : 'text-red-500'
+                              }`}>
+                                {domainStatus.dns_checks.cname_record?.status === 'found' ? (
+                                  <><CheckCircle className="w-4 h-4" /> Found</>
+                                ) : (
+                                  <><AlertCircle className="w-4 h-4" /> Not Found</>
+                                )}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between p-2 bg-white rounded-lg">
+                              <span className="text-gray-600">Domain Resolves</span>
+                              <span className={`flex items-center gap-1 ${
+                                domainStatus.dns_checks.resolves?.status === 'success' 
+                                  ? 'text-green-600' 
+                                  : 'text-red-500'
+                              }`}>
+                                {domainStatus.dns_checks.resolves?.status === 'success' ? (
+                                  <><CheckCircle className="w-4 h-4" /> Yes ({domainStatus.dns_checks.resolves.ip})</>
+                                ) : (
+                                  <><AlertCircle className="w-4 h-4" /> No</>
+                                )}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between p-2 bg-white rounded-lg">
+                              <span className="text-gray-600">TXT Verification</span>
+                              <span className={`flex items-center gap-1 ${
+                                domainStatus.dns_checks.txt_record?.found 
+                                  ? 'text-green-600' 
+                                  : 'text-amber-500'
+                              }`}>
+                                {domainStatus.dns_checks.txt_record?.found ? (
+                                  <><CheckCircle className="w-4 h-4" /> Verified</>
+                                ) : (
+                                  <><AlertCircle className="w-4 h-4" /> Optional</>
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {checkingDns && (
+                        <div className="mt-4 flex items-center justify-center text-gray-500 text-sm">
+                          <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                          Checking DNS records...
+                        </div>
+                      )}
+                      
                       <div className="flex gap-3 mt-4">
                         {!selectedTenant.custom_domain_verified && (
                           <Button
@@ -1177,6 +1245,7 @@ const TenantManagement = () => {
                       <li>• Users can access the app via your custom domain</li>
                       <li>• The app will automatically detect the tenant</li>
                       <li>• DNS changes may take up to 48 hours to propagate</li>
+                      <li>• System automatically checks DNS every hour</li>
                     </ul>
                   </div>
                 </div>
