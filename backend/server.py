@@ -1854,6 +1854,9 @@ async def login(credentials: UserLogin, request: Request):
         )
         raise HTTPException(status_code=401, detail="Incorrect password. Please try again")
     
+    # Get user's tenant_id
+    user_tenant = user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
     if not user.get("is_active", True):
         # Log deactivated account login attempt
         await log_audit_event(
