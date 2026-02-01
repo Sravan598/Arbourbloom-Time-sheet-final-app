@@ -236,7 +236,32 @@ Backend refactored from 7000+ line monolith to modular structure:
 
 ## Change Log
 
-### February 1, 2025
+### February 1, 2025 (Session 2)
+- ✅ **Verified PDF Timesheet Export (P1)** - All tenants working correctly
+  - Tenant-branded filenames: `{TenantName}_Timesheet_{UserName}_{Date}.pdf`
+  - CST timezone for date calculations
+  - PDFs generate with proper sizes (11-28KB per report)
+  - Tested: AurborBloom, Perfect Solutions, Knowvia Tech - all working
+  
+- ✅ **Verified CNAME Verification UI (P1)** - Ready for real-world testing
+  - Super Admin UI displays all tenants with domain status
+  - DNS Check Results: CNAME record, Domain resolves, TXT verification
+  - Detailed status modal with instructions
+  - "Verify Domain" and "Remove" buttons functional
+  - Automatic DNS verification background task running hourly
+  - Perfect Solutions configured with `hr.perfectsolutions.com` (pending verification)
+
+- ✅ **Verified Knowvia Tech Design (P0)** - User approved
+  - Red-to-Orange gradient background
+  - Frosted glass logo effect
+  - Clean, professional login/signup pages
+
+- ✅ **Database Seed Data Script** - Created for fresh environments
+  - Creates all 3 tenants: AurborBloom, Perfect Solutions, Knowvia Tech
+  - Creates test users: Super Admin, AurborBloom Admin, PS Admin, KT Admin
+  - Ensures proper tenant isolation and colors
+
+### February 1, 2025 (Session 1)
 - ✅ **Complete AurborBloom Tenant Isolation (P0)** - Full white-label experience for all tenants
   - **Isolated Login Pages**: Both AurborBloom and Perfect Solutions now have fully isolated login pages
   - **No Tenant Dropdown**: Neither tenant sees a dropdown with other companies
