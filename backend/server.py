@@ -1787,6 +1787,20 @@ async def signup(user_data: UserCreate):
             created_at=user.created_at
         )
     )
+    
+    # Trigger webhook for user creation
+    await trigger_webhooks(
+        tenant_id=tenant_id,
+        event_type=WebhookEventType.USER_CREATED,
+        payload={
+            "user_id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "role": user.role
+        }
+    )
+    
+    return response
 
 
 @api_router.post("/auth/login", response_model=TokenResponse)
