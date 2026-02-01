@@ -9415,6 +9415,8 @@ async def create_leave_request(
     current_user: dict = Depends(get_current_user)
 ):
     """Submit a new leave request"""
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
     # Validate dates
     try:
         start = datetime.strptime(request_data.start_date, "%Y-%m-%d")
@@ -9426,8 +9428,9 @@ async def create_leave_request(
     
     days = calculate_days(request_data.start_date, request_data.end_date)
     
-    # Check for overlapping requests
+    # Check for overlapping requests (within same tenant)
     overlap = await db.leave_requests.find_one({
+        "tenant_id": tenant_id,
         "user_id": current_user["id"],
         "status": {"$ne": "DENIED"},
         "$or": [
@@ -9457,12 +9460,13 @@ async def create_leave_request(
     )
     
     doc = leave_request.model_dump()
+    doc["tenant_id"] = tenant_id  # Add tenant_id
     doc["created_at"] = doc["created_at"].isoformat()
     doc["status"] = doc["status"].value
     await db.leave_requests.insert_one(doc)
     
-    # Notify all admins
-    admins = await db.users.find({"role": "ADMIN", "is_active": True}, {"_id": 0, "id": 1}).to_list(100)
+    # Notify all admins of this tenant
+    admins = await db.users.find({"tenant_id": tenant_id, "role": "ADMIN", "is_active": True}, {"_id": 0, "id": 1}).to_list(100)
     for admin in admins:
         await create_notification(
             user_id=admin["id"],
