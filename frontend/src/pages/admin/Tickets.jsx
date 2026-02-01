@@ -430,6 +430,14 @@ const AdminTickets = () => {
             <p className="text-gray-500">Manage employee support requests</p>
           </div>
           <div className="flex items-center gap-4">
+            <button
+              onClick={exportToPDF}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              data-testid="export-tickets-pdf-btn"
+            >
+              <Download className="w-4 h-4" />
+              Export PDF
+            </button>
             <span className="text-gray-600">{user?.name}</span>
             <NotificationBell />
           </div>
