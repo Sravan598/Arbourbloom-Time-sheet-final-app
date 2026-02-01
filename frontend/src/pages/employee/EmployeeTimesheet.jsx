@@ -198,6 +198,35 @@ const EmployeeTimesheet = () => {
     a.click();
   };
 
+  const exportToPDF = async () => {
+    try {
+      const token = localStorage.getItem('cortracker_token');
+      const params = new URLSearchParams();
+      if (startDate) params.append('start_date', startDate);
+      if (endDate) params.append('end_date', endDate);
+      
+      const response = await axios.get(`${API}/export/timesheet-history/pdf?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const contentDisposition = response.headers['content-disposition'];
+      const filename = contentDisposition 
+        ? contentDisposition.split('filename=')[1]?.replace(/"/g, '') 
+        : `Timesheet_History_${new Date().toISOString().split('T')[0]}.pdf`;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error('Failed to export PDF:', err);
+      setError('Failed to export PDF. Please try again.');
+    }
+  };
+
   const handleLogout = () => {
     // Get tenant directly from localStorage before any state changes
     const storedTenant = localStorage.getItem('cortracker_tenant');
