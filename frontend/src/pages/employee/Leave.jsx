@@ -2,11 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, Plus, X, Clock, CheckCircle, XCircle, 
-  Trash2, ChevronDown, AlertCircle 
+  Trash2, ChevronDown, AlertCircle, Download 
 } from 'lucide-react';
 import { format } from 'date-fns';
 import EmployeeSidebar from '../../components/employee/EmployeeSidebar';
 import leaveService from '../../services/leaveService';
+
+const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 // Status badge component - moved outside to avoid re-renders
 const StatusBadge = ({ status }) => {
