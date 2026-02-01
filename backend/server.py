@@ -7398,6 +7398,9 @@ async def create_tenant_indexes():
             ("security_audit_logs", [("tenant_id", 1), ("created_at", -1)]),
             ("security_audit_logs", [("event_type", 1), ("created_at", -1)]),
             ("security_audit_logs", [("severity", 1), ("created_at", -1)]),
+            ("tenant_usage", [("tenant_id", 1), ("date", -1)]),
+            ("tenant_usage_hourly", [("tenant_id", 1), ("date", -1), ("hour", 1)]),
+            ("tenant_rate_limits", [("tenant_slug", 1)]),
         ]
         
         for collection_name, index_keys in index_configs:
