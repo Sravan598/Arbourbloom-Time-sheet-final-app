@@ -135,18 +135,44 @@ const AurborBot = () => {
     return { left: 24, bottom: 24 };
   };
 
-  // Message handlers
-  const handleSend = () => {
+  // Message handlers - AI-powered
+  const handleSend = async () => {
     if (!inputValue.trim()) return;
     const userMessage = inputValue.trim();
     setInputValue('');
     setMessages(prev => [...prev, { type: 'user', text: userMessage }]);
     setIsTyping(true);
-    setTimeout(() => {
-      const response = findAnswer(userMessage);
-      setMessages(prev => [...prev, { type: 'bot', text: response.answer }]);
-      setIsTyping(false);
-    }, 500 + Math.random() * 500);
+    
+    // Use AI if authenticated, otherwise fall back to FAQ
+    if (useAI && isAuthenticated && token) {
+      try {
+        const response = await axios.post(
+          `${API}/api/chatbot/message`,
+          { message: userMessage, session_id: sessionId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        
+        setMessages(prev => [...prev, { type: 'bot', text: response.data.response, isAI: true }]);
+        setSessionId(response.data.session_id);
+      } catch (err) {
+        console.error('AI chatbot error:', err);
+        // Fallback to FAQ on error
+        const { findAnswer } = await import('./faqData');
+        const faqResponse = findAnswer(userMessage);
+        setMessages(prev => [...prev, { 
+          type: 'bot', 
+          text: faqResponse.answer + '\n\n_(AI temporarily unavailable, showing FAQ response)_',
+          isAI: false 
+        }]);
+      }
+    } else {
+      // FAQ fallback for unauthenticated users
+      const { findAnswer } = await import('./faqData');
+      const faqResponse = findAnswer(userMessage);
+      setMessages(prev => [...prev, { type: 'bot', text: faqResponse.answer, isAI: false }]);
+    }
+    
+    setIsTyping(false);
   };
 
   const handleKeyPress = (e) => {
@@ -159,18 +185,45 @@ const AurborBot = () => {
   const quickQuestions = [
     'How do I track time?',
     'How do I request leave?',
-    'How do I submit a ticket?',
-    'What can admins do?'
+    'What\'s my PTO balance?',
+    'Help me submit a ticket'
   ];
 
-  const handleQuickQuestion = (question) => {
+  const handleQuickQuestion = async (question) => {
     setMessages(prev => [...prev, { type: 'user', text: question }]);
     setIsTyping(true);
-    setTimeout(() => {
-      const response = findAnswer(question);
-      setMessages(prev => [...prev, { type: 'bot', text: response.answer }]);
-      setIsTyping(false);
-    }, 500);
+    
+    if (useAI && isAuthenticated && token) {
+      try {
+        const response = await axios.post(
+          `${API}/api/chatbot/message`,
+          { message: question, session_id: sessionId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setMessages(prev => [...prev, { type: 'bot', text: response.data.response, isAI: true }]);
+        setSessionId(response.data.session_id);
+      } catch (err) {
+        const { findAnswer } = await import('./faqData');
+        const faqResponse = findAnswer(question);
+        setMessages(prev => [...prev, { type: 'bot', text: faqResponse.answer, isAI: false }]);
+      }
+    } else {
+      const { findAnswer } = await import('./faqData');
+      const faqResponse = findAnswer(question);
+      setMessages(prev => [...prev, { type: 'bot', text: faqResponse.answer, isAI: false }]);
+    }
+    
+    setIsTyping(false);
+  };
+  
+  // Start new conversation
+  const handleNewChat = () => {
+    setSessionId(null);
+    const botName = getBotName();
+    setMessages([{
+      type: 'bot',
+      text: `Hi! 👋 I'm ${botName}, your HR assistant. How can I help you today?`
+    }]);
   };
   
   // Get tenant-specific colors
