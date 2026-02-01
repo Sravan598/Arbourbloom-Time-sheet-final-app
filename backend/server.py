@@ -2889,12 +2889,16 @@ async def create_project(
 
 @api_router.get("/projects", response_model=List[ProjectResponse])
 async def get_projects(current_user: dict = Depends(get_current_user)):
-    """Get projects - employees see only assigned, admins see all"""
+    """Get projects - employees see only assigned, admins see all (within their tenant)"""
+    # CRITICAL: Filter by tenant_id for data isolation
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
     if current_user.get("role") == "ADMIN":
-        query = {}
+        query = {"tenant_id": tenant_id}
     else:
         # Employees see projects they're assigned to
         query = {
+            "tenant_id": tenant_id,
             "$or": [
                 {"assigned_users": current_user["id"]},
                 {"assigned_users": {"$size": 0}}  # Or projects with no specific assignment (everyone)
