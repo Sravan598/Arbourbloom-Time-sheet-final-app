@@ -214,7 +214,7 @@ class TenantPublicInfo(BaseModel):
 DEFAULT_TENANT_SLUG = "aurborbloom"
 
 
-# ============== AUDIT LOG MODELS ==============
+# ============== SECURITY AUDIT LOG MODELS ==============
 
 class AuditEventType(str, Enum):
     """Types of audit events for security monitoring"""
@@ -233,8 +233,8 @@ class AuditEventType(str, Enum):
     USER_DEACTIVATED = "USER_DEACTIVATED"
 
 
-class AuditLog(BaseModel):
-    """Audit log entry for security monitoring"""
+class SecurityAuditLog(BaseModel):
+    """Security audit log entry for monitoring"""
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     tenant_id: str
     event_type: AuditEventType
@@ -263,7 +263,7 @@ async def log_audit_event(
 ):
     """Log an audit event to the database"""
     try:
-        audit_log = AuditLog(
+        audit_log = SecurityAuditLog(
             tenant_id=tenant_id,
             event_type=event_type,
             user_id=user_id,
