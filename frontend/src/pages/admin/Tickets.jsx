@@ -233,6 +233,17 @@ const AdminTickets = () => {
     }
   };
 
+  // Auto-refresh comments every 10 seconds when a ticket is selected
+  useEffect(() => {
+    if (!selectedTicket) return;
+    
+    const interval = setInterval(() => {
+      fetchComments(selectedTicket.id);
+    }, 10000); // Poll every 10 seconds
+    
+    return () => clearInterval(interval); // Cleanup on unmount or ticket change
+  }, [selectedTicket, token]);
+
   const handleSelectTicket = async (ticket) => {
     setSelectedTicket(ticket);
     setShowAssignDropdown(false);
