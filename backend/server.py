@@ -9853,6 +9853,67 @@ async def get_status_checks():
 # Include the router in the main app
 app.include_router(api_router)
 
+
+# Rate Limiting Middleware
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """Apply rate limiting per tenant"""
+    # Skip rate limiting for non-API routes and health checks
+    if not request.url.path.startswith("/api") or request.url.path in ["/api/health", "/api/tenants"]:
+        return await call_next(request)
+    
+    # Try to extract tenant_id from JWT token
+    tenant_id = "anonymous"
+    auth_header = request.headers.get("authorization", "")
+    
+    if auth_header.startswith("Bearer "):
+        try:
+            token = auth_header.split(" ")[1]
+            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            tenant_id = payload.get("tenant_id", "unknown")
+        except:
+            pass
+    
+    # Check rate limit
+    is_allowed, remaining = check_rate_limit(tenant_id)
+    
+    if not is_allowed:
+        # Log rate limit exceeded
+        await log_audit_event(
+            event_type=AuditEventType.SUSPICIOUS_ACTIVITY,
+            tenant_id=tenant_id,
+            details={"reason": "Rate limit exceeded", "endpoint": request.url.path},
+            severity="WARNING"
+        )
+        
+        return Response(
+            content=json.dumps({
+                "detail": "Rate limit exceeded. Please try again later.",
+                "retry_after": RATE_LIMIT_WINDOW
+            }),
+            status_code=429,
+            headers={
+                "Content-Type": "application/json",
+                "X-RateLimit-Limit": str(RATE_LIMIT_MAX_REQUESTS),
+                "X-RateLimit-Remaining": "0",
+                "X-RateLimit-Reset": str(RATE_LIMIT_WINDOW),
+                "Retry-After": str(RATE_LIMIT_WINDOW)
+            }
+        )
+    
+    # Track usage
+    if tenant_id != "anonymous":
+        await track_usage(tenant_id, request.url.path, request.method)
+    
+    # Add rate limit headers to response
+    response = await call_next(request)
+    response.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_MAX_REQUESTS)
+    response.headers["X-RateLimit-Remaining"] = str(remaining)
+    response.headers["X-RateLimit-Reset"] = str(RATE_LIMIT_WINDOW)
+    
+    return response
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
