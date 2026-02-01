@@ -38,12 +38,14 @@ const AurborBot = () => {
     if (tenant && tenant.slug !== prevTenantSlug.current) {
       prevTenantSlug.current = tenant.slug;
       const botName = getBotName();
+      const aiIndicator = useAI && isAuthenticated ? ' I\'m powered by AI and can answer complex questions!' : '';
       setMessages([{
         type: 'bot',
-        text: `Hi! 👋 I'm ${botName}, your HR assistant. Ask me anything about the app - time tracking, timesheets, leave requests, support tickets, and more!`
+        text: `Hi! 👋 I'm ${botName}, your HR assistant.${aiIndicator} Ask me anything about time tracking, timesheets, leave requests, support tickets, and more!`
       }]);
+      setSessionId(null); // Reset session on tenant change
     }
-  }, [tenant?.slug]);
+  }, [tenant?.slug, isAuthenticated]);
   
   // Track if user has dragged (to show at saved position)
   const [isDragging, setIsDragging] = useState(false);
