@@ -1718,6 +1718,90 @@ async def get_tenant_by_domain(domain: str):
     return tenant
 
 
+@api_router.get("/super-admin/tenants/{tenant_id}/domain-status")
+async def get_domain_status(
+    tenant_id: str,
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Get detailed domain verification status for a tenant"""
+    import socket
+    import dns.resolver
+    
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    domain = tenant.get("custom_domain")
+    if not domain:
+        return {
+            "has_domain": False,
+            "domain": None,
+            "verified": False,
+            "dns_checks": {}
+        }
+    
+    # Perform detailed DNS checks
+    dns_checks = {
+        "cname_record": {"status": "unknown", "value": None},
+        "resolves": {"status": "unknown", "ip": None},
+        "txt_record": {"status": "unknown", "found": False}
+    }
+    
+    # Check CNAME record
+    try:
+        answers = dns.resolver.resolve(domain, 'CNAME')
+        for rdata in answers:
+            target = str(rdata.target).rstrip('.')
+            dns_checks["cname_record"] = {
+                "status": "found",
+                "value": target,
+                "valid": 'emergentagent.com' in target.lower()
+            }
+            break
+    except dns.resolver.NoAnswer:
+        dns_checks["cname_record"] = {"status": "not_found", "value": None}
+    except dns.resolver.NXDOMAIN:
+        dns_checks["cname_record"] = {"status": "domain_not_exists", "value": None}
+    except Exception as e:
+        dns_checks["cname_record"] = {"status": "error", "error": str(e)}
+    
+    # Check if domain resolves
+    try:
+        ip = socket.gethostbyname(domain)
+        dns_checks["resolves"] = {"status": "success", "ip": ip}
+    except socket.gaierror as e:
+        dns_checks["resolves"] = {"status": "failed", "error": str(e)}
+    
+    # Check TXT verification record
+    verification_token = tenant.get("custom_domain_verification_token", "")
+    txt_domain = f"_aurborbloom-verify.{domain}"
+    try:
+        answers = dns.resolver.resolve(txt_domain, 'TXT')
+        for rdata in answers:
+            txt_value = str(rdata).strip('"')
+            if verification_token and txt_value == verification_token:
+                dns_checks["txt_record"] = {"status": "verified", "found": True}
+                break
+        else:
+            dns_checks["txt_record"] = {"status": "found_but_wrong_value", "found": False}
+    except dns.resolver.NXDOMAIN:
+        dns_checks["txt_record"] = {"status": "not_found", "found": False}
+    except Exception as e:
+        dns_checks["txt_record"] = {"status": "error", "error": str(e), "found": False}
+    
+    return {
+        "has_domain": True,
+        "domain": domain,
+        "verified": tenant.get("custom_domain_verified", False),
+        "verification_token": verification_token,
+        "dns_checks": dns_checks,
+        "instructions": {
+            "cname": f"Add CNAME record: {domain} → hrmsaas.preview.emergentagent.com",
+            "txt": f"Add TXT record: _aurborbloom-verify.{domain} → {verification_token}"
+        }
+    }
+
+
 # ============== FEATURE TOGGLE ENDPOINTS ==============
 
 # Available features that can be toggled
