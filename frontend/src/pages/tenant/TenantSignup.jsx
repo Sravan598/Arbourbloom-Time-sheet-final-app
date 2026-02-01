@@ -420,7 +420,7 @@ const TenantSignup = () => {
                 type="submit"
                 disabled={isLoading || (activeTab === 'EMPLOYEE' && codeValid === false)}
                 className="w-full py-3 text-white font-medium rounded-xl transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ backgroundColor: primaryColor }}
+                style={{ backgroundColor: buttonColor }}
               >
                 {isLoading ? (
                   <>
@@ -439,7 +439,7 @@ const TenantSignup = () => {
               <Link 
                 to={`/${tenantSlug}/login`}
                 className="font-medium hover:underline"
-                style={{ color: primaryColor }}
+                style={{ color: buttonColor }}
               >
                 Sign in
               </Link>
