@@ -344,7 +344,7 @@ const TenantLogin = () => {
                 type="submit"
                 disabled={isLoading}
                 className="w-full py-3 text-white font-medium rounded-xl transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ backgroundColor: primaryColor }}
+                style={{ backgroundColor: buttonColor }}
               >
                 {isLoading ? (
                   <>
