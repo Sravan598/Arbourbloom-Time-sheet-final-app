@@ -2859,6 +2859,9 @@ async def create_project(
     admin: dict = Depends(require_admin)
 ):
     """Create a new project (admin only)"""
+    # CRITICAL: Include tenant_id for data isolation
+    tenant_id = admin.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
     project = Project(
         name=project_data.name,
         description=project_data.description,
@@ -2869,6 +2872,7 @@ async def create_project(
     )
     
     project_doc = project.model_dump()
+    project_doc["tenant_id"] = tenant_id
     project_doc["created_at"] = project_doc["created_at"].isoformat()
     project_doc["updated_at"] = project_doc["updated_at"].isoformat()
     
