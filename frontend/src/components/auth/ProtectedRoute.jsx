@@ -47,9 +47,10 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     
     // Get tenant from localStorage for redirect
     const storedTenant = localStorage.getItem('cortracker_tenant');
-    const loginPath = storedTenant && storedTenant !== 'aurborbloom' 
+    // All tenants (including aurborbloom) now use isolated login pages
+    const loginPath = storedTenant 
       ? `/${storedTenant}/login` 
-      : '/login';
+      : '/aurborbloom/login';
     return <Navigate to={loginPath} replace />;
   }
 
