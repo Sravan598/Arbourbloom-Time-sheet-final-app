@@ -7941,7 +7941,9 @@ async def get_all_leave_requests(
     if current_user.get("role") != "ADMIN":
         raise HTTPException(status_code=403, detail="Admin access required")
     
-    query = {}
+    # CRITICAL: Filter by tenant_id for data isolation
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    query = {"tenant_id": tenant_id}
     if status:
         query["status"] = status.upper()
     
