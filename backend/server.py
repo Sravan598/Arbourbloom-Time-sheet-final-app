@@ -170,6 +170,296 @@ def check_rate_limit(tenant_id: str) -> tuple[bool, int]:
     return True, remaining - 1
 
 
+# ============== P2: DATA ENCRYPTION ==============
+
+# Master encryption key (in production, use AWS KMS, Azure Key Vault, etc.)
+MASTER_ENCRYPTION_KEY = os.environ.get('ENCRYPTION_KEY', 'aurborbloom-master-key-change-in-production-32ch')
+
+def derive_tenant_key(tenant_id: str) -> bytes:
+    """Derive a unique encryption key for each tenant from the master key"""
+    salt = tenant_id.encode()
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(MASTER_ENCRYPTION_KEY.encode()))
+    return key
+
+
+def get_tenant_cipher(tenant_id: str) -> Fernet:
+    """Get a Fernet cipher for a specific tenant"""
+    key = derive_tenant_key(tenant_id)
+    return Fernet(key)
+
+
+def encrypt_sensitive_data(tenant_id: str, data: str) -> str:
+    """Encrypt sensitive data for a tenant"""
+    if not data:
+        return data
+    cipher = get_tenant_cipher(tenant_id)
+    encrypted = cipher.encrypt(data.encode())
+    return base64.urlsafe_b64encode(encrypted).decode()
+
+
+def decrypt_sensitive_data(tenant_id: str, encrypted_data: str) -> str:
+    """Decrypt sensitive data for a tenant"""
+    if not encrypted_data:
+        return encrypted_data
+    try:
+        cipher = get_tenant_cipher(tenant_id)
+        decoded = base64.urlsafe_b64decode(encrypted_data.encode())
+        decrypted = cipher.decrypt(decoded)
+        return decrypted.decode()
+    except Exception as e:
+        logger.error(f"Decryption failed: {e}")
+        return None
+
+
+def hash_sensitive_field(data: str) -> str:
+    """Create a searchable hash of sensitive data (one-way)"""
+    if not data:
+        return None
+    return hashlib.sha256(data.encode()).hexdigest()
+
+
+# ============== P2: WEBHOOK SYSTEM ==============
+
+class WebhookEventType(str, Enum):
+    """Types of webhook events"""
+    USER_CREATED = "user.created"
+    USER_UPDATED = "user.updated"
+    USER_DEACTIVATED = "user.deactivated"
+    TIMESHEET_CLOCKED_IN = "timesheet.clocked_in"
+    TIMESHEET_CLOCKED_OUT = "timesheet.clocked_out"
+    TICKET_CREATED = "ticket.created"
+    TICKET_UPDATED = "ticket.updated"
+    TICKET_RESOLVED = "ticket.resolved"
+    LEAVE_REQUESTED = "leave.requested"
+    LEAVE_APPROVED = "leave.approved"
+    LEAVE_DENIED = "leave.denied"
+    ANNOUNCEMENT_CREATED = "announcement.created"
+
+
+class WebhookConfig(BaseModel):
+    """Webhook configuration for a tenant"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    name: str
+    url: str
+    secret: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    events: List[str]  # List of WebhookEventType values
+    is_active: bool = True
+    headers: Optional[Dict[str, str]] = None  # Custom headers
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    last_triggered_at: Optional[datetime] = None
+    failure_count: int = 0
+
+
+class WebhookDelivery(BaseModel):
+    """Record of a webhook delivery attempt"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    webhook_id: str
+    tenant_id: str
+    event_type: str
+    payload: dict
+    response_status: Optional[int] = None
+    response_body: Optional[str] = None
+    success: bool = False
+    error_message: Optional[str] = None
+    delivered_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+async def trigger_webhooks(tenant_id: str, event_type: WebhookEventType, payload: dict):
+    """Trigger all active webhooks for a tenant event"""
+    try:
+        # Find all active webhooks for this tenant and event type
+        webhooks = await db.webhooks.find({
+            "tenant_id": tenant_id,
+            "is_active": True,
+            "events": event_type.value
+        }, {"_id": 0}).to_list(50)
+        
+        for webhook in webhooks:
+            # Run webhook delivery in background
+            asyncio.create_task(deliver_webhook(webhook, event_type, payload))
+            
+    except Exception as e:
+        logger.error(f"Failed to trigger webhooks: {e}")
+
+
+async def deliver_webhook(webhook: dict, event_type: WebhookEventType, payload: dict):
+    """Deliver a webhook to the configured URL"""
+    webhook_id = webhook.get("id")
+    tenant_id = webhook.get("tenant_id")
+    
+    # Create signature for payload verification
+    signature = hashlib.sha256(
+        f"{webhook.get('secret')}:{json.dumps(payload, sort_keys=True)}".encode()
+    ).hexdigest()
+    
+    # Prepare headers
+    headers = {
+        "Content-Type": "application/json",
+        "X-Webhook-Event": event_type.value,
+        "X-Webhook-Signature": signature,
+        "X-Webhook-Timestamp": datetime.now(timezone.utc).isoformat(),
+        "User-Agent": "AurborBloom-Webhook/1.0"
+    }
+    
+    # Add custom headers if configured
+    if webhook.get("headers"):
+        headers.update(webhook["headers"])
+    
+    delivery_record = {
+        "id": str(uuid.uuid4()),
+        "webhook_id": webhook_id,
+        "tenant_id": tenant_id,
+        "event_type": event_type.value,
+        "payload": payload,
+        "delivered_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.post(
+                webhook.get("url"),
+                json={
+                    "event": event_type.value,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "tenant_id": tenant_id,
+                    "data": payload
+                },
+                headers=headers
+            )
+            
+            delivery_record["response_status"] = response.status_code
+            delivery_record["response_body"] = response.text[:500]  # Limit response size
+            delivery_record["success"] = 200 <= response.status_code < 300
+            
+            # Update webhook last triggered
+            await db.webhooks.update_one(
+                {"id": webhook_id},
+                {
+                    "$set": {"last_triggered_at": datetime.now(timezone.utc).isoformat()},
+                    "$inc": {"failure_count": 0 if delivery_record["success"] else 1}
+                }
+            )
+            
+    except Exception as e:
+        delivery_record["success"] = False
+        delivery_record["error_message"] = str(e)
+        
+        # Increment failure count
+        await db.webhooks.update_one(
+            {"id": webhook_id},
+            {"$inc": {"failure_count": 1}}
+        )
+        
+        logger.error(f"Webhook delivery failed for {webhook_id}: {e}")
+    
+    # Save delivery record
+    await db.webhook_deliveries.insert_one(delivery_record)
+
+
+# ============== P2: CUSTOM DOMAIN SSL ==============
+
+class DomainSSLStatus(str, Enum):
+    """SSL certificate status for custom domains"""
+    PENDING = "pending"
+    PROVISIONING = "provisioning"
+    ACTIVE = "active"
+    FAILED = "failed"
+    EXPIRED = "expired"
+
+
+class CustomDomainSSL(BaseModel):
+    """SSL certificate tracking for custom domains"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    domain: str
+    ssl_status: DomainSSLStatus = DomainSSLStatus.PENDING
+    certificate_provider: str = "lets_encrypt"  # For future implementation
+    issued_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+    last_checked_at: Optional[datetime] = None
+    error_message: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+async def request_ssl_certificate(tenant_id: str, domain: str) -> dict:
+    """
+    Request SSL certificate for a custom domain.
+    In production, this would integrate with Let's Encrypt or a cloud provider.
+    For now, we track the request and provide instructions.
+    """
+    
+    # Check if domain already has SSL tracking
+    existing = await db.custom_domain_ssl.find_one({"domain": domain}, {"_id": 0})
+    
+    if existing:
+        return {
+            "status": existing.get("ssl_status"),
+            "message": "SSL certificate already requested",
+            "domain": domain
+        }
+    
+    # Create SSL tracking record
+    ssl_record = CustomDomainSSL(
+        tenant_id=tenant_id,
+        domain=domain,
+        ssl_status=DomainSSLStatus.PENDING
+    )
+    
+    doc = ssl_record.model_dump()
+    doc["ssl_status"] = doc["ssl_status"].value
+    doc["created_at"] = doc["created_at"].isoformat()
+    
+    await db.custom_domain_ssl.insert_one(doc)
+    
+    # In production, this would trigger Let's Encrypt certificate request
+    # For now, we return instructions
+    
+    return {
+        "status": "pending",
+        "message": "SSL certificate request initiated",
+        "domain": domain,
+        "instructions": [
+            f"1. Ensure DNS is properly configured for {domain}",
+            "2. CNAME record must point to our server",
+            "3. Certificate will be provisioned automatically once DNS is verified",
+            "4. This process typically takes 5-15 minutes"
+        ],
+        "note": "In production, Let's Encrypt certificates are auto-provisioned"
+    }
+
+
+async def check_ssl_status(domain: str) -> dict:
+    """Check SSL certificate status for a domain"""
+    
+    ssl_record = await db.custom_domain_ssl.find_one({"domain": domain}, {"_id": 0})
+    
+    if not ssl_record:
+        return {
+            "status": "not_requested",
+            "domain": domain,
+            "message": "No SSL certificate requested for this domain"
+        }
+    
+    # In production, this would check actual certificate status
+    # For now, we return the stored status
+    
+    return {
+        "status": ssl_record.get("ssl_status"),
+        "domain": domain,
+        "issued_at": ssl_record.get("issued_at"),
+        "expires_at": ssl_record.get("expires_at"),
+        "last_checked_at": ssl_record.get("last_checked_at"),
+        "error_message": ssl_record.get("error_message")
+    }
+
+
 # ============== ENUMS ==============
 class UserRole(str, Enum):
     SUPER_ADMIN = "SUPER_ADMIN"  # Can manage all tenants
