@@ -205,12 +205,17 @@ const TenantSignup = () => {
         </div>
         
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
+          {/* Logo with glass effect - matching login page */}
           {tenant?.logo_url ? (
-            <img 
-              src={tenant.logo_url} 
-              alt={tenant.name} 
-              className="h-16 object-contain mb-8 brightness-0 invert"
-            />
+            <div className="mb-8">
+              <div className="inline-flex items-center px-6 py-4 rounded-2xl bg-white/15 backdrop-blur-lg border border-white/25 shadow-xl">
+                <img 
+                  src={tenant.logo_url} 
+                  alt={tenant.name}
+                  className="h-14 object-contain"
+                />
+              </div>
+            </div>
           ) : (
             <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-3xl font-bold mb-8">
               {tenant?.name?.charAt(0) || 'C'}
