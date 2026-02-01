@@ -172,8 +172,11 @@ def check_rate_limit(tenant_id: str) -> tuple[bool, int]:
 
 # ============== P2: DATA ENCRYPTION ==============
 
-# Master encryption key (in production, use AWS KMS, Azure Key Vault, etc.)
-MASTER_ENCRYPTION_KEY = os.environ.get('ENCRYPTION_KEY', 'aurborbloom-master-key-change-in-production-32ch')
+# Master encryption key (MUST be set in production via environment variable)
+MASTER_ENCRYPTION_KEY = os.environ.get('ENCRYPTION_KEY')
+if not MASTER_ENCRYPTION_KEY:
+    logger.warning("⚠️ ENCRYPTION_KEY not set in environment. Using fallback key - NOT SECURE FOR PRODUCTION!")
+    MASTER_ENCRYPTION_KEY = 'aurborbloom-fallback-key-32chars!'
 
 def derive_tenant_key(tenant_id: str) -> bytes:
     """Derive a unique encryption key for each tenant from the master key"""
