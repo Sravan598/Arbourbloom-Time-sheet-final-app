@@ -363,7 +363,7 @@ const TenantLogin = () => {
               <Link 
                 to={`/${tenantSlug}/signup`}
                 className="font-medium hover:underline"
-                style={{ color: primaryColor }}
+                style={{ color: buttonColor }}
               >
                 Sign up
               </Link>
