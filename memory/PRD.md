@@ -201,13 +201,13 @@ AurborBloom is a comprehensive Human Resource Management System (HRMS) built wit
 
 ### P0 - High Priority
 1. ✅ **Complete AurborBloom Tenant Isolation** - COMPLETED (February 1, 2025)
-2. **Daily Summary Email**: Automated work hour summaries (ON HOLD per user request)
+2. ✅ **CNAME Verification Logic** - COMPLETED (February 1, 2025)
+3. ✅ **AI HR Chatbot Integration** - COMPLETED (February 1, 2025)
+4. **Daily Summary Email**: Automated work hour summaries (ON HOLD per user request)
 
 ### P1 - Medium Priority
-1. **CNAME Verification Logic**: Implement backend DNS verification for custom domains
-2. **HR Chatbot AI Integration**: Intelligent AI chatbot using OpenAI or Gemini
-3. In-App Calendar (ON HOLD per user request)
-4. Calendar Integration Phase 2 (Two-Way OAuth Sync) - ON HOLD
+1. In-App Calendar (ON HOLD per user request)
+2. Calendar Integration Phase 2 (Two-Way OAuth Sync) - ON HOLD
 
 ### P2 - Medium Priority
 1. **Refactor server.py**: Split into modular structure (critical tech debt)
