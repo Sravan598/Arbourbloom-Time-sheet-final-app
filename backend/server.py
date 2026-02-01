@@ -5561,6 +5561,84 @@ async def ensure_default_channels():
             await db.chat_channels.insert_one(doc)
 
 
+# ============== BACKGROUND DNS VERIFICATION ==============
+async def verify_single_domain(tenant_id: str, domain: str) -> bool:
+    """Verify a single domain's DNS configuration"""
+    import socket
+    import dns.resolver
+    
+    try:
+        # Check CNAME record
+        answers = dns.resolver.resolve(domain, 'CNAME')
+        for rdata in answers:
+            if 'emergentagent.com' in str(rdata.target).lower():
+                return True
+    except dns.resolver.NoAnswer:
+        # No CNAME record, try A record resolution
+        pass
+    except dns.resolver.NXDOMAIN:
+        # Domain doesn't exist
+        logger.warning(f"Domain {domain} does not exist")
+        return False
+    except Exception as e:
+        logger.warning(f"DNS CNAME check failed for {domain}: {e}")
+    
+    # Fallback: try basic DNS resolution
+    try:
+        socket.gethostbyname(domain)
+        return True  # Domain resolves
+    except socket.gaierror:
+        return False
+
+
+async def periodic_dns_verification():
+    """Background task to periodically verify custom domains"""
+    logger.info("🔄 Starting periodic DNS verification task...")
+    
+    while True:
+        try:
+            # Wait 1 hour between checks (3600 seconds)
+            await asyncio.sleep(3600)
+            
+            # Find all tenants with unverified custom domains
+            cursor = db.tenants.find(
+                {"custom_domain": {"$ne": None}, "custom_domain_verified": False},
+                {"_id": 0, "id": 1, "name": 1, "custom_domain": 1}
+            )
+            
+            tenants_to_verify = await cursor.to_list(length=100)
+            
+            if tenants_to_verify:
+                logger.info(f"🔍 Checking DNS for {len(tenants_to_verify)} pending domains...")
+            
+            for tenant in tenants_to_verify:
+                domain = tenant.get("custom_domain")
+                tenant_id = tenant.get("id")
+                tenant_name = tenant.get("name")
+                
+                if domain and tenant_id:
+                    verified = await verify_single_domain(tenant_id, domain)
+                    
+                    if verified:
+                        await db.tenants.update_one(
+                            {"id": tenant_id},
+                            {"$set": {"custom_domain_verified": True}}
+                        )
+                        logger.info(f"✅ Auto-verified domain '{domain}' for tenant '{tenant_name}'")
+                    else:
+                        logger.debug(f"⏳ Domain '{domain}' for tenant '{tenant_name}' still pending verification")
+                
+                # Small delay between checks to avoid overwhelming DNS servers
+                await asyncio.sleep(2)
+                
+        except asyncio.CancelledError:
+            logger.info("🛑 DNS verification task cancelled")
+            break
+        except Exception as e:
+            logger.error(f"❌ Error in periodic DNS verification: {e}")
+            await asyncio.sleep(60)  # Wait a minute before retrying on error
+
+
 # Initialize default channels on startup
 @app.on_event("startup")
 async def startup_event():
