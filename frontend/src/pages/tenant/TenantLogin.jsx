@@ -188,14 +188,16 @@ const TenantLogin = () => {
         </div>
         
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
-          {/* Logo with transparent background */}
+          {/* Logo with frosted glass effect */}
           {tenant?.logo_url ? (
             <div className="mb-8">
-              <TransparentLogo 
-                src={tenant.logo_url} 
-                alt={tenant.name}
-                className="h-16"
-              />
+              <div className="inline-flex items-center px-6 py-4 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/30 shadow-2xl">
+                <img 
+                  src={tenant.logo_url} 
+                  alt={tenant.name}
+                  className="h-14 object-contain"
+                />
+              </div>
             </div>
           ) : (
             <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-3xl font-bold mb-8 border border-white/20">
