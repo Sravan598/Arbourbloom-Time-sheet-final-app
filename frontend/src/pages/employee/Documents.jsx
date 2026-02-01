@@ -98,17 +98,39 @@ const Documents = () => {
   useEffect(() => {
     const fetchTenant = async () => {
       try {
-        const storedTenant = localStorage.getItem('tenant_slug');
-        if (storedTenant) {
-          const response = await axios.get(`${API}/tenants/${storedTenant}/public`);
-          setTenant(response.data);
+        // Try multiple ways to get tenant slug
+        let tenantSlug = localStorage.getItem('tenant_slug');
+        
+        // If not found, try to extract from URL path
+        if (!tenantSlug) {
+          const pathParts = window.location.pathname.split('/');
+          const possibleTenants = ['aurborbloom', 'perfectsolutions', 'knowviatech'];
+          for (const part of pathParts) {
+            if (possibleTenants.includes(part.toLowerCase())) {
+              tenantSlug = part.toLowerCase();
+              break;
+            }
+          }
+        }
+        
+        // If still not found, try user's tenant_id
+        if (!tenantSlug && user?.tenant_id) {
+          tenantSlug = user.tenant_id;
+        }
+        
+        if (tenantSlug) {
+          const response = await fetch(`${API}/tenants/${tenantSlug}/public`);
+          if (response.ok) {
+            const data = await response.json();
+            setTenant(data);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch tenant:', err);
       }
     };
     fetchTenant();
-  }, []);
+  }, [user]);
 
   // Fetch profile
   useEffect(() => {
