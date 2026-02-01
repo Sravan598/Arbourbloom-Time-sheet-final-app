@@ -75,13 +75,14 @@ const Login = () => {
           return;
         }
         
-        navigate('/admin/dashboard');
+        // Navigate to admin dashboard - use window.location for clean redirect
+        window.location.href = '/admin/dashboard';
       } else {
         setLocalError(result.error || 'Login failed. Please try again.');
+        setIsLoading(false);
       }
     } catch (err) {
       setLocalError('An unexpected error occurred. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };
