@@ -18,7 +18,8 @@ const API = process.env.REACT_APP_BACKEND_URL;
 // Import tenant-specific landing pages
 const TENANT_PAGES = {
   'perfectsolutions': React.lazy(() => import('./PerfectSolutionsHome')),
-  'aurborbloom': React.lazy(() => import('./AurborBloomHome'))
+  'aurborbloom': React.lazy(() => import('./AurborBloomHome')),
+  'knowviatech': React.lazy(() => import('./KnowviaTechHome'))
 };
 
 const TenantLanding = () => {
