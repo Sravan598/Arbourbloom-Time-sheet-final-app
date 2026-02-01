@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const ProtectedRoute = ({ children, requiredRole }) => {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated, tenant } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -18,7 +18,12 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Get tenant from localStorage for redirect (may still be set during logout)
+    const storedTenant = localStorage.getItem('cortracker_tenant');
+    const loginPath = storedTenant && storedTenant !== 'aurborbloom' 
+      ? `/${storedTenant}/login` 
+      : '/login';
+    return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
   if (requiredRole && user?.role !== requiredRole) {
@@ -33,7 +38,13 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     } else if (user?.role === 'EMPLOYEE') {
       return <Navigate to="/employee/dashboard" replace />;
     }
-    return <Navigate to="/login" replace />;
+    
+    // Get tenant from localStorage for redirect
+    const storedTenant = localStorage.getItem('cortracker_tenant');
+    const loginPath = storedTenant && storedTenant !== 'aurborbloom' 
+      ? `/${storedTenant}/login` 
+      : '/login';
+    return <Navigate to={loginPath} replace />;
   }
 
   return children;
