@@ -326,12 +326,11 @@ class TestWebhookManagement:
         )
         assert response.status_code in [200, 201], f"Expected 200/201, got {response.status_code}: {response.text}"
         data = response.json()
-        assert "id" in data
-        assert data["name"] == webhook_data["name"]
-        assert data["url"] == webhook_data["url"]
+        assert "webhook_id" in data, f"Expected webhook_id in response: {data}"
         assert "secret" in data
-        print(f"✓ Webhook created successfully: {data['id']}")
-        return data["id"]
+        assert "message" in data
+        print(f"✓ Webhook created successfully: {data['webhook_id']}")
+        return data["webhook_id"]
     
     def test_list_webhooks(self, admin_token):
         """Admin can list webhooks"""
@@ -343,8 +342,10 @@ class TestWebhookManagement:
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         data = response.json()
-        assert isinstance(data, list)
-        print(f"✓ Listed {len(data)} webhooks")
+        assert "webhooks" in data, f"Expected 'webhooks' key in response: {data}"
+        assert isinstance(data["webhooks"], list)
+        assert "available_events" in data
+        print(f"✓ Listed {len(data['webhooks'])} webhooks, {len(data['available_events'])} available events")
     
     def test_test_webhook(self, admin_token):
         """Admin can test a webhook"""
@@ -366,7 +367,7 @@ class TestWebhookManagement:
         if create_response.status_code not in [200, 201]:
             pytest.skip("Could not create webhook for testing")
         
-        webhook_id = create_response.json()["id"]
+        webhook_id = create_response.json()["webhook_id"]
         
         # Test the webhook
         test_response = requests.post(
@@ -393,30 +394,31 @@ class TestDataEncryption:
         
         test_data = "Sensitive employee SSN: 123-45-6789"
         
-        # Encrypt data
+        # Encrypt data (uses /api/admin/encrypt endpoint)
         encrypt_response = requests.post(
             f"{BASE_URL}/api/admin/encrypt",
-            json={"data": test_data, "action": "encrypt"},
+            json={"data": test_data},
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert encrypt_response.status_code == 200, f"Expected 200, got {encrypt_response.status_code}: {encrypt_response.text}"
         encrypt_data = encrypt_response.json()
-        assert "encrypted_data" in encrypt_data or "result" in encrypt_data
+        assert "encrypted_data" in encrypt_data, f"Expected encrypted_data in response: {encrypt_data}"
         
-        encrypted_value = encrypt_data.get("encrypted_data") or encrypt_data.get("result")
+        encrypted_value = encrypt_data["encrypted_data"]
         assert encrypted_value != test_data, "Data should be encrypted"
         print(f"✓ Data encrypted successfully")
         
-        # Decrypt data
+        # Decrypt data (uses /api/admin/decrypt endpoint)
         decrypt_response = requests.post(
-            f"{BASE_URL}/api/admin/encrypt",
-            json={"data": encrypted_value, "action": "decrypt"},
+            f"{BASE_URL}/api/admin/decrypt",
+            json={"encrypted_data": encrypted_value},
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert decrypt_response.status_code == 200, f"Expected 200, got {decrypt_response.status_code}: {decrypt_response.text}"
         decrypt_data = decrypt_response.json()
         
-        decrypted_value = decrypt_data.get("decrypted_data") or decrypt_data.get("result")
+        assert "decrypted_data" in decrypt_data, f"Expected decrypted_data in response: {decrypt_data}"
+        decrypted_value = decrypt_data["decrypted_data"]
         assert decrypted_value == test_data, f"Decrypted data should match original: {decrypted_value} != {test_data}"
         print(f"✓ Data decrypted successfully and matches original")
     
