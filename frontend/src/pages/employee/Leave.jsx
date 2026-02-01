@@ -124,6 +124,35 @@ const Leave = () => {
     }
   };
 
+  // Export to PDF
+  const exportToPDF = async () => {
+    try {
+      const token = localStorage.getItem('cortracker_token');
+      const response = await fetch(`${API_URL}/api/export/my-leave-requests/pdf`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const contentDisposition = response.headers.get('content-disposition');
+        const filename = contentDisposition 
+          ? contentDisposition.split('filename=')[1]?.replace(/"/g, '') 
+          : `My_Leave_Requests_${new Date().toISOString().split('T')[0]}.pdf`;
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } else {
+        console.error('Failed to export PDF');
+      }
+    } catch (err) {
+      console.error('Failed to export PDF:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <EmployeeSidebar />
