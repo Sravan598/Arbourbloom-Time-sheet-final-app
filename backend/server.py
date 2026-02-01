@@ -10534,32 +10534,62 @@ async def get_ticket_attachment(
     filename: str,
     current_user: dict = Depends(get_current_user)
 ):
-    """Download a ticket attachment"""
+    """Download a ticket attachment (from ticket or comment)"""
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
     file_path = TICKET_UPLOAD_DIR / filename
     
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     
-    # Get ticket to check access
+    # Check if attachment is on a ticket
     ticket = await db.tickets.find_one(
-        {"attachments.filename": filename},
-        {"_id": 0, "created_by": 1}
+        {"attachments.filename": filename, "tenant_id": tenant_id},
+        {"_id": 0, "created_by": 1, "assigned_to": 1}
     )
     
+    # If not found in tickets, check ticket_comments
+    if not ticket:
+        comment = await db.ticket_comments.find_one(
+            {"attachments.filename": filename},
+            {"_id": 0, "ticket_id": 1, "user_id": 1}
+        )
+        
+        if comment:
+            # Get the parent ticket to verify access
+            ticket = await db.tickets.find_one(
+                {"id": comment["ticket_id"], "tenant_id": tenant_id},
+                {"_id": 0, "created_by": 1, "assigned_to": 1}
+            )
+    
+    # Verify access
     if ticket:
-        is_admin = current_user.get("role") == "ADMIN"
-        if not is_admin and ticket["created_by"] != current_user["id"]:
+        is_admin = current_user.get("role") in ["ADMIN", "SUPER_ADMIN"]
+        is_creator = ticket.get("created_by") == current_user["id"]
+        is_assigned = current_user["id"] in ticket.get("assigned_to", [])
+        
+        if not is_admin and not is_creator and not is_assigned:
             raise HTTPException(status_code=403, detail="Access denied")
+    else:
+        # No ticket found - deny access for security
+        raise HTTPException(status_code=404, detail="Attachment not found")
     
     # Determine content type
     content_type, _ = mimetypes.guess_type(str(file_path))
     if not content_type:
         content_type = "application/octet-stream"
     
+    # Get original filename if available
+    original_filename = filename
+    if ticket:
+        for att in ticket.get("attachments", []):
+            if att.get("filename") == filename:
+                original_filename = att.get("original_filename", filename)
+                break
+    
     return FileResponse(
         file_path,
         media_type=content_type,
-        filename=filename
+        filename=original_filename
     )
 
 
