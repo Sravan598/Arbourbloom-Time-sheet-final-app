@@ -7757,8 +7757,15 @@ async def create_notification(user_id: str, notif_type: NotificationType, title:
 # Leave Types APIs
 @api_router.get("/leave/types")
 async def get_leave_types(current_user: dict = Depends(get_current_user)):
-    """Get all active leave types"""
-    types = await db.leave_types.find({"is_active": True}, {"_id": 0}).to_list(100)
+    """Get all active leave types for the tenant"""
+    # CRITICAL: Filter by tenant_id for data isolation
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    types = await db.leave_types.find({"is_active": True, "tenant_id": tenant_id}, {"_id": 0}).to_list(100)
+    
+    # Fallback to default types if none exist for this tenant
+    if not types:
+        types = await db.leave_types.find({"is_active": True, "tenant_id": {"$exists": False}}, {"_id": 0}).to_list(100)
+    
     return types
 
 
@@ -7771,13 +7778,17 @@ async def create_leave_type(
     if current_user.get("role") != "ADMIN":
         raise HTTPException(status_code=403, detail="Admin access required")
     
-    # Check if type already exists
-    existing = await db.leave_types.find_one({"name": type_data.name})
+    # CRITICAL: Include tenant_id for data isolation
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    # Check if type already exists for this tenant
+    existing = await db.leave_types.find_one({"name": type_data.name, "tenant_id": tenant_id})
     if existing:
         raise HTTPException(status_code=400, detail="Leave type already exists")
     
     leave_type = LeaveType(name=type_data.name, icon=type_data.icon)
     doc = leave_type.model_dump()
+    doc["tenant_id"] = tenant_id
     doc["created_at"] = doc["created_at"].isoformat()
     await db.leave_types.insert_one(doc)
     
