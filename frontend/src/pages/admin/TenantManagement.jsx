@@ -65,6 +65,8 @@ const TenantManagement = () => {
   const [domainLoading, setDomainLoading] = useState(false);
   const [domainData, setDomainData] = useState({ domain: '' });
   const [domainInstructions, setDomainInstructions] = useState(null);
+  const [domainStatus, setDomainStatus] = useState(null);
+  const [checkingDns, setCheckingDns] = useState(false);
   
   const [formData, setFormData] = useState({
     slug: '',
