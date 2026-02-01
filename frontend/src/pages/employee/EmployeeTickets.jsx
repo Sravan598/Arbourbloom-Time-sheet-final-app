@@ -5,7 +5,7 @@ import { NotificationBell } from '../../components/notifications';
 import { 
   Ticket, Plus, Search, Clock, AlertTriangle, CheckCircle, 
   MessageSquare, Paperclip, User, X, Send, FileText, 
-  Image as ImageIcon, Upload
+  Image as ImageIcon, Upload, Download
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
