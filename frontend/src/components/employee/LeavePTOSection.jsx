@@ -89,18 +89,20 @@ const LeavePTOSection = () => {
     setSubmitting(true);
 
     try {
-      // Format dates properly
+      // Format dates as YYYY-MM-DD (backend expects this format)
       const payload = {
         ...formData,
-        start_date: new Date(formData.start_date).toISOString(),
-        end_date: new Date(formData.end_date).toISOString()
+        start_date: formData.start_date,
+        end_date: formData.end_date
       };
 
-      await axios.post(`${API}/leave/request`, payload);
+      await axios.post(`${API}/leave/requests`, payload);
       setFormSuccess('Leave request submitted successfully!');
       setShowModal(false);
       setFormData({ leave_type: 'VACATION', start_date: '', end_date: '', reason: '' });
+      // Refetch to show new request immediately
       await fetchRequests();
+      await fetchBalance();
     } catch (err) {
       setFormError(err.response?.data?.detail || 'Failed to submit leave request');
     } finally {
@@ -110,8 +112,9 @@ const LeavePTOSection = () => {
 
   const handleCancel = async (requestId) => {
     try {
-      await axios.delete(`${API}/leave/request/${requestId}`);
+      await axios.delete(`${API}/leave/requests/${requestId}`);
       await fetchRequests();
+      await fetchBalance();
     } catch (err) {
       console.error('Failed to cancel request:', err);
     }
