@@ -376,9 +376,12 @@ const AurborBot = () => {
                         className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
                         {msg.type === 'bot' && (
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-black to-gray-700 
-                                        flex items-center justify-center mr-2 flex-shrink-0">
-                            <Bot className="w-4 h-4 text-white" />
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-2 flex-shrink-0 ${
+                            msg.isAI 
+                              ? 'bg-gradient-to-br from-purple-500 to-pink-500' 
+                              : 'bg-gradient-to-br from-brand-black to-gray-700'
+                          }`}>
+                            {msg.isAI ? <Sparkles className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4 text-white" />}
                           </div>
                         )}
                         <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap ${
