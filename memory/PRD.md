@@ -280,6 +280,18 @@ Backend refactored from 7000+ line monolith to modular structure:
     - `/app/frontend/src/components/chatbot/AurborBot.jsx` - Updated to use AI API
     - `/app/frontend/src/components/chatbot/faqData.js` - Fallback FAQ data (unchanged)
 
+- ✅ **Knowvia Tech Tenant** - New fully isolated tenant
+  - **Company**: Knowvia Tech (Online Learning Platform)
+  - **Landing Page**: `/knowviatech` - Custom branded page with courses, testimonials
+  - **Login/Signup**: `/knowviatech/login`, `/knowviatech/signup` - Fully isolated
+  - **Branding**: Red (#E53935) primary, Green (#2E7D32) secondary
+  - **AI Chatbot**: Shows as "Knowvia Tech Assistant"
+  - **Features**: All enabled (Timesheets, Tickets, Leave, Calendar, Projects, Chat)
+  - **Admin**: admin@knowviatech.com / admin123
+  - Key files:
+    - `/app/frontend/src/pages/tenant/KnowviaTechHome.jsx` - Landing page
+    - `/app/frontend/public/knowviatech_logo.png` - Company logo
+
 ### January 31, 2025
 - ✅ **Custom Domain Mapping (CNAME)** - Allow tenants to use custom domains
   - Super Admin can configure custom domain for each tenant (e.g., hr.perfectsolutions.com)
