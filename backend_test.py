@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://hrmsaas.preview.emergentagent.com/api"
+BASE_URL = "https://multitenant-hrms.preview.emergentagent.com/api"
 
 # Test credentials
 EMPLOYEE_CREDENTIALS = {
