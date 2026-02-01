@@ -165,16 +165,26 @@ const Leave = () => {
               <h1 className="text-2xl font-bold text-gray-900">Leave / PTO</h1>
               <p className="text-gray-500 mt-1">Request and manage your time off</p>
             </div>
-            <motion.button
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-5 py-2 bg-brand-black text-white rounded-full
-                         hover:bg-gray-700 transition-colors font-medium"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Plus className="w-5 h-5" />
-              Request Leave
-            </motion.button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={exportToPDF}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full text-gray-600 hover:bg-gray-50 transition-colors"
+                data-testid="export-my-leave-pdf-btn"
+              >
+                <Download className="w-4 h-4" />
+                Export PDF
+              </button>
+              <motion.button
+                onClick={() => setShowModal(true)}
+                className="flex items-center gap-2 px-5 py-2 bg-brand-black text-white rounded-full
+                           hover:bg-gray-700 transition-colors font-medium"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Plus className="w-5 h-5" />
+                Request Leave
+              </motion.button>
+            </div>
           </div>
 
           {/* Filter Tabs */}
