@@ -4,9 +4,15 @@ Per-tenant API rate limiting
 """
 from datetime import datetime, timezone
 from typing import Dict, Tuple
+import logging
+
+# Import from local modules
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from config import RATE_LIMIT_WINDOW, RATE_LIMIT_MAX_REQUESTS
 from database import db
-import logging
 
 logger = logging.getLogger(__name__)
 
