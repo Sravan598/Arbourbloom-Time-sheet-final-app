@@ -861,12 +861,10 @@ const AdminTickets = () => {
                       {comment.attachments?.length > 0 && (
                         <div className="mt-2 pl-9 flex flex-wrap gap-2">
                           {comment.attachments.map(att => (
-                            <a
+                            <button
                               key={att.id}
-                              href={`${API_URL}/api/tickets/attachments/${att.filename}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600 hover:bg-gray-50 transition-colors"
+                              onClick={() => downloadAttachment(att.filename, att.original_filename)}
+                              className="flex items-center gap-1.5 px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
                             >
                               {att.file_type?.startsWith('image') ? (
                                 <ImageIcon className="w-3 h-3" />
@@ -874,7 +872,7 @@ const AdminTickets = () => {
                                 <FileText className="w-3 h-3" />
                               )}
                               {att.original_filename}
-                            </a>
+                            </button>
                           ))}
                         </div>
                       )}
