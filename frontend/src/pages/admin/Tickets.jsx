@@ -380,6 +380,33 @@ const AdminTickets = () => {
     }
   };
 
+  // Download attachment with authentication
+  const downloadAttachment = async (filename, originalFilename) => {
+    try {
+      const response = await fetch(`${API_URL}/api/tickets/attachments/${filename}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', originalFilename || filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        const error = await response.json();
+        alert(error.detail || 'Failed to download attachment');
+      }
+    } catch (err) {
+      console.error('Failed to download attachment:', err);
+      alert('Failed to download attachment');
+    }
+  };
+
   // Drag and Drop handlers
   const handleDragStart = (e, ticket) => {
     setDraggedTicket(ticket);
