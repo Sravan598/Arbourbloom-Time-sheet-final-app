@@ -5566,6 +5566,8 @@ async def ensure_default_channels():
 async def startup_event():
     await ensure_default_channels()
     await initialize_default_tenant()
+    # Start background DNS verification task
+    asyncio.create_task(periodic_dns_verification())
 
 
 async def initialize_default_tenant():
