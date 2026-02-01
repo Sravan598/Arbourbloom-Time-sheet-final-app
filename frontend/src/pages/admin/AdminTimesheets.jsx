@@ -423,12 +423,23 @@ const AdminTimesheets = () => {
             >
               Clear
             </Button>
-            <div className="ml-auto">
+            <div className="ml-auto flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={exportToPDF}
+                disabled={timesheets.length === 0}
+                data-testid="export-pdf-btn"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export PDF
+              </Button>
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={exportToCSV}
                 disabled={timesheets.length === 0}
+                data-testid="export-csv-btn"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Export CSV
