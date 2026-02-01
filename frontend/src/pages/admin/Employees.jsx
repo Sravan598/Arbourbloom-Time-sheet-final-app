@@ -579,7 +579,14 @@ const Employees = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex justify-end">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => openResetPasswordModal(emp)}
+                              className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Reset Password"
+                            >
+                              <Key className="w-5 h-5" />
+                            </button>
                             <button
                               onClick={() => openDeleteModal(emp)}
                               className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
