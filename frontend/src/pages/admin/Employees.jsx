@@ -184,7 +184,11 @@ const Employees = () => {
   };
 
   const handleLogout = () => {
-    const logoutUrl = getLogoutRedirectUrl();
+    // Get tenant directly from localStorage before any state changes
+    const storedTenant = localStorage.getItem('cortracker_tenant');
+    const logoutUrl = storedTenant && storedTenant !== 'aurborbloom' 
+      ? `/${storedTenant}/login` 
+      : '/login';
     logout();
     navigate(logoutUrl);
   };
