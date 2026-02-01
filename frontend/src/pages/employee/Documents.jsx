@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import { useTenant } from '../../context/TenantContext';
 import { Button } from '../../components/ui/Button';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
