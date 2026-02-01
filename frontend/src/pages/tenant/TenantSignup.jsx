@@ -244,34 +244,32 @@ const TenantSignup = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left side - Branding with Gradient */}
+      {/* Left side - Branding with Solid Color */}
       <div 
         className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
-        style={{ 
-          background: secondaryColor 
-            ? `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`
-            : primaryColor 
-        }}
+        style={{ backgroundColor: primaryColor }}
       >
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-20 w-64 h-64 rounded-full bg-white blur-3xl" />
-          <div className="absolute bottom-20 right-20 w-96 h-96 rounded-full bg-white blur-3xl" />
+        {/* Decorative circles */}
+        <div className="absolute inset-0">
+          <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full opacity-10" style={{ backgroundColor: 'white' }} />
+          <div className="absolute top-1/3 -left-10 w-48 h-48 rounded-full opacity-5" style={{ backgroundColor: 'white' }} />
+          <div className="absolute bottom-20 left-1/4 w-32 h-32 rounded-full opacity-5" style={{ backgroundColor: 'white' }} />
         </div>
         
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
-          {/* Logo with frosted glass effect */}
+          {/* Logo in white card - Left aligned */}
           {tenant?.logo_url ? (
-            <div className="mb-8">
-              <div className="inline-flex items-center px-6 py-4 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/30 shadow-2xl">
+            <div className="mb-10">
+              <div className="inline-flex bg-white rounded-2xl p-5 shadow-lg">
                 <img 
                   src={tenant.logo_url} 
                   alt={tenant.name}
-                  className="h-14 object-contain"
+                  className="h-16 w-auto object-contain"
                 />
               </div>
             </div>
           ) : (
-            <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center text-3xl font-bold mb-8">
+            <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-4xl font-bold mb-10 border border-white/20">
               {tenant?.name?.charAt(0) || 'C'}
             </div>
           )}
@@ -279,9 +277,24 @@ const TenantSignup = () => {
           <h1 className="text-4xl font-bold mb-4">
             Join {tenant?.name}
           </h1>
-          <p className="text-lg text-white/80">
+          <p className="text-lg text-white/70 mb-10 max-w-md">
             Create your account to access the HR portal.
           </p>
+          
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                <User className="w-5 h-5" />
+              </div>
+              <span className="text-white/90">Easy onboarding process</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                <Shield className="w-5 h-5" />
+              </div>
+              <span className="text-white/90">Secure & private access</span>
+            </div>
+          </div>
         </div>
       </div>
 
