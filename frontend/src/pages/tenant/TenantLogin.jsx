@@ -187,28 +187,28 @@ const TenantLogin = () => {
           <div className="absolute bottom-20 right-20 w-96 h-96 rounded-full bg-white blur-3xl" />
         </div>
         
-        <div className="relative z-10 flex flex-col justify-center p-12 text-white">
-          {/* Logo with frosted glass effect */}
+        <div className="relative z-10 flex flex-col justify-center items-center w-full p-12 text-white">
+          {/* Logo - Large and Prominent */}
           {tenant?.logo_url ? (
-            <div className="mb-8">
-              <div className="inline-flex items-center px-6 py-4 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/30 shadow-2xl">
+            <div className="mb-10">
+              <div className="bg-white rounded-2xl p-6 shadow-2xl">
                 <img 
                   src={tenant.logo_url} 
                   alt={tenant.name}
-                  className="h-14 object-contain"
+                  className="h-24 w-auto object-contain"
                 />
               </div>
             </div>
           ) : (
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-3xl font-bold mb-8 border border-white/20">
+            <div className="w-24 h-24 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-5xl font-bold mb-10 border border-white/20">
               {tenant?.name?.charAt(0) || 'C'}
             </div>
           )}
           
-          <h1 className="text-4xl font-bold mb-4">
+          <h1 className="text-4xl font-bold mb-4 text-center">
             Welcome to {tenant?.name}
           </h1>
-          <p className="text-lg text-white/80 mb-8">
+          <p className="text-lg text-white/80 mb-10 text-center max-w-md">
             Access your HR portal to manage time tracking, leave requests, and more.
           </p>
           
