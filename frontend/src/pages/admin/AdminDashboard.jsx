@@ -106,7 +106,8 @@ const AdminDashboard = () => {
       ? `/${storedTenant}/login` 
       : '/login';
     logout();
-    navigate(logoutUrl);
+    // Use window.location for immediate redirect (bypasses React router race conditions)
+    window.location.href = logoutUrl;
   };
 
   if (isLoading) {
