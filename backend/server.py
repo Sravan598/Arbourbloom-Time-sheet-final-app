@@ -3668,6 +3668,692 @@ async def export_timesheet_pdf(
     )
 
 
+# ============== ADMIN ALL TIMESHEETS PDF EXPORT ==============
+
+def generate_all_timesheets_pdf(timesheets: list, employees: dict, start_date: datetime, end_date: datetime, tenant_info: dict = None) -> bytes:
+    """Generate a PDF report of all employee timesheets"""
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    tenant_primary = tenant_info.get("primary_color", "#1a1a1a") if tenant_info else "#1a1a1a"
+    tenant_name = tenant_info.get("name", "Company") if tenant_info else "Company"
+    
+    section_style = ParagraphStyle(
+        'SectionHeader',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor(tenant_primary),
+        spaceBefore=20,
+        spaceAfter=10
+    )
+    
+    # Header
+    create_pdf_header_with_logo(elements, styles, "All Timesheets Report", tenant_info)
+    
+    # Report Info
+    elements.append(Paragraph("Report Information", section_style))
+    info_data = [
+        ["Company:", tenant_name],
+        ["Period:", f"{start_date.strftime('%B %d, %Y')} - {end_date.strftime('%B %d, %Y')}"],
+        ["Generated:", datetime.now().strftime("%B %d, %Y at %I:%M %p")],
+        ["Total Records:", str(len(timesheets))]
+    ]
+    info_table = Table(info_data, colWidths=[1.5*inch, 4*inch])
+    info_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(info_table)
+    elements.append(Spacer(1, 20))
+    
+    # Timesheets Table
+    elements.append(Paragraph("Timesheet Records", section_style))
+    
+    table_data = [["Employee", "Date", "Clock In", "Clock Out", "Duration", "Status"]]
+    
+    for ts in timesheets:
+        emp_name = employees.get(ts.get("user_id"), {}).get("name", "Unknown")
+        
+        clock_in = ts.get("clock_in_at")
+        clock_out = ts.get("clock_out_at")
+        
+        if isinstance(clock_in, str):
+            clock_in = datetime.fromisoformat(clock_in.replace("Z", "+00:00"))
+        if isinstance(clock_out, str):
+            clock_out = datetime.fromisoformat(clock_out.replace("Z", "+00:00"))
+        
+        date_str = clock_in.strftime("%m/%d/%Y") if clock_in else "-"
+        clock_in_str = clock_in.strftime("%I:%M %p") if clock_in else "-"
+        clock_out_str = clock_out.strftime("%I:%M %p") if clock_out else "-"
+        
+        total_mins = ts.get("total_minutes", 0)
+        hours = total_mins // 60
+        mins = total_mins % 60
+        duration = f"{hours}h {mins}m" if total_mins else "-"
+        
+        status = ts.get("status", "PENDING")
+        
+        table_data.append([emp_name, date_str, clock_in_str, clock_out_str, duration, status])
+    
+    if len(table_data) > 1:
+        table = Table(table_data, colWidths=[1.5*inch, 1*inch, 1*inch, 1*inch, 0.8*inch, 0.8*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(tenant_primary)),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F9FAFB')]),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        elements.append(table)
+    else:
+        elements.append(Paragraph("No timesheet records found for this period.", styles['Normal']))
+    
+    doc.build(elements)
+    return buffer.getvalue()
+
+
+@api_router.get("/admin/export/timesheets/pdf")
+async def export_admin_timesheets_pdf(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    employee_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export all timesheets as PDF (Admin only)"""
+    if current_user.get("role") not in ["ADMIN", "SUPER_ADMIN"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    # Build query
+    query = {"tenant_id": tenant_id}
+    
+    # Date filters
+    if start_date:
+        query["clock_in_at"] = {"$gte": start_date}
+    if end_date:
+        if "clock_in_at" in query:
+            query["clock_in_at"]["$lte"] = end_date
+        else:
+            query["clock_in_at"] = {"$lte": end_date}
+    
+    if employee_id:
+        query["user_id"] = employee_id
+    
+    # Get timesheets
+    timesheets = await db.timesheets.find(query, {"_id": 0}).sort("clock_in_at", -1).to_list(500)
+    
+    # Get employee names
+    user_ids = list(set(ts.get("user_id") for ts in timesheets if ts.get("user_id")))
+    employees_list = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "id": 1, "name": 1}).to_list(500)
+    employees = {emp["id"]: emp for emp in employees_list}
+    
+    # Determine date range for report
+    now = datetime.now(timezone.utc)
+    if start_date:
+        start_dt = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
+    else:
+        start_dt = now - timedelta(days=30)
+    if end_date:
+        end_dt = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
+    else:
+        end_dt = now
+    
+    # Get tenant info
+    tenant_info = await get_tenant_for_pdf(tenant_id)
+    
+    # Generate PDF
+    pdf_bytes = generate_all_timesheets_pdf(timesheets, employees, start_dt, end_dt, tenant_info)
+    
+    tenant_name = tenant_info.get("name", "").replace(" ", "_") if tenant_info else ""
+    filename = f"{tenant_name}_All_Timesheets_{now.strftime('%Y%m%d')}.pdf" if tenant_name else f"All_Timesheets_{now.strftime('%Y%m%d')}.pdf"
+    
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+# ============== EMPLOYEE TIMESHEET HISTORY PDF ==============
+
+def generate_employee_timesheet_history_pdf(user_data: dict, timesheets: list, start_date: datetime, end_date: datetime, tenant_info: dict = None) -> bytes:
+    """Generate a PDF of employee's timesheet history"""
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    tenant_primary = tenant_info.get("primary_color", "#1a1a1a") if tenant_info else "#1a1a1a"
+    
+    section_style = ParagraphStyle(
+        'SectionHeader',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor(tenant_primary),
+        spaceBefore=20,
+        spaceAfter=10
+    )
+    
+    # Header
+    create_pdf_header_with_logo(elements, styles, "Timesheet History Report", tenant_info)
+    
+    # Employee Info
+    elements.append(Paragraph("Employee Information", section_style))
+    info_data = [
+        ["Name:", user_data.get("name", "N/A")],
+        ["Email:", user_data.get("email", "N/A")],
+        ["Period:", f"{start_date.strftime('%B %d, %Y')} - {end_date.strftime('%B %d, %Y')}"],
+        ["Generated:", datetime.now().strftime("%B %d, %Y at %I:%M %p")],
+        ["Total Records:", str(len(timesheets))]
+    ]
+    info_table = Table(info_data, colWidths=[1.5*inch, 4*inch])
+    info_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(info_table)
+    elements.append(Spacer(1, 20))
+    
+    # Calculate summary
+    total_minutes = sum(ts.get("total_minutes", 0) for ts in timesheets)
+    total_hours = total_minutes // 60
+    total_mins = total_minutes % 60
+    
+    elements.append(Paragraph("Summary", section_style))
+    summary_data = [
+        ["Total Hours Worked:", f"{total_hours}h {total_mins}m"],
+        ["Average Per Day:", f"{(total_minutes / max(len(timesheets), 1) / 60):.1f}h"]
+    ]
+    summary_table = Table(summary_data, colWidths=[1.5*inch, 4*inch])
+    summary_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(summary_table)
+    elements.append(Spacer(1, 20))
+    
+    # Timesheet Records
+    elements.append(Paragraph("Timesheet Records", section_style))
+    
+    table_data = [["Date", "Clock In", "Clock Out", "Duration", "Notes", "Status"]]
+    
+    for ts in timesheets:
+        clock_in = ts.get("clock_in_at")
+        clock_out = ts.get("clock_out_at")
+        
+        if isinstance(clock_in, str):
+            clock_in = datetime.fromisoformat(clock_in.replace("Z", "+00:00"))
+        if isinstance(clock_out, str):
+            clock_out = datetime.fromisoformat(clock_out.replace("Z", "+00:00"))
+        
+        date_str = clock_in.strftime("%m/%d/%Y") if clock_in else "-"
+        clock_in_str = clock_in.strftime("%I:%M %p") if clock_in else "-"
+        clock_out_str = clock_out.strftime("%I:%M %p") if clock_out else "-"
+        
+        total_mins = ts.get("total_minutes", 0)
+        hours = total_mins // 60
+        mins = total_mins % 60
+        duration = f"{hours}h {mins}m" if total_mins else "-"
+        
+        notes = ts.get("notes", "-") or "-"
+        if len(notes) > 20:
+            notes = notes[:17] + "..."
+        status = ts.get("status", "PENDING")
+        
+        table_data.append([date_str, clock_in_str, clock_out_str, duration, notes, status])
+    
+    if len(table_data) > 1:
+        table = Table(table_data, colWidths=[1*inch, 1*inch, 1*inch, 0.8*inch, 1.5*inch, 0.8*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(tenant_primary)),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F9FAFB')]),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        elements.append(table)
+    else:
+        elements.append(Paragraph("No timesheet records found.", styles['Normal']))
+    
+    doc.build(elements)
+    return buffer.getvalue()
+
+
+@api_router.get("/export/timesheet-history/pdf")
+async def export_timesheet_history_pdf(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export employee's timesheet history as PDF"""
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    # Build query
+    query = {"user_id": current_user["id"]}
+    
+    if start_date:
+        query["clock_in_at"] = {"$gte": start_date}
+    if end_date:
+        if "clock_in_at" in query:
+            query["clock_in_at"]["$lte"] = end_date
+        else:
+            query["clock_in_at"] = {"$lte": end_date}
+    
+    # Get timesheets
+    timesheets = await db.timesheets.find(query, {"_id": 0}).sort("clock_in_at", -1).to_list(500)
+    
+    # Determine date range
+    now = datetime.now(timezone.utc)
+    if start_date:
+        start_dt = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
+    else:
+        start_dt = now - timedelta(days=30)
+    if end_date:
+        end_dt = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
+    else:
+        end_dt = now
+    
+    tenant_info = await get_tenant_for_pdf(tenant_id)
+    
+    pdf_bytes = generate_employee_timesheet_history_pdf(current_user, timesheets, start_dt, end_dt, tenant_info)
+    
+    tenant_name = tenant_info.get("name", "").replace(" ", "_") if tenant_info else ""
+    user_name = current_user.get('name', 'employee').replace(' ', '_')
+    filename = f"{tenant_name}_Timesheet_History_{user_name}_{now.strftime('%Y%m%d')}.pdf" if tenant_name else f"Timesheet_History_{user_name}_{now.strftime('%Y%m%d')}.pdf"
+    
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+# ============== LEAVE REQUESTS PDF EXPORT ==============
+
+def generate_leave_requests_pdf(leave_requests: list, employees: dict, start_date: datetime, end_date: datetime, tenant_info: dict = None, is_admin: bool = False) -> bytes:
+    """Generate a PDF report of leave requests"""
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    tenant_primary = tenant_info.get("primary_color", "#1a1a1a") if tenant_info else "#1a1a1a"
+    tenant_name = tenant_info.get("name", "Company") if tenant_info else "Company"
+    
+    section_style = ParagraphStyle(
+        'SectionHeader',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor(tenant_primary),
+        spaceBefore=20,
+        spaceAfter=10
+    )
+    
+    # Header
+    title = "Leave Requests Report" if is_admin else "My Leave Requests"
+    create_pdf_header_with_logo(elements, styles, title, tenant_info)
+    
+    # Report Info
+    elements.append(Paragraph("Report Information", section_style))
+    
+    # Count by status
+    approved = sum(1 for lr in leave_requests if lr.get("status") == "APPROVED")
+    pending = sum(1 for lr in leave_requests if lr.get("status") == "PENDING")
+    denied = sum(1 for lr in leave_requests if lr.get("status") == "DENIED")
+    
+    info_data = [
+        ["Company:", tenant_name],
+        ["Period:", f"{start_date.strftime('%B %d, %Y')} - {end_date.strftime('%B %d, %Y')}"],
+        ["Generated:", datetime.now().strftime("%B %d, %Y at %I:%M %p")],
+        ["Total Requests:", str(len(leave_requests))],
+        ["Approved:", str(approved)],
+        ["Pending:", str(pending)],
+        ["Denied:", str(denied)]
+    ]
+    info_table = Table(info_data, colWidths=[1.5*inch, 4*inch])
+    info_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(info_table)
+    elements.append(Spacer(1, 20))
+    
+    # Leave Requests Table
+    elements.append(Paragraph("Leave Request Details", section_style))
+    
+    if is_admin:
+        table_data = [["Employee", "Type", "Start Date", "End Date", "Days", "Status", "Reason"]]
+    else:
+        table_data = [["Type", "Start Date", "End Date", "Days", "Status", "Reason"]]
+    
+    for lr in leave_requests:
+        leave_type = lr.get("leave_type", "N/A")
+        start = lr.get("start_date", "")
+        end = lr.get("end_date", "")
+        
+        if isinstance(start, str) and start:
+            start = datetime.fromisoformat(start.replace("Z", "+00:00")).strftime("%m/%d/%Y")
+        if isinstance(end, str) and end:
+            end = datetime.fromisoformat(end.replace("Z", "+00:00")).strftime("%m/%d/%Y")
+        
+        days = lr.get("total_days", 1)
+        status = lr.get("status", "PENDING")
+        reason = lr.get("reason", "-") or "-"
+        if len(reason) > 25:
+            reason = reason[:22] + "..."
+        
+        if is_admin:
+            emp_name = employees.get(lr.get("user_id"), {}).get("name", "Unknown")
+            table_data.append([emp_name, leave_type, start, end, str(days), status, reason])
+        else:
+            table_data.append([leave_type, start, end, str(days), status, reason])
+    
+    if len(table_data) > 1:
+        if is_admin:
+            col_widths = [1.2*inch, 0.8*inch, 0.9*inch, 0.9*inch, 0.5*inch, 0.7*inch, 1.2*inch]
+        else:
+            col_widths = [1*inch, 1*inch, 1*inch, 0.6*inch, 0.8*inch, 1.8*inch]
+        
+        table = Table(table_data, colWidths=col_widths)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(tenant_primary)),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F9FAFB')]),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        elements.append(table)
+    else:
+        elements.append(Paragraph("No leave requests found for this period.", styles['Normal']))
+    
+    doc.build(elements)
+    return buffer.getvalue()
+
+
+@api_router.get("/admin/export/leave-requests/pdf")
+async def export_admin_leave_requests_pdf(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export all leave requests as PDF (Admin only)"""
+    if current_user.get("role") not in ["ADMIN", "SUPER_ADMIN"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    query = {"tenant_id": tenant_id}
+    
+    if start_date:
+        query["start_date"] = {"$gte": start_date}
+    if end_date:
+        if "start_date" in query:
+            query["start_date"]["$lte"] = end_date
+        else:
+            query["start_date"] = {"$lte": end_date}
+    if status:
+        query["status"] = status
+    
+    leave_requests = await db.leave_requests.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    
+    # Get employee names
+    user_ids = list(set(lr.get("user_id") for lr in leave_requests if lr.get("user_id")))
+    employees_list = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "id": 1, "name": 1}).to_list(500)
+    employees = {emp["id"]: emp for emp in employees_list}
+    
+    now = datetime.now(timezone.utc)
+    if start_date:
+        start_dt = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
+    else:
+        start_dt = now - timedelta(days=90)
+    if end_date:
+        end_dt = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
+    else:
+        end_dt = now
+    
+    tenant_info = await get_tenant_for_pdf(tenant_id)
+    
+    pdf_bytes = generate_leave_requests_pdf(leave_requests, employees, start_dt, end_dt, tenant_info, is_admin=True)
+    
+    tenant_name = tenant_info.get("name", "").replace(" ", "_") if tenant_info else ""
+    filename = f"{tenant_name}_Leave_Requests_{now.strftime('%Y%m%d')}.pdf" if tenant_name else f"Leave_Requests_{now.strftime('%Y%m%d')}.pdf"
+    
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+@api_router.get("/export/my-leave-requests/pdf")
+async def export_employee_leave_requests_pdf(
+    current_user: dict = Depends(get_current_user)
+):
+    """Export employee's own leave requests as PDF"""
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    leave_requests = await db.leave_requests.find(
+        {"user_id": current_user["id"]}, 
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    now = datetime.now(timezone.utc)
+    start_dt = now - timedelta(days=365)
+    
+    tenant_info = await get_tenant_for_pdf(tenant_id)
+    
+    pdf_bytes = generate_leave_requests_pdf(leave_requests, {}, start_dt, now, tenant_info, is_admin=False)
+    
+    tenant_name = tenant_info.get("name", "").replace(" ", "_") if tenant_info else ""
+    user_name = current_user.get('name', 'employee').replace(' ', '_')
+    filename = f"{tenant_name}_My_Leave_Requests_{user_name}_{now.strftime('%Y%m%d')}.pdf" if tenant_name else f"My_Leave_Requests_{user_name}_{now.strftime('%Y%m%d')}.pdf"
+    
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+# ============== TICKETS/SUPPORT PDF EXPORT ==============
+
+def generate_tickets_pdf(tickets: list, employees: dict, tenant_info: dict = None, is_admin: bool = False) -> bytes:
+    """Generate a PDF report of support tickets"""
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    tenant_primary = tenant_info.get("primary_color", "#1a1a1a") if tenant_info else "#1a1a1a"
+    tenant_name = tenant_info.get("name", "Company") if tenant_info else "Company"
+    
+    section_style = ParagraphStyle(
+        'SectionHeader',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor(tenant_primary),
+        spaceBefore=20,
+        spaceAfter=10
+    )
+    
+    # Header
+    title = "Support Tickets Report" if is_admin else "My Support Tickets"
+    create_pdf_header_with_logo(elements, styles, title, tenant_info)
+    
+    # Summary
+    elements.append(Paragraph("Summary", section_style))
+    
+    open_count = sum(1 for t in tickets if t.get("status") == "OPEN")
+    in_progress = sum(1 for t in tickets if t.get("status") == "IN_PROGRESS")
+    resolved = sum(1 for t in tickets if t.get("status") == "RESOLVED")
+    closed = sum(1 for t in tickets if t.get("status") == "CLOSED")
+    
+    info_data = [
+        ["Company:", tenant_name],
+        ["Generated:", datetime.now().strftime("%B %d, %Y at %I:%M %p")],
+        ["Total Tickets:", str(len(tickets))],
+        ["Open:", str(open_count)],
+        ["In Progress:", str(in_progress)],
+        ["Resolved:", str(resolved)],
+        ["Closed:", str(closed)]
+    ]
+    info_table = Table(info_data, colWidths=[1.5*inch, 4*inch])
+    info_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(info_table)
+    elements.append(Spacer(1, 20))
+    
+    # Tickets Table
+    elements.append(Paragraph("Ticket Details", section_style))
+    
+    if is_admin:
+        table_data = [["ID", "Submitter", "Subject", "Category", "Priority", "Status", "Created"]]
+    else:
+        table_data = [["ID", "Subject", "Category", "Priority", "Status", "Created"]]
+    
+    for ticket in tickets:
+        ticket_id = ticket.get("id", "")[:8] + "..."
+        subject = ticket.get("subject", "N/A")
+        if len(subject) > 20:
+            subject = subject[:17] + "..."
+        category = ticket.get("category", "N/A")
+        priority = ticket.get("priority", "MEDIUM")
+        status = ticket.get("status", "OPEN")
+        
+        created = ticket.get("created_at", "")
+        if isinstance(created, str) and created:
+            created = datetime.fromisoformat(created.replace("Z", "+00:00")).strftime("%m/%d/%Y")
+        
+        if is_admin:
+            submitter = employees.get(ticket.get("user_id"), {}).get("name", "Unknown")
+            table_data.append([ticket_id, submitter, subject, category, priority, status, created])
+        else:
+            table_data.append([ticket_id, subject, category, priority, status, created])
+    
+    if len(table_data) > 1:
+        if is_admin:
+            col_widths = [0.7*inch, 1*inch, 1.3*inch, 0.8*inch, 0.7*inch, 0.8*inch, 0.8*inch]
+        else:
+            col_widths = [0.8*inch, 1.8*inch, 1*inch, 0.8*inch, 0.8*inch, 0.9*inch]
+        
+        table = Table(table_data, colWidths=col_widths)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor(tenant_primary)),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F9FAFB')]),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        elements.append(table)
+    else:
+        elements.append(Paragraph("No tickets found.", styles['Normal']))
+    
+    doc.build(elements)
+    return buffer.getvalue()
+
+
+@api_router.get("/admin/export/tickets/pdf")
+async def export_admin_tickets_pdf(
+    status: Optional[str] = None,
+    category: Optional[str] = None,
+    priority: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export all tickets as PDF (Admin only)"""
+    if current_user.get("role") not in ["ADMIN", "SUPER_ADMIN"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    query = {"tenant_id": tenant_id}
+    if status:
+        query["status"] = status
+    if category:
+        query["category"] = category
+    if priority:
+        query["priority"] = priority
+    
+    tickets = await db.tickets.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    
+    # Get employee names
+    user_ids = list(set(t.get("user_id") for t in tickets if t.get("user_id")))
+    employees_list = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "id": 1, "name": 1}).to_list(500)
+    employees = {emp["id"]: emp for emp in employees_list}
+    
+    tenant_info = await get_tenant_for_pdf(tenant_id)
+    
+    pdf_bytes = generate_tickets_pdf(tickets, employees, tenant_info, is_admin=True)
+    
+    tenant_name = tenant_info.get("name", "").replace(" ", "_") if tenant_info else ""
+    now = datetime.now(timezone.utc)
+    filename = f"{tenant_name}_Tickets_Report_{now.strftime('%Y%m%d')}.pdf" if tenant_name else f"Tickets_Report_{now.strftime('%Y%m%d')}.pdf"
+    
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+@api_router.get("/export/my-tickets/pdf")
+async def export_employee_tickets_pdf(
+    current_user: dict = Depends(get_current_user)
+):
+    """Export employee's own tickets as PDF"""
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    tickets = await db.tickets.find(
+        {"user_id": current_user["id"]}, 
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    tenant_info = await get_tenant_for_pdf(tenant_id)
+    
+    pdf_bytes = generate_tickets_pdf(tickets, {}, tenant_info, is_admin=False)
+    
+    tenant_name = tenant_info.get("name", "").replace(" ", "_") if tenant_info else ""
+    user_name = current_user.get('name', 'employee').replace(' ', '_')
+    now = datetime.now(timezone.utc)
+    filename = f"{tenant_name}_My_Tickets_{user_name}_{now.strftime('%Y%m%d')}.pdf" if tenant_name else f"My_Tickets_{user_name}_{now.strftime('%Y%m%d')}.pdf"
+    
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
 # ============== WEEKLY PROGRESS ROUTES ==============
 
 class DailyHours(BaseModel):
