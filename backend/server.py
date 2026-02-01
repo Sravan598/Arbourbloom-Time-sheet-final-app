@@ -5645,6 +5645,172 @@ async def ensure_default_channels():
             await db.chat_channels.insert_one(doc)
 
 
+# ============== AI CHATBOT (AurborBot) ==============
+
+# System prompt for the HR assistant
+HR_ASSISTANT_SYSTEM_PROMPT = """You are an intelligent HR assistant for {company_name}, a workforce management application. Your name is {bot_name}.
+
+## Your Capabilities:
+- Answer questions about HR policies, leave management, time tracking, and company procedures
+- Help users navigate the application features
+- Provide information about timesheets, projects, documents, and performance insights
+- Assist with common HR inquiries
+
+## Application Features You Can Help With:
+1. **Time Tracking**: Clock in/out, view hours worked, breaks
+2. **Timesheets**: View daily/weekly/monthly timesheets, export to PDF
+3. **Leave Management**: Request PTO, view leave balance, check request status
+4. **Projects**: View assigned projects, track time per project
+5. **Documents**: Upload/view personal documents (secured with PIN)
+6. **Team Chat (AurborChat)**: Join channels, send messages, direct messages
+7. **Tickets**: Submit support tickets for IT, HR, or other departments
+8. **Calendar**: View company holidays, events, and schedules
+9. **Performance Insights**: View attendance patterns and work metrics
+
+## User Context:
+- User Name: {user_name}
+- Role: {user_role}
+- Company: {company_name}
+
+## Guidelines:
+- Be helpful, professional, and concise
+- If you don't know something specific to their company policy, suggest they contact HR
+- For technical issues, suggest contacting IT support or submitting a ticket
+- Keep responses friendly but professional
+- Use bullet points for lists
+- Don't make up specific company policies - refer to HR for details
+"""
+
+class ChatMessageRequest(BaseModel):
+    message: str
+    session_id: Optional[str] = None
+
+class ChatMessageResponse(BaseModel):
+    response: str
+    session_id: str
+
+
+@api_router.post("/chatbot/message", response_model=ChatMessageResponse)
+async def send_chatbot_message(
+    request: ChatMessageRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Send a message to the AI HR assistant and get a response"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    
+    # Get tenant info
+    tenant = await db.tenants.find_one(
+        {"slug": current_user.get("tenant_id", "aurborbloom")},
+        {"_id": 0, "name": 1, "slug": 1}
+    )
+    company_name = tenant.get("name", "AurborBloom") if tenant else "AurborBloom"
+    tenant_slug = tenant.get("slug", "aurborbloom") if tenant else "aurborbloom"
+    
+    # Determine bot name based on tenant
+    bot_name = "AurborBot" if tenant_slug == "aurborbloom" else f"{company_name} Assistant"
+    
+    # Create or use existing session
+    session_id = request.session_id or f"chatbot_{current_user['id']}_{uuid.uuid4().hex[:8]}"
+    
+    # Build system prompt with user context
+    system_prompt = HR_ASSISTANT_SYSTEM_PROMPT.format(
+        company_name=company_name,
+        bot_name=bot_name,
+        user_name=current_user.get("name", "User"),
+        user_role=current_user.get("role", "EMPLOYEE")
+    )
+    
+    # Get API key
+    api_key = os.environ.get("EMERGENT_LLM_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="AI service not configured")
+    
+    try:
+        # Initialize chat
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=session_id,
+            system_message=system_prompt
+        ).with_model("openai", "gpt-5.2")
+        
+        # Load chat history from database
+        history = await db.chatbot_history.find(
+            {"session_id": session_id, "user_id": current_user["id"]},
+            {"_id": 0}
+        ).sort("timestamp", 1).to_list(length=20)  # Last 20 messages for context
+        
+        # Send message
+        user_message = UserMessage(text=request.message)
+        response = await chat.send_message(user_message)
+        
+        # Store messages in database
+        timestamp = datetime.now(timezone.utc).isoformat()
+        await db.chatbot_history.insert_many([
+            {
+                "session_id": session_id,
+                "user_id": current_user["id"],
+                "tenant_id": tenant_slug,
+                "role": "user",
+                "content": request.message,
+                "timestamp": timestamp
+            },
+            {
+                "session_id": session_id,
+                "user_id": current_user["id"],
+                "tenant_id": tenant_slug,
+                "role": "assistant",
+                "content": response,
+                "timestamp": timestamp
+            }
+        ])
+        
+        return ChatMessageResponse(response=response, session_id=session_id)
+        
+    except Exception as e:
+        logger.error(f"Chatbot error: {e}")
+        # Fallback response
+        return ChatMessageResponse(
+            response="I apologize, but I'm having trouble processing your request right now. Please try again in a moment, or contact your HR department for immediate assistance.",
+            session_id=session_id
+        )
+
+
+@api_router.get("/chatbot/history/{session_id}")
+async def get_chatbot_history(
+    session_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get chat history for a session"""
+    messages = await db.chatbot_history.find(
+        {"session_id": session_id, "user_id": current_user["id"]},
+        {"_id": 0, "role": 1, "content": 1, "timestamp": 1}
+    ).sort("timestamp", 1).to_list(length=100)
+    
+    return {"session_id": session_id, "messages": messages}
+
+
+@api_router.delete("/chatbot/history/{session_id}")
+async def clear_chatbot_history(
+    session_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Clear chat history for a session"""
+    result = await db.chatbot_history.delete_many({
+        "session_id": session_id,
+        "user_id": current_user["id"]
+    })
+    return {"deleted": result.deleted_count}
+
+
+@api_router.post("/chatbot/new-session")
+async def create_new_chatbot_session(
+    current_user: dict = Depends(get_current_user)
+):
+    """Create a new chat session"""
+    session_id = f"chatbot_{current_user['id']}_{uuid.uuid4().hex[:8]}"
+    return {"session_id": session_id}
+
+
 # ============== BACKGROUND DNS VERIFICATION ==============
 async def verify_single_domain(tenant_id: str, domain: str) -> bool:
     """Verify a single domain's DNS configuration"""
