@@ -9909,6 +9909,23 @@ async def create_ticket(
     
     await db.tickets.insert_one(ticket_doc)
     
+    # Get tenant_id for webhooks
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    # Trigger webhook for ticket creation
+    await trigger_webhooks(
+        tenant_id=tenant_id,
+        event_type=WebhookEventType.TICKET_CREATED,
+        payload={
+            "ticket_id": ticket.id,
+            "ticket_number": ticket.ticket_number,
+            "subject": ticket.subject,
+            "category": ticket.category.value,
+            "priority": ticket.priority.value,
+            "created_by": current_user.get("email")
+        }
+    )
+    
     # Notify all admins about new ticket
     admins = await db.users.find({"role": "ADMIN", "is_active": True}, {"_id": 0, "id": 1}).to_list(100)
     for admin in admins:
