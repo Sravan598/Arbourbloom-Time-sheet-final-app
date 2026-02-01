@@ -131,11 +131,13 @@ export const AuthProvider = ({ children }) => {
     return currentTenant;
   };
 
-  // Get the logout URL for current tenant
+  // Get the logout URL for current tenant - call this BEFORE logout()
   const getLogoutRedirectUrl = () => {
-    const currentTenant = tenant || localStorage.getItem('cortracker_tenant');
+    const storedTenant = localStorage.getItem('cortracker_tenant');
+    const currentTenant = storedTenant || tenant;
+    
     // If tenant is not default aurborbloom, redirect to tenant-specific login
-    if (currentTenant && currentTenant !== DEFAULT_TENANT) {
+    if (currentTenant && currentTenant !== 'aurborbloom') {
       return `/${currentTenant}/login`;
     }
     return '/login';
