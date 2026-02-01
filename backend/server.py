@@ -2613,7 +2613,9 @@ async def get_all_timesheets(
     end_date: Optional[str] = None,
     admin: dict = Depends(require_admin)
 ):
-    query = {}
+    # CRITICAL: Filter by tenant_id for data isolation
+    tenant_id = admin.get("tenant_id", DEFAULT_TENANT_SLUG)
+    query = {"tenant_id": tenant_id}
     
     if user_id:
         query["user_id"] = user_id
