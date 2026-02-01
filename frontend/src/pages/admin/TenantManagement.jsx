@@ -338,12 +338,31 @@ const TenantManagement = () => {
         fetchTenants();
       } else {
         setError(response.data.message);
+        // Fetch detailed status on failure
+        fetchDomainStatus();
       }
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err.response?.data?.detail || 'Verification failed');
+      fetchDomainStatus();
     } finally {
       setDomainLoading(false);
+    }
+  };
+
+  const fetchDomainStatus = async () => {
+    if (!selectedTenant?.id) return;
+    setCheckingDns(true);
+    try {
+      const response = await axios.get(
+        `${API}/api/super-admin/tenants/${selectedTenant.id}/domain-status`,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      setDomainStatus(response.data);
+    } catch (err) {
+      console.error('Failed to fetch domain status:', err);
+    } finally {
+      setCheckingDns(false);
     }
   };
 
