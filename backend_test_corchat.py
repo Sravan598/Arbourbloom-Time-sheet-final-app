@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://saasbloom.preview.emergentagent.com/api"
+BASE_URL = "https://hrmsaas.preview.emergentagent.com/api"
 
 # Admin credentials for testing
 ADMIN_CREDENTIALS = {
