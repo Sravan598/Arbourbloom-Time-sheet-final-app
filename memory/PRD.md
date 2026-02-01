@@ -251,6 +251,35 @@ Backend refactored from 7000+ line monolith to modular structure:
     - `/app/frontend/src/components/auth/ProtectedRoute.jsx` - Updated redirect logic
   - **12/12 frontend tests passed (100%)**
 
+- ✅ **CNAME Verification Logic (P1)** - Custom domain DNS verification
+  - **Backend DNS Verification**: Full DNS check (CNAME, A record, TXT verification)
+  - **Periodic Auto-Verification**: Background task runs every hour to auto-verify pending domains
+  - **Detailed Domain Status API**: New endpoint `/api/super-admin/tenants/{id}/domain-status`
+  - **Enhanced UI**: DNS check results displayed in domain modal (CNAME, Resolves, TXT)
+  - API Endpoints:
+    - `GET /api/super-admin/tenants/{id}/domain-status` - Detailed DNS status check
+  - Key files modified:
+    - `/app/backend/server.py` - Added `periodic_dns_verification()` background task and domain-status endpoint
+    - `/app/frontend/src/pages/admin/TenantManagement.jsx` - Enhanced domain modal with DNS check results
+
+- ✅ **AI HR Chatbot (AurborBot) (P1)** - Intelligent AI-powered assistant
+  - **OpenAI GPT-5.2 Integration**: Uses Emergent LLM Key for AI responses
+  - **Context-Aware**: Knows user's name, role, and company
+  - **Conversation Memory**: Chat history stored in MongoDB for session continuity
+  - **HR-Specific Knowledge**: Trained to answer HR, time tracking, leave, and app navigation questions
+  - **Tenant-Branded**: Shows as "AurborBot" for AurborBloom, "{Company} Assistant" for other tenants
+  - **AI Badge**: Purple sparkles indicator distinguishes AI responses from FAQ
+  - **Fallback Mode**: Falls back to FAQ responses if AI is unavailable
+  - API Endpoints:
+    - `POST /api/chatbot/message` - Send message to AI chatbot
+    - `GET /api/chatbot/history/{session_id}` - Get chat history
+    - `DELETE /api/chatbot/history/{session_id}` - Clear chat history
+    - `POST /api/chatbot/new-session` - Create new chat session
+  - Key files:
+    - `/app/backend/server.py` - AI chatbot endpoints using emergentintegrations
+    - `/app/frontend/src/components/chatbot/AurborBot.jsx` - Updated to use AI API
+    - `/app/frontend/src/components/chatbot/faqData.js` - Fallback FAQ data (unchanged)
+
 ### January 31, 2025
 - ✅ **Custom Domain Mapping (CNAME)** - Allow tenants to use custom domains
   - Super Admin can configure custom domain for each tenant (e.g., hr.perfectsolutions.com)
