@@ -126,6 +126,12 @@ const KnowviaTechHome = () => {
             <div className="flex items-center gap-4">
               <Link 
                 to="/knowviatech/login"
+                className="text-gray-700 hover:text-red-600 font-medium transition-colors"
+              >
+                Login
+              </Link>
+              <Link 
+                to="/knowviatech/signup"
                 className="bg-red-600 text-white px-6 py-2 rounded-md font-medium hover:bg-red-700 transition-all"
               >
                 Sign up
