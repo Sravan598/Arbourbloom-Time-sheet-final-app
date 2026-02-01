@@ -120,13 +120,13 @@ const Navbar = () => {
                 </button>
               ))}
               <div className="pt-4 border-t border-gray-100 space-y-2">
-                <Link to="/login" className="block">
+                <Link to="/aurborbloom/login" className="block">
                   <Button variant="ghost" className="w-full justify-center">
                     <LogIn className="w-4 h-4 mr-2" />
                     Login
                   </Button>
                 </Link>
-                <Link to="/signup" className="block">
+                <Link to="/aurborbloom/signup" className="block">
                   <Button variant="primary" className="w-full justify-center">
                     Sign Up Free
                   </Button>
