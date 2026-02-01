@@ -8396,8 +8396,10 @@ async def get_tickets(
     assigned_to_me: bool = False,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get tickets - Employees see their own, Admins see all"""
-    query = {}
+    """Get tickets - Employees see their own, Admins see all (within their tenant)"""
+    # CRITICAL: Filter by tenant_id for data isolation
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    query = {"tenant_id": tenant_id}
     
     # Role-based filtering
     if current_user.get("role") != "ADMIN":
