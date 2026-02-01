@@ -8141,6 +8141,10 @@ async def create_tenant_indexes():
             ("tenant_usage", [("tenant_id", 1), ("date", -1)]),
             ("tenant_usage_hourly", [("tenant_id", 1), ("date", -1), ("hour", 1)]),
             ("tenant_rate_limits", [("tenant_slug", 1)]),
+            ("webhooks", [("tenant_id", 1), ("is_active", 1)]),
+            ("webhook_deliveries", [("webhook_id", 1), ("delivered_at", -1)]),
+            ("custom_domain_ssl", [("domain", 1)]),
+            ("custom_domain_ssl", [("tenant_id", 1)]),
         ]
         
         for collection_name, index_keys in index_configs:
