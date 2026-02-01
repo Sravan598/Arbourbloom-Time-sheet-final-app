@@ -9,6 +9,12 @@ from datetime import datetime, timezone
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+# Import from local modules
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from config import ENCRYPTION_KEY
 
 
