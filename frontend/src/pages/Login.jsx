@@ -1,73 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, AlertCircle, User, Shield, Building2, ChevronDown, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
+// This page is reserved for Super Admin login only
+// Regular users should use tenant-specific login pages (e.g., /aurborbloom/login)
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, error, clearError, isAuthenticated, user } = useAuth();
   
-  const [activeTab, setActiveTab] = useState('EMPLOYEE');
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState('');
-  
-  // Multi-tenant state
-  const [tenants, setTenants] = useState([]);
-  const [selectedTenant, setSelectedTenant] = useState(null);
-  const [showTenantDropdown, setShowTenantDropdown] = useState(false);
-  const [tenantsLoading, setTenantsLoading] = useState(true);
 
-  // Fetch available tenants on mount
+  // Check for 'superadmin' query param - if not present, redirect to default tenant login
   useEffect(() => {
-    const fetchTenants = async () => {
-      try {
-        const response = await axios.get(`${API}/api/tenants/public`);
-        setTenants(response.data);
-        
-        // Check for tenant preselection from URL params or referrer
-        const urlParams = new URLSearchParams(location.search);
-        const preselectedSlug = urlParams.get('tenant');
-        const referrerPath = location.state?.from?.pathname || '';
-        
-        // Try to find preselected tenant
-        let targetTenant = null;
-        
-        if (preselectedSlug) {
-          targetTenant = response.data.find(t => t.slug === preselectedSlug);
-        } else if (referrerPath.includes('perfectsolutions')) {
-          targetTenant = response.data.find(t => t.slug === 'perfectsolutions');
-        }
-        
-        // Auto-select tenant
-        if (targetTenant) {
-          setSelectedTenant(targetTenant);
-        } else if (response.data.length > 0) {
-          const defaultTenant = response.data.find(t => t.slug === 'aurborbloom') || response.data[0];
-          setSelectedTenant(defaultTenant);
-        }
-      } catch (err) {
-        console.error('Failed to fetch tenants:', err);
-        // Set default tenant on error
-        setSelectedTenant({
-          slug: 'aurborbloom',
-          name: 'AurborBloom',
-          logo_url: null,
-          primary_color: '#1a1a1a'
-        });
-      } finally {
-        setTenantsLoading(false);
-      }
-    };
+    const urlParams = new URLSearchParams(location.search);
+    const isSuperAdminMode = urlParams.get('superadmin') === 'true';
     
-    fetchTenants();
-  }, [location.search, location.state]);
+    // If not super admin mode, redirect to AurborBloom tenant login
+    if (!isSuperAdminMode && !isAuthenticated) {
+      navigate('/aurborbloom/login', { replace: true });
+    }
+  }, [location.search, navigate, isAuthenticated]);
 
   // Redirect if already authenticated
   useEffect(() => {
