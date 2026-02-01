@@ -19,7 +19,8 @@ import {
   Clock,
   Ticket,
   Copy,
-  RefreshCw
+  RefreshCw,
+  Key
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
