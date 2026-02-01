@@ -2,23 +2,14 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  Code, 
-  Brain, 
-  Smartphone, 
-  GraduationCap, 
-  Briefcase, 
-  TrendingUp, 
-  Lightbulb,
-  CheckCircle,
   Star,
   ArrowRight,
-  Users,
   Clock,
-  Award,
   ChevronRight,
-  Mail,
-  Phone,
-  MapPin
+  Facebook,
+  Instagram,
+  Twitter,
+  MessageCircle
 } from 'lucide-react';
 
 const KnowviaTechHome = () => {
@@ -27,88 +18,105 @@ const KnowviaTechHome = () => {
   const courses = [
     {
       title: 'Full Stack .NET Development',
-      level: 'Beginner to Advanced',
+      subtitle: 'Beginner to Advanced',
+      level: 'Progressive',
       duration: '6 months',
       rating: 4.8,
-      icon: Code,
-      color: '#512BD4'
+      image: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=600&q=80'
     },
     {
       title: 'Generative AI',
+      subtitle: 'Gen AI Master',
       level: 'Beginner',
       duration: '3 months',
       rating: 4.8,
-      icon: Brain,
-      color: '#10B981'
+      image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&q=80'
     },
     {
-      title: 'Mobile App Development',
+      title: 'Mobile Application Development',
+      subtitle: 'All in One Mobile App',
       level: 'Beginner',
       duration: '6 months',
       rating: 4.9,
-      icon: Smartphone,
-      color: '#3B82F6'
+      image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&q=80'
     }
   ];
 
   const targetAudience = [
     {
       title: 'Fresh Graduates',
-      description: 'Bridge the gap between college education and industry requirements with practical, job-ready skills.',
-      icon: GraduationCap
+      description: 'Fresh Graduates looking to bridge the gap between college education and industry requirements with practical, job-ready skills in modern technologies.',
+      icon: '📊'
     },
     {
       title: 'Career Switchers',
-      description: 'Transition into high-paying software development roles without a computer science degree.',
-      icon: Briefcase
+      description: 'Career Switchers from non-tech backgrounds who want to transition into high-paying software development roles without a computer science degree.',
+      icon: '🔄'
     },
     {
       title: 'Working Professionals',
-      description: 'Upskill in cutting-edge technologies like Generative AI and .NET to accelerate career growth.',
-      icon: TrendingUp
+      description: 'Working Professionals seeking to upskill in cutting-edge technologies like Generative AI and .NET to accelerate their career growth and salary.',
+      icon: '📈'
     },
     {
       title: 'Aspiring Entrepreneurs',
-      description: 'Build your own apps and digital products without depending on expensive development agencies.',
-      icon: Lightbulb
+      description: 'Aspiring Entrepreneurs who want to build their own apps and digital products without depending on expensive development agencies.',
+      icon: '💡'
     }
   ];
 
   const steps = [
-    { number: '01', title: 'Choose Your Path', description: 'Select the course that aligns with your career goals.' },
-    { number: '02', title: 'Learn with Projects', description: 'Follow structured modules with real-world projects.' },
-    { number: '03', title: 'Get Expert Guidance', description: 'Mentors available for doubt-clearing and code reviews.' },
-    { number: '04', title: 'Land Your Dream Job', description: 'Career support, resume guidance, and interview prep.' }
+    { 
+      number: '01', 
+      title: 'Choose Your Path', 
+      description: "Select the course that aligns with your career goals. Not sure? Book a free counseling session with our career advisors." 
+    },
+    { 
+      number: '02', 
+      title: 'Learn with Hands-On Projects', 
+      description: 'Follow structured modules with video lessons, coding exercises, and real-world projects that build your portfolio.' 
+    },
+    { 
+      number: '03', 
+      title: 'Get Expert Guidance', 
+      description: 'Stuck? Our mentors are available for doubt-clearing sessions, code reviews, and career guidance throughout your journey.' 
+    },
+    { 
+      number: '04', 
+      title: 'Land Your Dream Job', 
+      description: 'With our career support, resume guidance, and interview prep, confidently apply and secure your first tech role.' 
+    }
   ];
 
-  const companies = ['Microsoft', 'Google', 'Intel', 'Cisco', 'Verizon', 'Infopulse'];
+  const companies = [
+    { name: 'Microsoft', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/512px-Microsoft_logo.svg.png' },
+    { name: 'Google', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/512px-Google_2015_logo.svg.png' },
+    { name: 'Intel', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Intel_logo_%282006-2020%29.svg/512px-Intel_logo_%282006-2020%29.svg.png' },
+    { name: 'Cisco', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Cisco_logo_blue_2016.svg/512px-Cisco_logo_blue_2016.svg.png' },
+    { name: 'Verizon', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Verizon_2015_logo_-vector.svg/512px-Verizon_2015_logo_-vector.svg.png' }
+  ];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    alert('Thank you for your inquiry! Our team will contact you soon.');
+    setFormData({ name: '', email: '', message: '' });
+  };
 
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link to="/knowviatech" className="flex items-center gap-2">
-              <img src="/knowviatech_logo.png" alt="Knowvia Tech" className="h-10 w-auto" />
+            <Link to="/knowviatech" className="flex items-center">
+              <img src="/knowviatech_logo.png" alt="Knowvia Tech" className="h-12 w-auto" />
             </Link>
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#courses" className="text-gray-600 hover:text-red-600 transition-colors">Courses</a>
-              <a href="#about" className="text-gray-600 hover:text-red-600 transition-colors">About</a>
-              <a href="#contact" className="text-gray-600 hover:text-red-600 transition-colors">Contact</a>
-            </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Link 
                 to="/knowviatech/login"
-                className="text-gray-700 hover:text-red-600 font-medium transition-colors"
+                className="bg-red-600 text-white px-6 py-2 rounded-md font-medium hover:bg-red-700 transition-all"
               >
-                Login
-              </Link>
-              <Link 
-                to="/knowviatech/signup"
-                className="bg-gradient-to-r from-red-600 to-red-500 text-white px-5 py-2 rounded-full font-medium hover:shadow-lg hover:shadow-red-500/30 transition-all"
-              >
-                Employee Portal
+                Sign up
               </Link>
             </div>
           </div>
@@ -116,93 +124,71 @@ const KnowviaTechHome = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-24 pb-16 bg-gradient-to-br from-gray-50 via-white to-red-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="pt-20 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-full text-sm font-medium mb-6">
-                <Award className="w-4 h-4" />
-                Best Online Learning Platform
-              </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-                Code Your Future with{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-green-600">
-                  Industry-Ready Skills
-                </span>
+                Code Your Future with Industry-Ready Skills
               </h1>
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
                 Master in-demand technologies like .NET Full Stack, Generative AI, and Mobile App Development 
-                through hands-on projects and expert mentorship.
+                through hands-on projects and expert mentorship. Join thousands of learners building real-world 
+                applications and landing their dream tech jobs.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <a 
-                  href="#courses"
-                  className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-red-500 text-white px-8 py-4 rounded-full font-semibold hover:shadow-xl hover:shadow-red-500/30 transition-all"
-                >
-                  Explore Courses
-                  <ArrowRight className="w-5 h-5" />
-                </a>
-                <Link 
-                  to="/knowviatech/login"
-                  className="inline-flex items-center justify-center gap-2 bg-white text-gray-800 px-8 py-4 rounded-full font-semibold border-2 border-gray-200 hover:border-red-500 hover:text-red-600 transition-all"
-                >
-                  Employee Portal
-                </Link>
-              </div>
-              <div className="flex items-center gap-8 mt-10">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-gray-900">1000+</div>
-                  <div className="text-sm text-gray-500">Students</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-gray-900">4.8</div>
-                  <div className="text-sm text-gray-500">Rating</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-gray-900">95%</div>
-                  <div className="text-sm text-gray-500">Placement</div>
-                </div>
+              
+              {/* Course Tags */}
+              <div className="flex flex-wrap gap-3 mb-8">
+                <span className="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-medium">
+                  .NET Full-stack Development
+                </span>
+                <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
+                  Generative AI
+                </span>
+                <span className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+                  Mobile App Development
+                </span>
               </div>
             </motion.div>
+            
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="relative"
             >
-              <div className="relative bg-gradient-to-br from-red-500 to-green-500 rounded-3xl p-1">
-                <div className="bg-white rounded-3xl p-8">
-                  <div className="grid grid-cols-3 gap-4">
-                    {[Code, Brain, Smartphone].map((Icon, idx) => (
-                      <div key={idx} className="aspect-square bg-gray-50 rounded-2xl flex items-center justify-center">
-                        <Icon className={`w-10 h-10 ${idx === 0 ? 'text-purple-600' : idx === 1 ? 'text-green-600' : 'text-blue-600'}`} />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-6 text-center">
-                    <h3 className="font-semibold text-gray-900">Knowledge via Technology</h3>
-                    <p className="text-sm text-gray-500 mt-1">Transform your career with us</p>
-                  </div>
-                </div>
+              <div className="grid grid-cols-2 gap-4">
+                <img 
+                  src="https://images.unsplash.com/photo-1638452033979-14fba9e17fbb?w=400&q=80" 
+                  alt="Student learning" 
+                  className="rounded-2xl shadow-lg w-full h-64 object-cover"
+                />
+                <img 
+                  src="https://images.unsplash.com/photo-1686624386665-4cd01b96d0f6?w=400&q=80" 
+                  alt="Students in class" 
+                  className="rounded-2xl shadow-lg w-full h-64 object-cover mt-8"
+                />
               </div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Courses Section */}
-      <section id="courses" className="py-20 bg-white">
+      {/* Our Courses Section */}
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Courses</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Industry-aligned curriculum designed to make you job-ready
-            </p>
+          <div className="flex items-center justify-between mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Our Courses</h2>
+            <button className="flex items-center gap-2 text-red-600 font-medium hover:text-red-700">
+              Explore Courses
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
+          
           <div className="grid md:grid-cols-3 gap-8">
             {courses.map((course, idx) => (
               <motion.div
@@ -211,16 +197,22 @@ const KnowviaTechHome = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:border-red-200 transition-all group"
+                className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all group"
               >
-                <div className="h-48 flex items-center justify-center" style={{ backgroundColor: `${course.color}10` }}>
-                  <course.icon className="w-20 h-20" style={{ color: course.color }} />
+                <div className="h-48 overflow-hidden">
+                  <img 
+                    src={course.image} 
+                    alt={course.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{course.title}</h3>
-                  <p className="text-gray-600 mb-4">{course.level}</p>
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-1 text-gray-500">
+                  <p className="text-sm text-gray-500 mb-1">{course.title}</p>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">{course.subtitle}</h3>
+                  
+                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                    <span>{course.level}</span>
+                    <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
                       {course.duration}
                     </div>
@@ -229,7 +221,8 @@ const KnowviaTechHome = () => {
                       {course.rating}
                     </div>
                   </div>
-                  <button className="w-full mt-4 py-3 border-2 border-gray-200 rounded-xl font-medium text-gray-700 group-hover:border-red-500 group-hover:text-red-600 transition-all flex items-center justify-center gap-2">
+                  
+                  <button className="w-full py-3 border-2 border-gray-200 rounded-xl font-medium text-gray-700 hover:border-red-500 hover:text-red-600 transition-all flex items-center justify-center gap-2">
                     View Course
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -241,11 +234,12 @@ const KnowviaTechHome = () => {
       </section>
 
       {/* Who It's For Section */}
-      <section id="about" className="py-20 bg-gray-50">
+      <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Courses are Suitable for...</h2>
-          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12 text-center">
+            Our Courses are Suitable for …
+          </h2>
+          
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {targetAudience.map((item, idx) => (
               <motion.div
@@ -254,27 +248,26 @@ const KnowviaTechHome = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="bg-white rounded-2xl p-6 hover:shadow-lg transition-all"
+                className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all"
               >
-                <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center mb-4">
-                  <item.icon className="w-7 h-7 text-red-600" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-600 text-sm">{item.description}</p>
+                <div className="text-4xl mb-4">{item.icon}</div>
+                <h3 className="text-lg font-bold text-gray-900 mb-3">{item.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{item.description}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* How It Works Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
-            <p className="text-lg text-gray-600">Your journey to a tech career in 4 simple steps</p>
-          </div>
-          <div className="grid md:grid-cols-4 gap-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
+            The Knowvia Tech Team with High Technical Skills
+          </h2>
+          <p className="text-xl text-gray-600 text-center mb-16">Help You Learn a New Profession</p>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, idx) => (
               <motion.div
                 key={idx}
@@ -284,110 +277,103 @@ const KnowviaTechHome = () => {
                 transition={{ delay: idx * 0.1 }}
                 className="text-center"
               >
-                <div className="text-5xl font-bold text-red-600 mb-4">{step.number}</div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">{step.title}</h3>
-                <p className="text-gray-600 text-sm">{step.description}</p>
+                <div className="text-6xl font-bold text-red-600 mb-4">{step.number}</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{step.description}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonial */}
-      <section className="py-20 bg-gradient-to-br from-red-600 to-red-700">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="text-white">
-            <div className="flex justify-center mb-6">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-6 h-6 text-yellow-400 fill-current" />
-              ))}
+      {/* Testimonial Section */}
+      <section className="py-20 bg-gray-900">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="flex justify-center">
+              <img 
+                src="https://images.unsplash.com/photo-1638452033979-14fba9e17fbb?w=400&q=80"
+                alt="Rahul Mehta"
+                className="rounded-2xl shadow-2xl w-80 h-96 object-cover"
+              />
             </div>
-            <blockquote className="text-xl md:text-2xl font-medium mb-6 leading-relaxed">
-              "As a Python developer, I wanted to get into AI. The Generative AI course gave me hands-on 
-              experience with GPT models and LangChain. Within 2 months of completion, I landed an AI 
-              engineer role with a 60% salary hike."
-            </blockquote>
-            <div className="font-semibold">— Rahul Mehta, AI Engineer</div>
-          </div>
-        </div>
-      </section>
-
-      {/* Companies */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h3 className="text-lg font-medium text-gray-500">Where Our Graduates Work</h3>
-          </div>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
-            {companies.map((company, idx) => (
-              <div key={idx} className="text-xl font-bold text-gray-300 hover:text-gray-500 transition-colors">
-                {company}
+            <div className="text-white">
+              <div className="text-6xl text-red-500 mb-6">"</div>
+              <blockquote className="text-xl md:text-2xl font-light italic mb-8 leading-relaxed">
+                As a Python developer, I wanted to get into AI. The Generative AI course gave me hands-on 
+                experience with GPT models and LangChain. Within 2 months of completion, I landed an AI 
+                engineer role with a 60% salary hike.
+              </blockquote>
+              <div className="flex items-center gap-4">
+                <img 
+                  src="https://images.unsplash.com/photo-1638452033979-14fba9e17fbb?w=100&q=80"
+                  alt="Rahul Mehta"
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <div className="font-semibold">Rahul Mehta,</div>
+                  <div className="text-gray-400">AI Engineer</div>
+                </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20 bg-gray-50">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
                 Book a Free Career Counseling Session
               </h2>
-              <p className="text-lg text-gray-600 mb-8">
+              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
                 Not sure which course is right for you? Talk to our career advisors who'll help you 
                 choose the perfect learning path based on your background and goals.
               </p>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                    <Mail className="w-6 h-6 text-red-600" />
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-500">Email</div>
-                    <div className="font-medium text-gray-900">info@knowviatech.com</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                    <Users className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-500">Community</div>
-                    <div className="font-medium text-gray-900">Join 1000+ learners</div>
-                  </div>
-                </div>
-              </div>
+              <img 
+                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500&q=80"
+                alt="Career Counseling"
+                className="rounded-2xl shadow-lg w-full"
+              />
             </div>
-            <div className="bg-white rounded-2xl p-8 shadow-lg">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Get a Consultation</h3>
-              <form className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Your Name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                />
-                <input
-                  type="email"
-                  placeholder="Your Email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                />
-                <textarea
-                  placeholder="Your Message"
-                  rows={4}
-                  value={formData.message}
-                  onChange={(e) => setFormData({...formData, message: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
-                />
+            
+            <div className="bg-gray-50 rounded-2xl p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Get a Consultation</h3>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <textarea
+                    placeholder="Message"
+                    rows={4}
+                    value={formData.message}
+                    onChange={(e) => setFormData({...formData, message: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                  />
+                </div>
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-red-600 to-red-500 text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:shadow-red-500/30 transition-all"
+                  className="w-full bg-red-600 text-white py-4 rounded-xl font-semibold hover:bg-red-700 transition-all"
                 >
                   Get a Consultation
                 </button>
@@ -397,18 +383,38 @@ const KnowviaTechHome = () => {
         </div>
       </section>
 
+      {/* Where Our Graduates Work */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h3 className="text-2xl font-bold text-gray-900 text-center mb-10">
+            Where Our Graduates Work in
+          </h3>
+          <div className="flex flex-wrap justify-center items-center gap-12">
+            {companies.map((company, idx) => (
+              <div key={idx} className="grayscale hover:grayscale-0 transition-all opacity-60 hover:opacity-100">
+                <img 
+                  src={company.logo} 
+                  alt={company.name}
+                  className="h-8 w-auto object-contain"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Employee Portal CTA */}
-      <section className="py-16 bg-gradient-to-r from-gray-900 to-gray-800">
+      <section className="py-16 bg-red-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
             Knowvia Tech Employee Portal
           </h2>
-          <p className="text-gray-400 mb-8">
+          <p className="text-red-100 mb-8">
             Access your timesheets, leave management, and HR services
           </p>
           <Link
             to="/knowviatech/login"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-500 text-white px-8 py-4 rounded-full font-semibold hover:shadow-xl hover:shadow-red-500/30 transition-all"
+            className="inline-flex items-center gap-2 bg-white text-red-600 px-8 py-4 rounded-xl font-semibold hover:shadow-xl transition-all"
           >
             Access Employee Portal
             <ArrowRight className="w-5 h-5" />
@@ -417,18 +423,58 @@ const KnowviaTechHome = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-12">
+      <footer className="bg-gray-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-3">
-              <img src="/knowviatech_logo.png" alt="Knowvia Tech" className="h-10 w-auto brightness-0 invert" />
+          <div className="grid md:grid-cols-4 gap-8">
+            {/* Logo & Description */}
+            <div className="md:col-span-2">
+              <Link to="/knowviatech" className="flex items-center mb-4">
+                <img src="/knowviatech_logo.png" alt="Knowvia Tech" className="h-12 w-auto brightness-0 invert" />
+              </Link>
+              <p className="text-gray-400 mb-6">
+                Knowvia Tech is an LMS platform that provides hands-on training in tech courses like 
+                .NET Fullstack, Generative AI, and App Development.
+              </p>
+              <div className="flex items-center gap-4">
+                <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors">
+                  <Facebook className="w-5 h-5" />
+                </a>
+                <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors">
+                  <Instagram className="w-5 h-5" />
+                </a>
+                <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors">
+                  <Twitter className="w-5 h-5" />
+                </a>
+                <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors">
+                  <MessageCircle className="w-5 h-5" />
+                </a>
+              </div>
             </div>
-            <div className="text-sm">
-              Knowvia Tech © 2025 All rights reserved
+            
+            {/* Links */}
+            <div>
+              <h4 className="font-bold mb-4">Links</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors">Home</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Courses</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+              </ul>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-xs">Knowledge via Technology</span>
+            
+            {/* Classes */}
+            <div>
+              <h4 className="font-bold mb-4">Class</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors">.NET Full Stack</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Generative AI</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Mobile App Dev</a></li>
+              </ul>
             </div>
+          </div>
+          
+          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+            <p>Knowvia Tech © 2025 All rights reserved by Cortracker360 Solutions</p>
           </div>
         </div>
       </footer>
