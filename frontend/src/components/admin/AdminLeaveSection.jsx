@@ -59,12 +59,13 @@ const AdminLeaveSection = () => {
   const handleReview = async (requestId, status) => {
     setProcessing(true);
     try {
-      await axios.put(`${API}/admin/leave/request/${requestId}`, {
+      await axios.put(`${API}/admin/leave/requests/${requestId}`, {
         status,
         admin_notes: adminNotes || null
       });
       setSelectedRequest(null);
       setAdminNotes('');
+      // Refetch immediately to update the list
       await fetchRequests();
     } catch (err) {
       console.error('Failed to review request:', err);
