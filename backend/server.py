@@ -3252,17 +3252,17 @@ def create_pdf_header_with_logo(elements: list, styles, subtitle_text: str = "",
     # Use tenant info if provided
     tenant_name = tenant_info.get("name", "AurborBloom") if tenant_info else "AurborBloom"
     tenant_primary_color = tenant_info.get("primary_color", "#1a1a1a") if tenant_info else "#1a1a1a"
-    tenant_logo_base64 = tenant_info.get("logo_url") if tenant_info else None
+    tenant_logo_url = tenant_info.get("logo_url") if tenant_info else None
     tenant_slug = tenant_info.get("slug", "aurborbloom") if tenant_info else "aurborbloom"
     
     logo_added = False
     
-    # Try to use tenant logo first
-    if tenant_logo_base64 and tenant_logo_base64.startswith("data:image"):
+    # Try to use tenant logo first - handle base64 format
+    if tenant_logo_url and tenant_logo_url.startswith("data:image"):
         try:
             # Decode base64 image
             import base64
-            header, data = tenant_logo_base64.split(",", 1)
+            header, data = tenant_logo_url.split(",", 1)
             image_data = base64.b64decode(data)
             logo_buffer = io.BytesIO(image_data)
             
@@ -3281,9 +3281,34 @@ def create_pdf_header_with_logo(elements: list, styles, subtitle_text: str = "",
             elements.append(Spacer(1, 15))
             logo_added = True
         except Exception as e:
-            print(f"Error loading tenant logo: {e}")
+            print(f"Error loading tenant base64 logo: {e}")
     
-    # Only use default AurborBloom logo if this IS the AurborBloom tenant
+    # Try to use tenant logo - handle file path format (e.g., /knowviatech_logo.png)
+    if not logo_added and tenant_logo_url and tenant_logo_url.startswith("/"):
+        try:
+            # Look for logo in frontend public folder
+            logo_filename = tenant_logo_url.lstrip("/")
+            frontend_logo_path = Path("/app/frontend/public") / logo_filename
+            
+            if frontend_logo_path.exists():
+                from PIL import Image as PILImage
+                with PILImage.open(str(frontend_logo_path)) as img:
+                    orig_width, orig_height = img.size
+                    aspect_ratio = orig_width / orig_height
+                
+                desired_width = 2.0 * inch
+                calculated_height = desired_width / aspect_ratio
+                
+                logo = Image(str(frontend_logo_path), width=desired_width, height=calculated_height)
+                logo.hAlign = 'CENTER'
+                elements.append(logo)
+                elements.append(Spacer(1, 15))
+                logo_added = True
+                print(f"Loaded tenant logo from: {frontend_logo_path}")
+        except Exception as e:
+            print(f"Error loading tenant file logo: {e}")
+    
+    # Use default AurborBloom logo if this IS the AurborBloom tenant
     if not logo_added and tenant_slug == "aurborbloom" and LOGO_PATH.exists():
         try:
             from PIL import Image as PILImage
