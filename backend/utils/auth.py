@@ -6,6 +6,12 @@ import jwt
 from datetime import datetime, timezone, timedelta
 from fastapi import HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+# Import from local modules
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from config import JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRY_HOURS, DEFAULT_TENANT_SLUG
 from database import db
 
@@ -19,7 +25,8 @@ def create_token(user_id: str, email: str, role: str, tenant_id: str) -> str:
         "email": email,
         "role": role,
         "tenant_id": tenant_id,
-        "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRY_HOURS)
+        "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRY_HOURS),
+        "iat": datetime.now(timezone.utc)
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
@@ -73,3 +80,18 @@ async def require_super_admin(credentials: HTTPAuthorizationCredentials = Depend
         raise HTTPException(status_code=403, detail="Super Admin access required")
     
     return user
+
+
+async def require_employee(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    """Require the current user to be an employee"""
+    user = await get_current_user(credentials)
+    
+    if user.get("role") not in ["EMPLOYEE"]:
+        raise HTTPException(status_code=403, detail="Employee access required")
+    
+    return user
+
+
+def get_tenant_id(current_user: dict) -> str:
+    """Extract tenant_id from current user"""
+    return current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
