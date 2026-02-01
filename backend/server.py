@@ -280,7 +280,8 @@ async def log_audit_event(
         doc["event_type"] = doc["event_type"].value
         doc["created_at"] = doc["created_at"].isoformat()
         
-        await db.audit_logs.insert_one(doc)
+        # Use separate collection for security audit logs
+        await db.security_audit_logs.insert_one(doc)
         
         # Log critical events to server logs as well
         if severity == "CRITICAL":
