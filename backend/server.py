@@ -1890,6 +1890,354 @@ async def get_security_alerts(
     }
 
 
+# ============== TENANT DATA EXPORT ENDPOINTS ==============
+
+@api_router.get("/super-admin/tenants/{tenant_id}/export")
+async def export_tenant_data(
+    tenant_id: str,
+    format: str = "json",
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Export all data for a specific tenant (GDPR compliance)"""
+    
+    # Verify tenant exists
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    tenant_slug = tenant.get("slug")
+    
+    # Collect all tenant data
+    export_data = {
+        "export_metadata": {
+            "tenant_id": tenant_id,
+            "tenant_name": tenant.get("name"),
+            "tenant_slug": tenant_slug,
+            "exported_at": datetime.now(timezone.utc).isoformat(),
+            "exported_by": super_admin.get("email"),
+            "format_version": "1.0"
+        },
+        "tenant_config": tenant,
+        "users": await db.users.find({"tenant_id": tenant_slug}, {"_id": 0, "password_hash": 0}).to_list(10000),
+        "timesheets": await db.timesheets.find({"tenant_id": tenant_slug}, {"_id": 0}).to_list(50000),
+        "tickets": await db.tickets.find({"tenant_id": tenant_slug}, {"_id": 0}).to_list(10000),
+        "leave_requests": await db.leave_requests.find({"tenant_id": tenant_slug}, {"_id": 0}).to_list(10000),
+        "projects": await db.projects.find({"tenant_id": tenant_slug}, {"_id": 0}).to_list(1000),
+        "announcements": await db.announcements.find({"tenant_id": tenant_slug}, {"_id": 0}).to_list(1000),
+        "holidays": await db.holidays.find({"tenant_id": tenant_slug}, {"_id": 0}).to_list(500),
+        "invitations": await db.invitations.find({"tenant_id": tenant_slug}, {"_id": 0}).to_list(1000),
+        "leave_types": await db.leave_types.find({"tenant_id": tenant_slug}, {"_id": 0}).to_list(100),
+    }
+    
+    # Add summary stats
+    export_data["summary"] = {
+        "total_users": len(export_data["users"]),
+        "total_timesheets": len(export_data["timesheets"]),
+        "total_tickets": len(export_data["tickets"]),
+        "total_leave_requests": len(export_data["leave_requests"]),
+        "total_projects": len(export_data["projects"]),
+        "total_announcements": len(export_data["announcements"]),
+        "total_holidays": len(export_data["holidays"]),
+        "total_invitations": len(export_data["invitations"])
+    }
+    
+    # Log the export action
+    await log_audit_event(
+        event_type=AuditEventType.DATA_ACCESS,
+        tenant_id=tenant_slug,
+        user_id=super_admin.get("id"),
+        user_email=super_admin.get("email"),
+        resource_type="tenant_export",
+        resource_id=tenant_id,
+        details={"action": "full_data_export", "record_counts": export_data["summary"]},
+        severity="INFO"
+    )
+    
+    # Return as JSON file download
+    json_str = json.dumps(export_data, indent=2, default=str)
+    
+    filename = f"{tenant_slug}_full_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    
+    return StreamingResponse(
+        io.BytesIO(json_str.encode()),
+        media_type="application/json",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+@api_router.delete("/super-admin/tenants/{tenant_id}/data")
+async def delete_tenant_data(
+    tenant_id: str,
+    confirm: str = None,
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Delete all data for a tenant (GDPR right to be forgotten)"""
+    
+    if confirm != "DELETE_ALL_DATA":
+        raise HTTPException(
+            status_code=400, 
+            detail="Must confirm deletion by passing ?confirm=DELETE_ALL_DATA"
+        )
+    
+    # Verify tenant exists
+    tenant = await db.tenants.find_one({"id": tenant_id}, {"_id": 0})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    tenant_slug = tenant.get("slug")
+    
+    # Prevent deletion of default tenant
+    if tenant_slug == DEFAULT_TENANT_SLUG:
+        raise HTTPException(status_code=400, detail="Cannot delete the default tenant")
+    
+    # Delete all tenant data
+    deletion_results = {
+        "users": (await db.users.delete_many({"tenant_id": tenant_slug})).deleted_count,
+        "timesheets": (await db.timesheets.delete_many({"tenant_id": tenant_slug})).deleted_count,
+        "tickets": (await db.tickets.delete_many({"tenant_id": tenant_slug})).deleted_count,
+        "leave_requests": (await db.leave_requests.delete_many({"tenant_id": tenant_slug})).deleted_count,
+        "projects": (await db.projects.delete_many({"tenant_id": tenant_slug})).deleted_count,
+        "announcements": (await db.announcements.delete_many({"tenant_id": tenant_slug})).deleted_count,
+        "holidays": (await db.holidays.delete_many({"tenant_id": tenant_slug})).deleted_count,
+        "invitations": (await db.invitations.delete_many({"tenant_id": tenant_slug})).deleted_count,
+        "leave_types": (await db.leave_types.delete_many({"tenant_id": tenant_slug})).deleted_count,
+        "tenant": (await db.tenants.delete_one({"id": tenant_id})).deleted_count
+    }
+    
+    # Log the deletion
+    await log_audit_event(
+        event_type=AuditEventType.DATA_DELETE,
+        tenant_id=tenant_slug,
+        user_id=super_admin.get("id"),
+        user_email=super_admin.get("email"),
+        resource_type="tenant_deletion",
+        resource_id=tenant_id,
+        details={"action": "full_tenant_deletion", "deleted_counts": deletion_results},
+        severity="CRITICAL"
+    )
+    
+    return {
+        "message": f"All data for tenant '{tenant.get('name')}' has been deleted",
+        "deleted_counts": deletion_results
+    }
+
+
+# ============== TENANT USAGE METRICS ENDPOINTS ==============
+
+@api_router.get("/super-admin/usage/overview")
+async def get_usage_overview(
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Get usage overview for all tenants"""
+    
+    # Get all tenants
+    tenants = await db.tenants.find({}, {"_id": 0, "id": 1, "slug": 1, "name": 1}).to_list(100)
+    
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    last_30_days = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
+    
+    overview = []
+    
+    for tenant in tenants:
+        tenant_slug = tenant.get("slug")
+        
+        # Get user counts
+        total_users = await db.users.count_documents({"tenant_id": tenant_slug})
+        active_users = await db.users.count_documents({"tenant_id": tenant_slug, "is_active": True})
+        admin_count = await db.users.count_documents({"tenant_id": tenant_slug, "role": "ADMIN"})
+        
+        # Get today's usage from database
+        today_usage = await db.tenant_usage.find_one(
+            {"tenant_id": tenant_slug, "date": today},
+            {"_id": 0}
+        )
+        
+        # Get 30-day usage
+        monthly_pipeline = [
+            {
+                "$match": {
+                    "tenant_id": tenant_slug,
+                    "date": {"$gte": last_30_days}
+                }
+            },
+            {
+                "$group": {
+                    "_id": None,
+                    "total_requests": {"$sum": "$total_requests"}
+                }
+            }
+        ]
+        monthly_result = await db.tenant_usage.aggregate(monthly_pipeline).to_list(1)
+        monthly_requests = monthly_result[0]["total_requests"] if monthly_result else 0
+        
+        # Get recent activity counts
+        timesheets_30d = await db.timesheets.count_documents({
+            "tenant_id": tenant_slug,
+            "created_at": {"$gte": last_30_days}
+        })
+        
+        tickets_30d = await db.tickets.count_documents({
+            "tenant_id": tenant_slug,
+            "created_at": {"$gte": last_30_days}
+        })
+        
+        # Add in-memory metrics if available
+        in_memory = usage_metrics_store.get(tenant_slug, {})
+        
+        overview.append({
+            "tenant_id": tenant.get("id"),
+            "tenant_slug": tenant_slug,
+            "tenant_name": tenant.get("name"),
+            "users": {
+                "total": total_users,
+                "active": active_users,
+                "admins": admin_count,
+                "employees": total_users - admin_count
+            },
+            "api_usage": {
+                "today": (today_usage.get("total_requests", 0) if today_usage else 0) + in_memory.get("total_requests", 0),
+                "last_30_days": monthly_requests + in_memory.get("total_requests", 0)
+            },
+            "activity": {
+                "timesheets_30d": timesheets_30d,
+                "tickets_30d": tickets_30d
+            }
+        })
+    
+    # Sort by activity (most active first)
+    overview.sort(key=lambda x: x["api_usage"]["last_30_days"], reverse=True)
+    
+    return {
+        "tenants": overview,
+        "total_tenants": len(overview),
+        "generated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+
+@api_router.get("/super-admin/usage/tenant/{tenant_slug}")
+async def get_tenant_usage_details(
+    tenant_slug: str,
+    days: int = 30,
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Get detailed usage metrics for a specific tenant"""
+    
+    # Verify tenant exists
+    tenant = await db.tenants.find_one({"slug": tenant_slug}, {"_id": 0})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    start_date = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
+    
+    # Get daily usage breakdown
+    daily_usage = await db.tenant_usage.find(
+        {"tenant_id": tenant_slug, "date": {"$gte": start_date}},
+        {"_id": 0}
+    ).sort("date", 1).to_list(days)
+    
+    # Get hourly usage for today
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    hourly_usage = await db.tenant_usage_hourly.find(
+        {"tenant_id": tenant_slug, "date": today},
+        {"_id": 0}
+    ).sort("hour", 1).to_list(24)
+    
+    # Get feature usage (based on endpoint patterns)
+    feature_pipeline = [
+        {"$match": {"tenant_id": tenant_slug, "date": {"$gte": start_date}}},
+        {"$group": {"_id": None, "total": {"$sum": "$total_requests"}}}
+    ]
+    total_result = await db.tenant_usage.aggregate(feature_pipeline).to_list(1)
+    total_requests = total_result[0]["total"] if total_result else 0
+    
+    # Get user activity stats
+    user_stats = {
+        "total_users": await db.users.count_documents({"tenant_id": tenant_slug}),
+        "active_users": await db.users.count_documents({"tenant_id": tenant_slug, "is_active": True}),
+        "admins": await db.users.count_documents({"tenant_id": tenant_slug, "role": "ADMIN"}),
+    }
+    
+    # Get content stats
+    content_stats = {
+        "total_timesheets": await db.timesheets.count_documents({"tenant_id": tenant_slug}),
+        "total_tickets": await db.tickets.count_documents({"tenant_id": tenant_slug}),
+        "total_projects": await db.projects.count_documents({"tenant_id": tenant_slug}),
+        "total_leave_requests": await db.leave_requests.count_documents({"tenant_id": tenant_slug}),
+    }
+    
+    # Get login activity from audit logs
+    login_stats = {
+        "successful_logins": await db.security_audit_logs.count_documents({
+            "tenant_id": tenant_slug,
+            "event_type": "LOGIN_SUCCESS",
+            "created_at": {"$gte": start_date}
+        }),
+        "failed_logins": await db.security_audit_logs.count_documents({
+            "tenant_id": tenant_slug,
+            "event_type": "LOGIN_FAILED",
+            "created_at": {"$gte": start_date}
+        })
+    }
+    
+    # Include in-memory metrics
+    in_memory = usage_metrics_store.get(tenant_slug, {})
+    
+    return {
+        "tenant": {
+            "id": tenant.get("id"),
+            "slug": tenant_slug,
+            "name": tenant.get("name")
+        },
+        "period": {
+            "start": start_date,
+            "end": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            "days": days
+        },
+        "api_usage": {
+            "total_requests": total_requests + in_memory.get("total_requests", 0),
+            "daily_breakdown": daily_usage,
+            "hourly_today": hourly_usage,
+            "top_endpoints": in_memory.get("requests_by_endpoint", {})
+        },
+        "user_stats": user_stats,
+        "content_stats": content_stats,
+        "login_activity": login_stats,
+        "rate_limit": {
+            "limit_per_minute": RATE_LIMIT_MAX_REQUESTS,
+            "window_seconds": RATE_LIMIT_WINDOW
+        }
+    }
+
+
+@api_router.put("/super-admin/rate-limit/{tenant_slug}")
+async def update_tenant_rate_limit(
+    tenant_slug: str,
+    max_requests: int = 100,
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Update rate limit for a specific tenant (for future use with per-tenant limits)"""
+    
+    # For now, just store in database for reference
+    # In production, this would update a Redis/cache store
+    
+    await db.tenant_rate_limits.update_one(
+        {"tenant_slug": tenant_slug},
+        {
+            "$set": {
+                "max_requests_per_minute": max_requests,
+                "updated_by": super_admin.get("email"),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+        },
+        upsert=True
+    )
+    
+    return {
+        "message": f"Rate limit updated for {tenant_slug}",
+        "max_requests_per_minute": max_requests
+    }
+
+
 @api_router.put("/super-admin/tenants/{tenant_id}", response_model=TenantResponse)
 async def update_tenant(
     tenant_id: str,
