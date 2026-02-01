@@ -2,11 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, Clock, CheckCircle, XCircle, Search,
-  MessageSquare, Check, X, Settings, Plus, Edit2, Trash2, Save, AlertCircle, Info
+  MessageSquare, Check, X, Settings, Plus, Edit2, Trash2, Save, AlertCircle, Info, Download
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
+import axios from 'axios';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import leaveService from '../../services/leaveService';
+
+const API = process.env.REACT_APP_BACKEND_URL + '/api';
 
 // Common emoji options for leave types
 const EMOJI_OPTIONS = ['🏖️', '🤒', '👤', '🖤', '👶', '📅', '✈️', '🏠', '💼', '🎓', '⚕️', '🌴'];
