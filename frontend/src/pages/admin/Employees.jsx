@@ -192,6 +192,58 @@ const Employees = () => {
     setShowDeleteModal(true);
   };
 
+  // Password Reset Functions
+  const openResetPasswordModal = (employee) => {
+    setEmployeeToReset(employee);
+    setNewPassword('');
+    setConfirmPassword('');
+    setShowPassword(false);
+    setShowResetPasswordModal(true);
+  };
+
+  const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setNewPassword(password);
+    setConfirmPassword(password);
+    setShowPassword(true);
+  };
+
+  const handleResetPassword = async () => {
+    if (!employeeToReset) return;
+    
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    setIsResetting(true);
+    setError('');
+
+    try {
+      await axios.post(`${API}/admin/employees/${employeeToReset.id}/reset-password`, {
+        new_password: newPassword
+      });
+      setSuccess(`Password reset successfully for "${employeeToReset.name}". Please share the new password with them securely.`);
+      setShowResetPasswordModal(false);
+      setEmployeeToReset(null);
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to reset password');
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   const handleLogout = () => {
     // Get tenant directly from localStorage before any state changes
     const storedTenant = localStorage.getItem('cortracker_tenant');
