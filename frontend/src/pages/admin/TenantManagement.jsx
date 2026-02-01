@@ -294,11 +294,28 @@ const TenantManagement = () => {
   };
 
   // Custom Domain
-  const openDomainModal = (tenant) => {
+  const openDomainModal = async (tenant) => {
     setSelectedTenant(tenant);
     setDomainData({ domain: tenant.custom_domain || '' });
     setDomainInstructions(null);
+    setDomainStatus(null);
     setShowDomainModal(true);
+    
+    // Fetch domain status if domain exists
+    if (tenant.custom_domain) {
+      setCheckingDns(true);
+      try {
+        const response = await axios.get(
+          `${API}/api/super-admin/tenants/${tenant.id}/domain-status`,
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+        setDomainStatus(response.data);
+      } catch (err) {
+        console.error('Failed to fetch domain status:', err);
+      } finally {
+        setCheckingDns(false);
+      }
+    }
   };
 
   const setCustomDomain = async () => {
