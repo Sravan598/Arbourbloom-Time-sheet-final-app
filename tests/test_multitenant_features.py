@@ -519,8 +519,9 @@ class TestPDFExports:
         end_date = datetime.now().strftime("%Y-%m-%d")
         start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
         
+        # Correct endpoint: /admin/export/timesheets/pdf
         response = requests.get(
-            f"{BASE_URL}/api/admin/timesheets/export/pdf?start_date={start_date}&end_date={end_date}",
+            f"{BASE_URL}/api/admin/export/timesheets/pdf?start_date={start_date}&end_date={end_date}",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         
@@ -544,8 +545,9 @@ class TestPDFExports:
         """Admin can export leave requests as PDF"""
         assert admin_token, "Failed to get admin token"
         
+        # Correct endpoint: /admin/export/leave-requests/pdf
         response = requests.get(
-            f"{BASE_URL}/api/admin/leave/requests/export/pdf",
+            f"{BASE_URL}/api/admin/export/leave-requests/pdf",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         
@@ -556,8 +558,9 @@ class TestPDFExports:
         """Admin can export tickets as PDF"""
         assert admin_token, "Failed to get admin token"
         
+        # Correct endpoint: /admin/export/tickets/pdf
         response = requests.get(
-            f"{BASE_URL}/api/admin/tickets/export/pdf",
+            f"{BASE_URL}/api/admin/export/tickets/pdf",
             headers={"Authorization": f"Bearer {admin_token}"}
         )
         
