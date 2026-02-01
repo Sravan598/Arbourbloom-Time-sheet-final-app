@@ -129,6 +129,11 @@ const TenantSignup = () => {
 
   // Dynamic colors based on tenant
   const primaryColor = tenant?.primary_color || '#1a1a1a';
+  const secondaryColor = tenant?.secondary_color || '#E53935';
+  
+  // Determine if primary is dark (use secondary for buttons)
+  const isDarkPrimary = primaryColor === '#1a1a1a' || primaryColor === '#000000' || primaryColor?.toLowerCase() === '#1a1a1a';
+  const buttonColor = isDarkPrimary ? secondaryColor : primaryColor;
 
   // Loading state
   if (tenantLoading) {
