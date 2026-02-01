@@ -6615,8 +6615,43 @@ async def periodic_dns_verification():
 async def startup_event():
     await ensure_default_channels()
     await initialize_default_tenant()
+    await create_tenant_indexes()
     # Start background DNS verification task
     asyncio.create_task(periodic_dns_verification())
+
+
+async def create_tenant_indexes():
+    """Create database indexes for tenant isolation and performance"""
+    try:
+        # Indexes for tenant_id + created_at (most common query pattern)
+        index_configs = [
+            ("users", [("tenant_id", 1), ("created_at", -1)]),
+            ("users", [("tenant_id", 1), ("email", 1)]),
+            ("timesheets", [("tenant_id", 1), ("created_at", -1)]),
+            ("timesheets", [("tenant_id", 1), ("user_id", 1), ("clock_in_at", -1)]),
+            ("tickets", [("tenant_id", 1), ("created_at", -1)]),
+            ("tickets", [("tenant_id", 1), ("status", 1)]),
+            ("leave_requests", [("tenant_id", 1), ("created_at", -1)]),
+            ("leave_requests", [("tenant_id", 1), ("user_id", 1)]),
+            ("projects", [("tenant_id", 1), ("created_at", -1)]),
+            ("invitations", [("tenant_id", 1), ("created_at", -1)]),
+            ("announcements", [("tenant_id", 1), ("created_at", -1)]),
+            ("holidays", [("tenant_id", 1)]),
+            ("leave_types", [("tenant_id", 1), ("is_active", 1)]),
+            ("audit_logs", [("tenant_id", 1), ("created_at", -1)]),
+            ("audit_logs", [("event_type", 1), ("created_at", -1)]),
+        ]
+        
+        for collection_name, index_keys in index_configs:
+            try:
+                await db[collection_name].create_index(index_keys, background=True)
+            except Exception as e:
+                # Index might already exist or collection doesn't exist yet
+                pass
+        
+        logger.info("✅ Database indexes created/verified for tenant isolation")
+    except Exception as e:
+        logger.error(f"Error creating indexes: {e}")
 
 
 async def initialize_default_tenant():
