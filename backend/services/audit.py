@@ -4,46 +4,18 @@ Track security-related events for compliance and monitoring
 """
 import logging
 from datetime import datetime, timezone
-from enum import Enum
 from typing import Optional
-from pydantic import BaseModel, Field
 import uuid
+
+# Import from local modules (relative to backend/)
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from database import db
+from models.security import AuditEventType, SecurityAuditLog
 
 logger = logging.getLogger(__name__)
-
-
-class AuditEventType(str, Enum):
-    """Types of audit events for security monitoring"""
-    LOGIN_SUCCESS = "LOGIN_SUCCESS"
-    LOGIN_FAILED = "LOGIN_FAILED"
-    LOGOUT = "LOGOUT"
-    CROSS_TENANT_ATTEMPT = "CROSS_TENANT_ATTEMPT"
-    DATA_ACCESS = "DATA_ACCESS"
-    DATA_MODIFY = "DATA_MODIFY"
-    DATA_DELETE = "DATA_DELETE"
-    PERMISSION_DENIED = "PERMISSION_DENIED"
-    SUSPICIOUS_ACTIVITY = "SUSPICIOUS_ACTIVITY"
-    ADMIN_ACTION = "ADMIN_ACTION"
-    PASSWORD_CHANGE = "PASSWORD_CHANGE"
-    USER_CREATED = "USER_CREATED"
-    USER_DEACTIVATED = "USER_DEACTIVATED"
-
-
-class SecurityAuditLog(BaseModel):
-    """Security audit log entry for monitoring"""
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    tenant_id: str
-    event_type: AuditEventType
-    user_id: Optional[str] = None
-    user_email: Optional[str] = None
-    ip_address: Optional[str] = None
-    user_agent: Optional[str] = None
-    resource_type: Optional[str] = None
-    resource_id: Optional[str] = None
-    details: Optional[dict] = None
-    severity: str = "INFO"  # INFO, WARNING, CRITICAL
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 async def log_audit_event(
