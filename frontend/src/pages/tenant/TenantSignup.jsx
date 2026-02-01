@@ -244,10 +244,14 @@ const TenantSignup = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left side - Branding */}
+      {/* Left side - Branding with Gradient */}
       <div 
         className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
-        style={{ backgroundColor: primaryColor }}
+        style={{ 
+          background: secondaryColor 
+            ? `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`
+            : primaryColor 
+        }}
       >
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-64 h-64 rounded-full bg-white blur-3xl" />
