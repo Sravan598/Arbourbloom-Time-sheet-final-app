@@ -73,13 +73,13 @@ const Navbar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/login">
+            <Link to="/aurborbloom/login">
               <Button variant="ghost" size="sm">
                 <LogIn className="w-4 h-4 mr-2" />
                 Login
               </Button>
             </Link>
-            <Link to="/signup">
+            <Link to="/aurborbloom/signup">
               <Button variant="primary" size="sm">
                 Sign Up Free
               </Button>
