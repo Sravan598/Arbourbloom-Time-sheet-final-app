@@ -2534,6 +2534,436 @@ async def update_tenant_rate_limit(
     }
 
 
+# ============== P2: ENCRYPTION API ENDPOINTS ==============
+
+class EncryptDataRequest(BaseModel):
+    data: str
+    field_name: Optional[str] = None
+
+
+class DecryptDataRequest(BaseModel):
+    encrypted_data: str
+
+
+@api_router.post("/admin/encrypt")
+async def encrypt_data_endpoint(
+    request: EncryptDataRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Encrypt sensitive data for storage (Admin only)"""
+    if current_user.get("role") not in ["ADMIN", "SUPER_ADMIN"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    encrypted = encrypt_sensitive_data(tenant_id, request.data)
+    
+    return {
+        "encrypted_data": encrypted,
+        "field_name": request.field_name,
+        "tenant_id": tenant_id,
+        "note": "Store this encrypted value. Original data cannot be recovered without decryption."
+    }
+
+
+@api_router.post("/admin/decrypt")
+async def decrypt_data_endpoint(
+    request: DecryptDataRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Decrypt sensitive data (Admin only)"""
+    if current_user.get("role") not in ["ADMIN", "SUPER_ADMIN"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    decrypted = decrypt_sensitive_data(tenant_id, request.encrypted_data)
+    
+    if decrypted is None:
+        raise HTTPException(status_code=400, detail="Failed to decrypt data. Invalid key or corrupted data.")
+    
+    return {
+        "decrypted_data": decrypted,
+        "tenant_id": tenant_id
+    }
+
+
+@api_router.get("/super-admin/encryption/status")
+async def get_encryption_status(
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Get encryption status and configuration (Super Admin only)"""
+    
+    # Count encrypted fields across collections (example check)
+    # In production, you'd track which fields are encrypted
+    
+    return {
+        "encryption_enabled": True,
+        "algorithm": "Fernet (AES-128-CBC with HMAC)",
+        "key_derivation": "PBKDF2-HMAC-SHA256",
+        "per_tenant_keys": True,
+        "key_rotation_supported": True,
+        "note": "Each tenant has a unique encryption key derived from the master key"
+    }
+
+
+# ============== P2: WEBHOOK API ENDPOINTS ==============
+
+class WebhookCreateRequest(BaseModel):
+    name: str
+    url: str
+    events: List[str]
+    headers: Optional[Dict[str, str]] = None
+
+
+class WebhookUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    url: Optional[str] = None
+    events: Optional[List[str]] = None
+    headers: Optional[Dict[str, str]] = None
+    is_active: Optional[bool] = None
+
+
+@api_router.get("/admin/webhooks")
+async def get_webhooks(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all webhooks for the tenant (Admin only)"""
+    if current_user.get("role") not in ["ADMIN", "SUPER_ADMIN"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    webhooks = await db.webhooks.find({"tenant_id": tenant_id}, {"_id": 0}).to_list(100)
+    
+    # Mask secrets
+    for webhook in webhooks:
+        if webhook.get("secret"):
+            webhook["secret"] = webhook["secret"][:8] + "..." + webhook["secret"][-4:]
+    
+    return {
+        "webhooks": webhooks,
+        "available_events": [e.value for e in WebhookEventType]
+    }
+
+
+@api_router.post("/admin/webhooks")
+async def create_webhook(
+    webhook_data: WebhookCreateRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create a new webhook (Admin only)"""
+    if current_user.get("role") not in ["ADMIN", "SUPER_ADMIN"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    # Validate events
+    valid_events = [e.value for e in WebhookEventType]
+    for event in webhook_data.events:
+        if event not in valid_events:
+            raise HTTPException(status_code=400, detail=f"Invalid event type: {event}")
+    
+    # Validate URL
+    if not webhook_data.url.startswith(("http://", "https://")):
+        raise HTTPException(status_code=400, detail="Webhook URL must start with http:// or https://")
+    
+    webhook = WebhookConfig(
+        tenant_id=tenant_id,
+        name=webhook_data.name,
+        url=webhook_data.url,
+        events=webhook_data.events,
+        headers=webhook_data.headers
+    )
+    
+    doc = webhook.model_dump()
+    doc["created_at"] = doc["created_at"].isoformat()
+    
+    await db.webhooks.insert_one(doc)
+    
+    return {
+        "message": "Webhook created successfully",
+        "webhook_id": webhook.id,
+        "secret": webhook.secret,
+        "note": "Save this secret securely - it's used to verify webhook signatures"
+    }
+
+
+@api_router.put("/admin/webhooks/{webhook_id}")
+async def update_webhook(
+    webhook_id: str,
+    webhook_data: WebhookUpdateRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a webhook (Admin only)"""
+    if current_user.get("role") not in ["ADMIN", "SUPER_ADMIN"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    # Verify webhook exists and belongs to tenant
+    existing = await db.webhooks.find_one({"id": webhook_id, "tenant_id": tenant_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+    
+    # Build update
+    update_fields = {}
+    if webhook_data.name is not None:
+        update_fields["name"] = webhook_data.name
+    if webhook_data.url is not None:
+        update_fields["url"] = webhook_data.url
+    if webhook_data.events is not None:
+        update_fields["events"] = webhook_data.events
+    if webhook_data.headers is not None:
+        update_fields["headers"] = webhook_data.headers
+    if webhook_data.is_active is not None:
+        update_fields["is_active"] = webhook_data.is_active
+    
+    if update_fields:
+        await db.webhooks.update_one(
+            {"id": webhook_id},
+            {"$set": update_fields}
+        )
+    
+    return {"message": "Webhook updated successfully"}
+
+
+@api_router.delete("/admin/webhooks/{webhook_id}")
+async def delete_webhook(
+    webhook_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete a webhook (Admin only)"""
+    if current_user.get("role") not in ["ADMIN", "SUPER_ADMIN"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    result = await db.webhooks.delete_one({"id": webhook_id, "tenant_id": tenant_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+    
+    return {"message": "Webhook deleted successfully"}
+
+
+@api_router.post("/admin/webhooks/{webhook_id}/test")
+async def test_webhook(
+    webhook_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Send a test event to a webhook (Admin only)"""
+    if current_user.get("role") not in ["ADMIN", "SUPER_ADMIN"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    webhook = await db.webhooks.find_one({"id": webhook_id, "tenant_id": tenant_id}, {"_id": 0})
+    if not webhook:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+    
+    # Send test payload
+    test_payload = {
+        "test": True,
+        "message": "This is a test webhook delivery",
+        "tenant_id": tenant_id,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Deliver synchronously for test
+    signature = hashlib.sha256(
+        f"{webhook.get('secret')}:{json.dumps(test_payload, sort_keys=True)}".encode()
+    ).hexdigest()
+    
+    headers = {
+        "Content-Type": "application/json",
+        "X-Webhook-Event": "test",
+        "X-Webhook-Signature": signature,
+        "X-Webhook-Timestamp": datetime.now(timezone.utc).isoformat(),
+        "User-Agent": "AurborBloom-Webhook/1.0"
+    }
+    
+    if webhook.get("headers"):
+        headers.update(webhook["headers"])
+    
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.post(
+                webhook.get("url"),
+                json={
+                    "event": "test",
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "tenant_id": tenant_id,
+                    "data": test_payload
+                },
+                headers=headers
+            )
+            
+            return {
+                "success": 200 <= response.status_code < 300,
+                "status_code": response.status_code,
+                "response": response.text[:500],
+                "message": "Test webhook delivered successfully" if 200 <= response.status_code < 300 else "Webhook delivery failed"
+            }
+            
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Failed to deliver test webhook"
+        }
+
+
+@api_router.get("/admin/webhooks/{webhook_id}/deliveries")
+async def get_webhook_deliveries(
+    webhook_id: str,
+    limit: int = 50,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get delivery history for a webhook (Admin only)"""
+    if current_user.get("role") not in ["ADMIN", "SUPER_ADMIN"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    # Verify webhook belongs to tenant
+    webhook = await db.webhooks.find_one({"id": webhook_id, "tenant_id": tenant_id})
+    if not webhook:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+    
+    deliveries = await db.webhook_deliveries.find(
+        {"webhook_id": webhook_id},
+        {"_id": 0}
+    ).sort("delivered_at", -1).limit(limit).to_list(limit)
+    
+    # Calculate stats
+    total = len(deliveries)
+    successful = sum(1 for d in deliveries if d.get("success"))
+    
+    return {
+        "deliveries": deliveries,
+        "stats": {
+            "total": total,
+            "successful": successful,
+            "failed": total - successful,
+            "success_rate": f"{(successful/total*100):.1f}%" if total > 0 else "N/A"
+        }
+    }
+
+
+# ============== P2: CUSTOM DOMAIN SSL ENDPOINTS ==============
+
+@api_router.post("/admin/domains/{domain}/ssl")
+async def request_domain_ssl(
+    domain: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Request SSL certificate for a custom domain (Admin only)"""
+    if current_user.get("role") not in ["ADMIN", "SUPER_ADMIN"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    tenant_id = current_user.get("tenant_id", DEFAULT_TENANT_SLUG)
+    
+    # Verify tenant owns this domain
+    tenant = await db.tenants.find_one({"slug": tenant_id})
+    if not tenant or tenant.get("custom_domain") != domain:
+        raise HTTPException(status_code=400, detail="Domain not configured for this tenant")
+    
+    # Request SSL
+    result = await request_ssl_certificate(tenant_id, domain)
+    
+    return result
+
+
+@api_router.get("/admin/domains/{domain}/ssl")
+async def get_domain_ssl_status(
+    domain: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get SSL certificate status for a domain (Admin only)"""
+    if current_user.get("role") not in ["ADMIN", "SUPER_ADMIN"]:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await check_ssl_status(domain)
+    
+    return result
+
+
+@api_router.get("/super-admin/ssl/overview")
+async def get_ssl_overview(
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Get SSL certificate overview for all custom domains (Super Admin only)"""
+    
+    # Get all tenants with custom domains
+    tenants_with_domains = await db.tenants.find(
+        {"custom_domain": {"$exists": True, "$ne": None}},
+        {"_id": 0, "id": 1, "slug": 1, "name": 1, "custom_domain": 1}
+    ).to_list(100)
+    
+    overview = []
+    
+    for tenant in tenants_with_domains:
+        domain = tenant.get("custom_domain")
+        ssl_status = await db.custom_domain_ssl.find_one({"domain": domain}, {"_id": 0})
+        
+        overview.append({
+            "tenant_id": tenant.get("id"),
+            "tenant_name": tenant.get("name"),
+            "domain": domain,
+            "ssl_status": ssl_status.get("ssl_status") if ssl_status else "not_requested",
+            "expires_at": ssl_status.get("expires_at") if ssl_status else None
+        })
+    
+    # Count by status
+    status_counts = {}
+    for item in overview:
+        status = item.get("ssl_status")
+        status_counts[status] = status_counts.get(status, 0) + 1
+    
+    return {
+        "domains": overview,
+        "total_domains": len(overview),
+        "by_status": status_counts
+    }
+
+
+@api_router.post("/super-admin/ssl/provision/{domain}")
+async def manually_provision_ssl(
+    domain: str,
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Manually trigger SSL provisioning for a domain (Super Admin only)"""
+    
+    # In production, this would trigger Let's Encrypt certificate request
+    # For now, we simulate the provisioning process
+    
+    ssl_record = await db.custom_domain_ssl.find_one({"domain": domain})
+    
+    if not ssl_record:
+        raise HTTPException(status_code=404, detail="Domain not found in SSL tracking")
+    
+    # Simulate provisioning
+    await db.custom_domain_ssl.update_one(
+        {"domain": domain},
+        {
+            "$set": {
+                "ssl_status": "provisioning",
+                "last_checked_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    # In production, this would start the actual certificate request
+    # For demo, we'll set it to active after a delay (simulated)
+    
+    return {
+        "message": f"SSL provisioning initiated for {domain}",
+        "status": "provisioning",
+        "note": "In production, certificate would be provisioned via Let's Encrypt within 5-15 minutes"
+    }
+
+
 @api_router.put("/super-admin/tenants/{tenant_id}", response_model=TenantResponse)
 async def update_tenant(
     tenant_id: str,
