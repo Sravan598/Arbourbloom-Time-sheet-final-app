@@ -1,14 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { Bot, X, Minus, Send } from 'lucide-react';
-import { findAnswer } from './faqData';
+import { Bot, X, Minus, Send, Sparkles, RefreshCw } from 'lucide-react';
 import { useTenant } from '../../context/TenantContext';
+import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
+
+const API = process.env.REACT_APP_BACKEND_URL;
 
 // Storage key for position persistence
 const POSITION_STORAGE_KEY = 'corbot_position';
 
 const AurborBot = () => {
-  const { tenant, getTenantName, isDefaultTenant } = useTenant();
+  const { tenant, getTenantName } = useTenant();
+  const { token, isAuthenticated } = useAuth();
   
   // Get tenant-specific bot name
   const getBotName = () => {
@@ -21,6 +25,8 @@ const AurborBot = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
+  const [useAI, setUseAI] = useState(true); // Toggle between AI and FAQ mode
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const dragControls = useDragControls();
