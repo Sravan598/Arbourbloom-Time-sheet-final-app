@@ -15,6 +15,18 @@ import {
 const KnowviaTechHome = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
 
+  // Professional images
+  const images = {
+    hero1: 'https://images.unsplash.com/photo-1758873268023-15a6e6d739ed?w=600&q=80',
+    hero2: 'https://images.unsplash.com/photo-1690383921891-3f0b6b2f9bab?w=600&q=80',
+    dotnet: 'https://images.unsplash.com/photo-1565687981296-535f09db714e?w=600&q=80',
+    ai: 'https://images.unsplash.com/photo-1655393001768-d946c97d6fd1?w=600&q=80',
+    mobile: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&q=80',
+    testimonial: 'https://images.unsplash.com/photo-1758598497628-942ad38a6dc4?w=600&q=80',
+    consultation: 'https://images.unsplash.com/photo-1758518725921-1eb74ed293be?w=600&q=80',
+    coding: 'https://images.unsplash.com/photo-1760670399462-f5e479452c27?w=600&q=80'
+  };
+
   const courses = [
     {
       title: 'Full Stack .NET Development',
@@ -22,7 +34,7 @@ const KnowviaTechHome = () => {
       level: 'Progressive',
       duration: '6 months',
       rating: 4.8,
-      image: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=600&q=80'
+      image: images.dotnet
     },
     {
       title: 'Generative AI',
@@ -30,7 +42,7 @@ const KnowviaTechHome = () => {
       level: 'Beginner',
       duration: '3 months',
       rating: 4.8,
-      image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&q=80'
+      image: images.ai
     },
     {
       title: 'Mobile Application Development',
@@ -38,7 +50,7 @@ const KnowviaTechHome = () => {
       level: 'Beginner',
       duration: '6 months',
       rating: 4.9,
-      image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&q=80'
+      image: images.mobile
     }
   ];
 
@@ -163,13 +175,13 @@ const KnowviaTechHome = () => {
             >
               <div className="grid grid-cols-2 gap-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1638452033979-14fba9e17fbb?w=400&q=80" 
-                  alt="Student learning" 
+                  src={images.hero1}
+                  alt="Professional developer" 
                   className="rounded-2xl shadow-lg w-full h-64 object-cover"
                 />
                 <img 
-                  src="https://images.unsplash.com/photo-1686624386665-4cd01b96d0f6?w=400&q=80" 
-                  alt="Students in class" 
+                  src={images.coding}
+                  alt="Coding workspace" 
                   className="rounded-2xl shadow-lg w-full h-64 object-cover mt-8"
                 />
               </div>
@@ -292,8 +304,8 @@ const KnowviaTechHome = () => {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="flex justify-center">
               <img 
-                src="https://images.unsplash.com/photo-1638452033979-14fba9e17fbb?w=400&q=80"
-                alt="Rahul Mehta"
+                src={images.testimonial}
+                alt="Rahul Mehta - Success Story"
                 className="rounded-2xl shadow-2xl w-80 h-96 object-cover"
               />
             </div>
@@ -306,7 +318,7 @@ const KnowviaTechHome = () => {
               </blockquote>
               <div className="flex items-center gap-4">
                 <img 
-                  src="https://images.unsplash.com/photo-1638452033979-14fba9e17fbb?w=100&q=80"
+                  src={images.testimonial}
                   alt="Rahul Mehta"
                   className="w-12 h-12 rounded-full object-cover"
                 />
@@ -333,9 +345,9 @@ const KnowviaTechHome = () => {
                 choose the perfect learning path based on your background and goals.
               </p>
               <img 
-                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500&q=80"
+                src={images.consultation}
                 alt="Career Counseling"
-                className="rounded-2xl shadow-lg w-full"
+                className="rounded-2xl shadow-lg w-full h-80 object-cover"
               />
             </div>
             
