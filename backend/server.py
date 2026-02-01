@@ -1622,6 +1622,185 @@ async def get_tenant_details(
     return tenant
 
 
+# ============== AUDIT LOG ENDPOINTS ==============
+
+class AuditLogResponse(BaseModel):
+    """Response model for audit logs"""
+    id: str
+    tenant_id: str
+    event_type: str
+    user_id: Optional[str] = None
+    user_email: Optional[str] = None
+    ip_address: Optional[str] = None
+    resource_type: Optional[str] = None
+    resource_id: Optional[str] = None
+    details: Optional[dict] = None
+    severity: str
+    created_at: datetime
+
+
+@api_router.get("/super-admin/audit-logs", response_model=List[AuditLogResponse])
+async def get_audit_logs(
+    tenant_id: Optional[str] = None,
+    event_type: Optional[str] = None,
+    severity: Optional[str] = None,
+    user_email: Optional[str] = None,
+    limit: int = 100,
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Get audit logs across all tenants (super admin only)"""
+    query = {}
+    
+    if tenant_id:
+        query["tenant_id"] = tenant_id
+    if event_type:
+        query["event_type"] = event_type.upper()
+    if severity:
+        query["severity"] = severity.upper()
+    if user_email:
+        query["user_email"] = {"$regex": user_email, "$options": "i"}
+    
+    logs = await db.audit_logs.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    for log in logs:
+        if isinstance(log.get("created_at"), str):
+            log["created_at"] = datetime.fromisoformat(log["created_at"].replace("Z", "+00:00"))
+    
+    return logs
+
+
+@api_router.get("/super-admin/audit-logs/stats")
+async def get_audit_log_stats(
+    tenant_id: Optional[str] = None,
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Get audit log statistics (super admin only)"""
+    match_stage = {}
+    if tenant_id:
+        match_stage["tenant_id"] = tenant_id
+    
+    # Get counts by event type
+    pipeline = [
+        {"$match": match_stage} if match_stage else {"$match": {}},
+        {"$group": {
+            "_id": "$event_type",
+            "count": {"$sum": 1}
+        }},
+        {"$sort": {"count": -1}}
+    ]
+    
+    event_counts = await db.audit_logs.aggregate(pipeline).to_list(50)
+    
+    # Get counts by severity
+    severity_pipeline = [
+        {"$match": match_stage} if match_stage else {"$match": {}},
+        {"$group": {
+            "_id": "$severity",
+            "count": {"$sum": 1}
+        }}
+    ]
+    
+    severity_counts = await db.audit_logs.aggregate(severity_pipeline).to_list(10)
+    
+    # Get recent critical events
+    critical_events = await db.audit_logs.find(
+        {"severity": "CRITICAL", **match_stage},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(10).to_list(10)
+    
+    for event in critical_events:
+        if isinstance(event.get("created_at"), str):
+            event["created_at"] = datetime.fromisoformat(event["created_at"].replace("Z", "+00:00"))
+    
+    return {
+        "by_event_type": {item["_id"]: item["count"] for item in event_counts},
+        "by_severity": {item["_id"]: item["count"] for item in severity_counts},
+        "recent_critical_events": critical_events,
+        "total_logs": await db.audit_logs.count_documents(match_stage)
+    }
+
+
+@api_router.get("/super-admin/security-alerts")
+async def get_security_alerts(
+    super_admin: dict = Depends(require_super_admin)
+):
+    """Get active security alerts based on audit logs (super admin only)"""
+    now = datetime.now(timezone.utc)
+    last_24h = (now - timedelta(hours=24)).isoformat()
+    
+    alerts = []
+    
+    # Check for cross-tenant attempts in last 24h
+    cross_tenant_count = await db.audit_logs.count_documents({
+        "event_type": "CROSS_TENANT_ATTEMPT",
+        "created_at": {"$gte": last_24h}
+    })
+    
+    if cross_tenant_count > 0:
+        alerts.append({
+            "type": "CROSS_TENANT_ATTEMPT",
+            "severity": "CRITICAL",
+            "count": cross_tenant_count,
+            "message": f"{cross_tenant_count} cross-tenant access attempt(s) in the last 24 hours",
+            "action": "Review audit logs for details"
+        })
+    
+    # Check for multiple failed logins from same IP
+    failed_login_pipeline = [
+        {
+            "$match": {
+                "event_type": "LOGIN_FAILED",
+                "created_at": {"$gte": last_24h}
+            }
+        },
+        {
+            "$group": {
+                "_id": "$ip_address",
+                "count": {"$sum": 1},
+                "emails": {"$addToSet": "$user_email"}
+            }
+        },
+        {
+            "$match": {"count": {"$gte": 5}}
+        }
+    ]
+    
+    suspicious_ips = await db.audit_logs.aggregate(failed_login_pipeline).to_list(20)
+    
+    for ip_data in suspicious_ips:
+        alerts.append({
+            "type": "BRUTE_FORCE_ATTEMPT",
+            "severity": "WARNING",
+            "ip_address": ip_data["_id"],
+            "count": ip_data["count"],
+            "targeted_emails": ip_data["emails"][:5],  # Show first 5
+            "message": f"IP {ip_data['_id']} has {ip_data['count']} failed login attempts",
+            "action": "Consider blocking this IP"
+        })
+    
+    # Check for deactivated account login attempts
+    deactivated_attempts = await db.audit_logs.count_documents({
+        "event_type": "LOGIN_FAILED",
+        "details.reason": "Account deactivated",
+        "created_at": {"$gte": last_24h}
+    })
+    
+    if deactivated_attempts > 0:
+        alerts.append({
+            "type": "DEACTIVATED_ACCOUNT_ACCESS",
+            "severity": "INFO",
+            "count": deactivated_attempts,
+            "message": f"{deactivated_attempts} login attempt(s) from deactivated accounts",
+            "action": "May indicate former employees trying to access"
+        })
+    
+    return {
+        "alerts": alerts,
+        "total_alerts": len(alerts),
+        "checked_at": now.isoformat()
+    }
+
+
 @api_router.put("/super-admin/tenants/{tenant_id}", response_model=TenantResponse)
 async def update_tenant(
     tenant_id: str,
