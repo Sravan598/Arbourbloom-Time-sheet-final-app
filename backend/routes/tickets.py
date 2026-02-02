@@ -344,7 +344,7 @@ async def get_ticket(
         if ticket.get(date_field) and isinstance(ticket[date_field], str):
             try:
                 ticket[date_field] = datetime.fromisoformat(ticket[date_field].replace("Z", "+00:00"))
-            except:
+            except Exception:
                 pass
     
     return ticket
@@ -494,7 +494,10 @@ async def get_ticket_comments(
     # Parse dates
     for comment in comments:
         if isinstance(comment.get("created_at"), str):
-            comment["created_at"] = datetime.fromisoformat(comment["created_at"].replace("Z", "+00:00"))
+            try:
+                comment["created_at"] = datetime.fromisoformat(comment["created_at"].replace("Z", "+00:00"))
+            except Exception:
+                pass
     
     return comments
 
