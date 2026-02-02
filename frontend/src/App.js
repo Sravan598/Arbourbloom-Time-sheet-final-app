@@ -84,6 +84,11 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             
             {/* Tenant-specific routes (isolated login/signup per tenant) */}
+            {/* AurborBloom landing redirects to home, others show TenantLanding */}
+            <Route 
+              path="/aurborbloom" 
+              element={<Navigate to="/" replace />} 
+            />
             <Route 
               path="/:tenantSlug" 
               element={
