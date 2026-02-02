@@ -42,6 +42,8 @@ const TenantSignup = () => {
       try {
         const response = await axios.get(`${API}/api/tenants/${tenantSlug}/public`);
         setTenant(response.data);
+        // Set document title based on tenant
+        document.title = `${response.data.name} - Sign Up`;
       } catch (err) {
         console.error('Failed to fetch tenant:', err);
         setTenantNotFound(true);
