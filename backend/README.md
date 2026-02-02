@@ -37,8 +37,12 @@ Multi-tenant Human Resource Management System built with FastAPI, MongoDB, and P
 │   └── utils.py        # Utility functions
 ├── routes/             # API routes (being migrated)
 │   ├── __init__.py     # Route aggregator
-│   ├── auth.py         # Authentication routes
-│   └── tenants.py      # Tenant management routes
+│   ├── auth.py         # Authentication routes ✅
+│   ├── tenants.py      # Tenant management routes ✅
+│   ├── employees.py    # Employee management routes ✅
+│   ├── timesheets.py   # Time tracking routes ✅
+│   ├── leave.py        # Leave management routes ✅
+│   └── tickets.py      # Ticket management routes ✅
 ├── utils/              # Helper utilities
 │   ├── __init__.py     # Exports all utils
 │   ├── auth.py         # JWT authentication
@@ -99,9 +103,25 @@ from utils.helpers import hash_password, verify_password
 4. Business services extracted to `/services/`
 5. Auth utilities in `/utils/auth.py`
 6. Helper functions in `/utils/helpers.py`
+7. Authentication routes in `/routes/auth.py`
+8. Tenant routes in `/routes/tenants.py`
+9. Employee management routes in `/routes/employees.py`
+10. Timesheet routes in `/routes/timesheets.py`
+11. Leave management routes in `/routes/leave.py`
+12. Ticket management routes in `/routes/tickets.py`
 
 ### In Progress 🔄
-- Routes being migrated from `server.py` to `/routes/`
+- Remaining routes still in `server.py`:
+  - Profile routes
+  - Project routes
+  - Chat routes
+  - Document routes
+  - Calendar/Holiday routes
+  - Notification routes
+  - Announcement routes
+  - Break/Performance routes
+  - PDF export routes
+  - Super Admin routes (audit, usage, webhooks, SSL)
 
 ### Migration Strategy
 Routes are being migrated incrementally while keeping `server.py` functional.
