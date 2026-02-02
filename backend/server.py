@@ -49,6 +49,12 @@ JWT_EXPIRATION_HOURS = 24
 # Create the main app without a prefix
 app = FastAPI(title="AurborBloom API", version="1.0.0")
 
+# Health check endpoint for Kubernetes
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Kubernetes liveness/readiness probes"""
+    return {"status": "healthy", "service": "aurborbloom-api"}
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
