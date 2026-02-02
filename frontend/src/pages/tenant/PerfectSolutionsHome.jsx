@@ -32,6 +32,9 @@ const PerfectSolutionsHome = () => {
   const [tenantInfo, setTenantInfo] = useState(null);
 
   useEffect(() => {
+    // Set document title
+    document.title = 'Perfect Solutions - HRMS';
+    
     // Fetch tenant info
     const fetchTenant = async () => {
       try {
