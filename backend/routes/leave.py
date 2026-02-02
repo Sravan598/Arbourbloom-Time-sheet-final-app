@@ -72,7 +72,7 @@ def calculate_days(start_date: str, end_date: str) -> float:
         start = datetime.strptime(start_date, "%Y-%m-%d")
         end = datetime.strptime(end_date, "%Y-%m-%d")
         return (end - start).days + 1
-    except:
+    except Exception:
         return 1
 
 

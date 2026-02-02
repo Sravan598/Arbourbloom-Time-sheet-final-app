@@ -142,7 +142,7 @@ async def generate_ticket_number() -> str:
         try:
             last_num = int(last_ticket["ticket_number"].split("-")[-1])
             new_num = last_num + 1
-        except:
+        except Exception:
             new_num = 1
     else:
         new_num = 1
@@ -292,7 +292,7 @@ async def get_tickets(
             if ticket.get(date_field) and isinstance(ticket[date_field], str):
                 try:
                     ticket[date_field] = datetime.fromisoformat(ticket[date_field].replace("Z", "+00:00"))
-                except:
+                except Exception:
                     pass
         
         # Check SLA breach
