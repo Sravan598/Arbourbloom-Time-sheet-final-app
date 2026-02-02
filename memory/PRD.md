@@ -243,10 +243,27 @@ Backend being refactored from 11,000+ line monolith to modular structure:
 - **utils/**: Helper functions
   - auth.py: JWT authentication (create_token, get_current_user, require_admin)
   - helpers.py: Password hashing, encryption, datetime handling
+- **routes/**: API route modules (February 2, 2025)
+  - auth.py: Authentication (signup, login, token management) ✅
+  - tenants.py: Tenant management (CRUD, public info) ✅
+  - employees.py: Employee management (CRUD, invitations, work info) ✅
+  - timesheets.py: Time tracking (clock in/out, corrections, admin management) ✅
+  - leave.py: Leave management (requests, types, approvals) ✅
+  - tickets.py: Ticket management (CRUD, comments, attachments, stats) ✅
 
 ### In Progress 🔄
-- **routes/**: API routes (auth.py, tenants.py created, more to migrate)
-- **server.py**: Still contains all 11,000+ lines of routes (functional)
+- **routes/**: Remaining routes to migrate from server.py:
+  - profile.py: User profile routes
+  - projects.py: Project management routes
+  - chat.py: Team chat routes
+  - documents.py: Document management routes
+  - calendar.py: Calendar/Holiday routes
+  - notifications.py: Notification routes
+  - announcements.py: Announcement routes
+  - breaks.py: Break/Performance routes
+  - exports.py: PDF export routes
+  - super_admin.py: Super Admin routes (audit, usage, webhooks, SSL)
+- **server.py**: Still contains remaining routes (~6000+ lines)
 
 ### Migration Strategy
 Routes are being migrated incrementally while keeping server.py functional.
