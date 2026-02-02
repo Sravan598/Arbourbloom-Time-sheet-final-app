@@ -11,8 +11,8 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # Database
-MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-DB_NAME = os.environ.get('DB_NAME', 'test_database')
+MONGO_URL = os.environ.get('MONGO_URL') or 'mongodb://localhost:27017'
+DB_NAME = os.environ.get('DB_NAME') or 'test_database'
 
 # JWT
 JWT_SECRET = os.environ.get('JWT_SECRET', 'aurborbloom-secret-key-change-in-production')
