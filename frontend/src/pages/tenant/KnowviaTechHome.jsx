@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -14,6 +14,11 @@ import {
 
 const KnowviaTechHome = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+
+  useEffect(() => {
+    // Set document title
+    document.title = 'Knowvia Tech - HRMS';
+  }, []);
 
   // Professional images
   const images = {
