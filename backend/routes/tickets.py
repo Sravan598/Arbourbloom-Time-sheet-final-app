@@ -455,7 +455,7 @@ async def delete_ticket(
             file_path = TICKET_UPLOAD_DIR / attachment.get("filename", "")
             if file_path.exists():
                 file_path.unlink()
-        except:
+        except Exception:
             pass
     
     return {"message": "Ticket deleted successfully"}
@@ -743,7 +743,7 @@ async def delete_ticket_attachment(
         file_path = TICKET_UPLOAD_DIR / attachment.get("filename", "")
         if file_path.exists():
             file_path.unlink()
-    except:
+    except Exception:
         pass
     
     # Remove from ticket
