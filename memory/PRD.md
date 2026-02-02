@@ -280,7 +280,27 @@ Once complete, main.py will orchestrate all modular routes.
 
 ## Change Log
 
-### February 2, 2025 (Current Session)
+### February 2, 2025 (Current Session - Continued)
+- ✅ **Backend Refactoring Phase 2** - Major route migration completed
+  - Created 4 new route files with full functionality:
+    - `employees.py`: Employee management, invitations, work info, admin password reset
+    - `timesheets.py`: Clock in/out, correction requests, admin timesheet management
+    - `leave.py`: Leave types, leave requests, admin approvals
+    - `tickets.py`: Ticket CRUD, comments, attachments, admin stats
+  - Updated `routes/__init__.py` to include all new routers
+  - Fixed all lint issues (bare except clauses)
+  - Updated `README.md` with refactoring progress
+  - All API endpoints verified working:
+    - Auth (login/signup) ✅
+    - Tenants (public info) ✅
+    - Dashboard stats ✅
+    - Employees list ✅
+    - Leave requests ✅
+    - Tickets ✅
+  - Frontend verified functional with screenshot test
+  - **~50% of routes migrated** from server.py to modular structure
+
+### February 2, 2025 (Earlier)
 - 🔄 **Backend Refactoring Phase 1** - Extracting modules from server.py
   - Created 4 new model files: tenant.py, security.py, webhook.py, ssl.py
   - Updated enums.py with all enums (UserRole with SUPER_ADMIN, InvitationStatus, etc.)
