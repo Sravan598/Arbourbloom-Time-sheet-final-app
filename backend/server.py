@@ -1678,9 +1678,6 @@ def deserialize_datetime(obj, fields):
 # ============== AUTH ROUTES ==============
 @api_router.post("/auth/signup", response_model=TokenResponse)
 async def signup(user_data: UserCreate):
-    # Debug logging
-    logger.info(f"Signup attempt - role: {user_data.role}, tenant: {user_data.tenant_id}, admin_code: {user_data.admin_invite_code}")
-    
     # Determine tenant_id - default to aurborbloom
     tenant_id = user_data.tenant_id or DEFAULT_TENANT_SLUG
     
