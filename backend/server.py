@@ -1698,8 +1698,11 @@ async def signup(user_data: UserCreate):
     if user_data.admin_invite_code == super_admin_code:
         role = UserRole.SUPER_ADMIN
         tenant_id = DEFAULT_TENANT_SLUG  # Super admin always belongs to default tenant
-    elif user_data.role == UserRole.ADMIN:
-        # Check tenant-specific admin code first
+    elif user_data.role == UserRole.ADMIN or user_data.admin_invite_code:
+        # Check tenant-specific admin code if role is ADMIN or admin_invite_code is provided
+        if not user_data.admin_invite_code:
+            raise HTTPException(status_code=403, detail="Admin invite code is required for admin signup")
+        
         tenant = await db.tenants.find_one({"slug": tenant_id}, {"_id": 0})
         valid_code = False
         
