@@ -1704,10 +1704,6 @@ async def signup(user_data: UserCreate):
             raise HTTPException(status_code=403, detail="Admin invite code is required for admin signup")
         
         tenant = await db.tenants.find_one({"slug": tenant_id}, {"_id": 0})
-        logger.info(f"Tenant lookup result: {tenant}")
-        logger.info(f"Stored code: {tenant.get('admin_signup_code') if tenant else 'NO TENANT'}")
-        logger.info(f"Provided code: {user_data.admin_invite_code}")
-        logger.info(f"Comparison: {tenant.get('admin_signup_code') == user_data.admin_invite_code if tenant else 'N/A'}")
         valid_code = False
         
         if tenant and tenant.get("admin_signup_code") == user_data.admin_invite_code:
@@ -1718,7 +1714,6 @@ async def signup(user_data: UserCreate):
             if user_data.admin_invite_code == admin_code:
                 valid_code = True
         
-        logger.info(f"Valid code result: {valid_code}")
         if not valid_code:
             raise HTTPException(status_code=403, detail="Invalid admin invite code")
         role = UserRole.ADMIN
