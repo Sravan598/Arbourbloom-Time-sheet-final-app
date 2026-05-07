@@ -1,102 +1,78 @@
 <analysis>**original_problem_statement:**
-The initial project was to build a premium marketing website and time-tracking application (CORtracker). This evolved into a full-featured Human Resource Management System (HRMS) named AurborBloom, which has now been transformed into a multi-tenant SaaS platform. The application is now deployed and live.
+The initial project was to build a premium marketing website and time-tracking application (CORtracker). This evolved into a full-featured Human Resource Management System (HRMS) named AurborBloom, which is now deployed as a multi-tenant SaaS platform. 
+PRODUCT REQUIREMENTS include a ticketing system, in-app calendar, secure invitation-only signups, time/attendance tracking, and a complete white-label experience ensuring absolute brand and route isolation for each client company (AurborBloom, Perfect Solutions, Knowvia Tech). Recent goals included dynamic browser tab titles per tenant, backend route refactoring (breaking down the monolithic ), and preparing the platform for full SaaS features (super admin dashboards, custom domains).
 
-The core functionalities include a ticketing system, in-app calendar, secure invitation-only signups, and time/attendance tracking. The primary focus is on providing a complete white-label experience, ensuring absolute brand and route isolation for each client company (AurborBloom, Perfect Solutions, Knowvia Tech).
+**User's preferred language**: English (INSTRUCT next agent to respond in English)
 
-Recent user requests included implementing PDF exports, auditing tenant data isolation, adding SaaS-focused enhancements, initiating a critical refactoring of the monolithic  backend file, redesigning the AurborBloom login/signup pages, fixing several deployment-blocking issues, and finally, making the browser tab titles dynamic for each tenant.
-
-**User's preferred language**: English
-
-**what currently exists?**
-The application is a deployed and live multi-tenant HRMS with a React frontend and a FastAPI backend. It supports three fully isolated tenants: AurborBloom, Perfect Solutions, and Knowvia Tech.
-
-Key features include dynamic branding, an AI chatbot, advanced PDF exports, and a suite of SaaS-readiness features. The AurborBloom tenant's login and signup pages have been redesigned to match the branding of its landing page.
-
-A significant portion of the backend  file has been refactored. The modular structure (, , ) is in place, and the routes for , , , and  have been migrated to the  directory. However, many API routes still reside within the monolithic  file.
-
-The application has been successfully deployed after fixing several critical build and runtime issues, including Node.js version incompatibilities and a missing Kubernetes health check endpoint. A final fix for making browser tab titles dynamic for each tenant has been implemented in the preview environment.
+**what currently exists?** 
+A live, deployed multi-tenant HRMS (React frontend + FastAPI backend + MongoDB). It supports dynamic branding and isolated tenant environments. A fix for dynamic browser tab titles was recently implemented in the preview environment but awaits deployment.
 
 **Last working item**:
-    - Last item agent was working: The agent implemented a fix to make the browser tab titles dynamic for each tenant. For example, when a user visits the Perfect Solutions landing page, the browser tab now shows Perfect Solutions - HRMS instead of the default AurborBloom HRMS.
-    - Status: USER VERIFICATION PENDING
+    - Last item agent was working: The agent was debugging an Invalid admin invite code issue for the Perfect Solutions tenant signup. It was discovered that the preview/live environments were using , while the agent initially queried an outdated . The agent provided the correct invite codes from the correct database and answered user queries regarding code deployment vs. shared database architecture, and provided support instructions for billing/invoice queries.
+    - Status: USER VERIFICATION PENDING (The dynamic title code changes and minor auth logic fixes are in preview and need to be deployed to production to take effect).
     - Agent Testing Done: Y
-    - Which testing method agent to use? Manual testing by user by visiting the preview URLs provided. The user needs to visually confirm the browser tab titles are correct for each tenant. After confirmation, the fix needs to be deployed to production.
-    - User Testing Done: N
+    - Which testing method agent to use? Manual testing by user / NA (User already verified the correct admin code works on the live app).
+    - User Testing Done: Y
 
 **All Pending/In progress Issue list**:
-  Issue 1:  Redeploy the dynamic title fix to production (P0)
+  Issue 1: Redeploy the preview changes (Dynamic tab titles & minor auth validation fixes) to production (P0)
   
   Issues Detail:
   - Issue 1: 
-     - Attempted fixes: The fix has been implemented and tested successfully in the preview environment.
-     - Next debug checklist: 
-        1. User must verify the changes in the preview environment using the URLs provided.
-        2. Once confirmed, the application needs to be redeployed to make the changes live on the production URL.
-     - Why fix this issue and what will be achieved with the fix? This is a user-requested cosmetic fix that improves the white-label experience for each tenant by displaying the correct company name in the browser tab.
-     - Status:  USER VERIFICATION PENDING
+     - Attempted fixes: Code changes for dynamic tabs and auth validation are complete in the preview environment.
+     - Next debug checklist: Instruct the user to use the deployment feature to push the current preview state to live production.
+     - Why fix this issue and what will be achieved with the fix? Code changes (unlike database records) do not auto-sync to production. Deployment is required to reflect recent UI branding updates on the live app.
+     - Status: USER VERIFICATION PENDING
      - Is recurring issue? N
      - Should Test frontend/backend/both after fix? Frontend
-     - Blocked on other issue: User verification.
+     - Blocked on other issue: User initiating deployment.
 
 **In progress Task List**:
+  Task 1: Refactor  Route Handlers (P1)
+
+ Task Detail:
   - Task 1: 
-     - Where to resume: The  file still contains many API route handlers. The next step is to methodically migrate the remaining endpoints into their respective files within the  directory (e.g., , , etc.).
-     - What will be achieved with this? A maintainable, scalable, and less error-prone backend architecture, which is critical for a production application.
-     - Status:  IN PROGRESS
-     - Should Test frontend/backend/both after fix? Both. A full backend regression test is mandatory after each chunk of routes is migrated.
+     - Where to resume: The  file still contains many monolithic API route handlers. Methodically migrate the remaining endpoints into feature-specific files within . NOTE: Be aware there are currently duplicate  routes in both  and . 
+     - What will be achieved with this? A modular, maintainable, and scalable backend architecture.
+     - Status: IN PROGRESS
+     - Should Test frontend/backend/both after fix? Both (Backend regression test mandatory after migrating routes).
      - Blocked on something: No.
 
 **Upcoming and Future Tasks**
-*   **Upcoming Tasks:**
-    *   **P1: UI for Super Admin Features**: The backend APIs for Usage Metrics, Data Export, Rate Limiting, Webhooks, Encryption, and SSL management are complete. The next step is to build a frontend UI within the Super Admin dashboard for managing these features.
-    *   **P1: Complete Custom Domain Frontend Logic**: The frontend needs a small update to detect the custom domain on page load () and fetch the corresponding tenant's branding and data.
-    *   **P1: CNAME Verification User Testing**: The custom domain feature is backend-ready but requires testing with a real domain provided by the user to validate the end-to-end CNAME setup and verification flow.
-*   **Future Tasks**:
-    *   **P2: Implement Forgot Password via Email**: The user expressed interest in this feature. The agent recommended using Resend's free tier. This involves setting up the integration and creating the password reset flow.
-    *   **P2: Ticketing System Enhancements**: Implement Email Notifications, Canned Responses, and Satisfaction Ratings.
-    *   **P2: Advanced Payroll Export**: Build the Payroll page with a data export formatted for ADP.
-    *   **P2: Bulk Employee Import**: Allow admins to import employees via a CSV file.
-    *   **P2: Shift Scheduling Module.**
-    *   **Upgrade Ticket Chat to WebSockets**: The current implementation uses polling for real-time updates. An upgrade to WebSockets would provide a true live chat experience.
+    Upcoming Tasks:
+    - P1: UI for Super Admin Features: Build frontend UI in the Super Admin dashboard to manage backend-ready features (Usage Metrics, Data Export, Rate Limiting, Webhooks, Encryption, SSL).
+    - P1: Complete Custom Domain Frontend Logic: Update frontend to detect custom domain on page load () and fetch corresponding tenant data.
+    - P1: CNAME Verification User Testing: Test the custom domain verification flow with a real user domain.
+    
+    Future Tasks:
+    - P2: Implement Forgot Password via Email using Resend.
+    - P2: Ticketing System Enhancements (Email Notifications, Canned Responses, Satisfaction Ratings).
+    - P2: Advanced Payroll Export (ADP formatted).
+    - P2: Bulk Employee Import via CSV.
+    - P2: Shift Scheduling Module.
+    - P2: Upgrade Ticket Chat to WebSockets (currently using polling).
 
 **Completed work in this session**
-- List of all completed tasks with file and method name:
-    - **Backend Refactoring**: Migrated routes from  to new files:
-        - 
-        - 
-        - 
-        - 
-    - **UI Redesign**: Redesigned the AurborBloom login and signup pages to match the landing page theme.
-        - 
-        - 
-    - **Deployment Fix (Node Version)**: Resolved a critical deployment error ( requiring Node 22+) by removing unused 3D-related packages.
-        - yarn remove v1.22.22
-[1/4] Removing module @react-three/drei...
-info Visit https://yarnpkg.com/en/docs/cli/remove for documentation about this command.
-        - Updated 
-        - Created  and  to ignore strict engine checks.
-    - **Deployment Fix (Health Check)**: Fixed a Kubernetes runtime error () by adding a  endpoint.
-        - 
-    - **Application Deployment**: Successfully guided the user through deploying the application to production.
-    - **Dynamic Browser Titles**: Implemented dynamic browser tab titles for each tenant.
-        - 
-        - 
-        - 
-        - 
+- Debugged backend validation for  enum string matching during signup in  and .
+- Identified correct MongoDB database in use ( instead of ).
+- Retrieved and verified the active Admin Invite Codes for all tenants.
+- Assisted user with platform billing/invoice inquiries via .
 
 - Recently completed:
+  - Admin Invite Code debugging and resolution (DONE)
   - Dynamic Browser Titles for all tenants (DONE, PENDING DEPLOYMENT)
   - Application Deployed to Production (DONE)
-  - Critical Deployment Blockers Fixed (DONE)
   - AurborBloom Login/Signup Page Redesign (DONE)
-  - Backend  Route Refactoring (PARTIALLY DONE)
 
 **Earlier issues found/mentioned but not fixed**
-   - Issue 1: **React Three Fiber Incompatibility**: Low priority; no changes made. This was partially addressed by removing the unused packages, but the root cause wasn't a focus.
-   - Issue 2: **Unused Google Auth dependencies**: Low priority; no changes made.
+   Issue 1: Duplicate Auth Routes
+   - Debug checklist:  and  both contain a  endpoint.  is taking precedence. 
+   - Why to solve this issue and what will be achieved with this? Causes confusion when debugging auth flows. Needs to be cleaned up as part of the  refactoring task.
+   - Should Test frontend/backend/both after fix: Backend
+   - Is recurring issue? N
 
 **Known issue recurrence from previous fork**
-  - Issue recurrence in previous fork: None.
+  - Issue recurrence in previous fork: None
   - Recurrence count: 0
   - Status: RESOLVED
 
@@ -104,86 +80,66 @@ info Visit https://yarnpkg.com/en/docs/cli/remove for documentation about this c
 
 
 **Key Technical Concepts**
--   **Frontend**: React, TailwindCSS, , React Context API (, ), .
--   **Backend**: FastAPI, Pydantic.
--   **Database**: MongoDB.
--   **Architecture**: Multi-Tenancy (SaaS), Monolith (being refactored to modular).
--   **Deployment**: Kubernetes on Emergent Platform.
+- Frontend: React, TailwindCSS, , React Context API
+- Backend: FastAPI, Pydantic
+- Database: MongoDB
+- Architecture: Multi-Tenancy (SaaS), Monolith to Modular refactoring
+- Deployment: Kubernetes on Emergent Platform
 
 **key DB schema**
-  - No new schemas were added. Agent primarily worked with , , , , and .
+  - : {id, slug, admin_signup_code}
+  - : {email, role, tenant_id}
 
 **changes in tech stack**
   - None.
 
-**All files of reference**
-*   : The monolithic file, still containing many API routes needing refactoring.
-*   : Directory containing the newly migrated route files.
-*   : Updated for the AurborBloom UI redesign and dynamic titles.
-*   : Updated for the AurborBloom UI redesign and dynamic titles.
-*   : Updated to remove unused packages, bump version, and specify Node engine.
-*    & : New files created to bypass strict Node engine checks during deployment.
-*   , : Updated to set dynamic browser titles.
-*   : Updated to handle empty environment variables gracefully.
+**All files of reference** 
+- : Contains majority of the monolithic endpoints and the active  route. Edited to fix role enum checks.
+- : Edited to fix role enum checks (though currently bypassed by ).
+- : Database connection settings.
 
-**Areas that need refactoring**:
--   ** Route Handlers**: This is the top priority. All remaining API endpoints ( and ) must be moved from  into feature-specific files in the  directory to complete the modular refactoring.
+**Areas that need refactoring**: 
+-  Route Handlers: Continuing to migrate endpoints to .
 
 **key api endpoints**
-*   : A new root-level endpoint was created to satisfy Kubernetes health checks.
+- : Validates the tenant invite code and creates admin/employee.
 
 **Critical Info for New Agent**
-- The application is **LIVE**. Any changes will need to be redeployed to take effect on the production URL.
-- The user's immediate priority is to verify the dynamic browser title fix in the preview environment. Once they approve, the app should be redeployed.
-- The most important ongoing technical task is to **continue the  refactoring**. Many routes still remain in the monolithic file.
-- The user has been heavily involved in debugging deployment. Be prepared for more questions related to deployment, URLs, and tenant access.
+- **Database Awareness**: The application connects to , not . Ensure any manual MongoDB queries target .
+- **Environment Context**: Code changes made in the preview environment (like the dynamic browser titles and minor auth logic tweaks) require a **manual redeployment** to reflect on the live application. Database data (like invite codes), however, is shared between live and preview environments.
+- Do not provide direct preview/live URLs. If the user asks about going live, instruct them to deploy. 
 
 **documents and test reports created in this job**
-*   : Updated to reflect refactoring progress.
-*   : Updated with refactoring progress and completed tasks.
+- None created in this session.
 
 **Last 10 User Messages and any pending HUMAN messages** 
- -  1. : User requested all preview and production URLs to test the dynamic title fix. (Completed)
- -  2. : User approved the implementation of the dynamic browser title fix. (Completed)
- -  3. : User asked for confirmation that the title fix is low-risk. (Clarified)
- -  4. : User confirmed the dynamic title issue and asked for suggestions without implementation. (Completed)
- -  5. : User reported the dynamic title branding issue and asked for suggestions. (Completed)
- -  6. : User acknowledged the successful deployment. (Completed)
- -  7. : User provided the live production URL. (Completed)
- -  8. : User asked for the specific URL for the Perfect Solutions landing page on the live production site. (Completed)
- -  9. : User shared a screenshot showing the successful deployment status. (Completed)
- -  10. : User asked to confirm if the deployment was complete and the application was live. (Clarified)
+ 1.  (Clarified differences between Code deploy vs DB shared)
+ 2.  (Clarified that the DB is shared so the invite code worked, but code fixes didn't push)
+ 3.  (Acknowledged)
+ 4.  (Completed)
+ 5.  (Completed - provided support contact instructions via support_agent)
 
 **Project Health Check:**
-*   **Broken**: None. The application is deployed and running.
-*   **Mocked**: None.
+- Broken: None
+- Mocked: None
 
-**3rd Party Integrations**
-*   **Emergent LLM Key**: Used via  library for the AI Chatbot.
-*   **react-big-calendar**: Used for the in-app calendar.
-*   **Framer Motion**: Used for UI animations.
-*   **ReportLab**: Used for PDF generation.
-*   **Cryptography**: Used for data-at-rest encryption.
+**3rd Party Integrations** 
+- Emergent LLM Key — uses Emergent LLM Key (for AI chatbot)
+- react-big-calendar — Open source (in-app calendar)
+- Framer Motion — Open source (animations)
+- ReportLab — Open source (PDF generation)
 
 **Testing status**
   - Testing agent used after significant changes: NO
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: []
-  - Known regressions: None.
+  - Known regressions: None
 
 **Credentials to test flow:**
-*   **Super Admin:**
-    *   Email: 
-    *   Password: 
-*   **AurborBloom Admin:**
-    *   Email: 
-    *   Password: 
-*   **Perfect Solutions Admin:**
-    *   Email: 
-    *   Password: 
-*   **Knowvia Tech Admin:**
-    *   Email: 
-    *   Password: 
+- **Super Admin**:  /  / Code: 
+- **AurborBloom Admin**:  /  / Code: 
+- **Perfect Solutions Admin**:  /  / Code: 
+- **Knowvia Tech Admin**:  /  / Code: 
 
 **What agent forgot to execute**
-- Nothing was forgotten. The agent correctly prioritized user requests and deployment issues over the background refactoring task.</analysis>
+- Nothing was overlooked in this session. The user's queries were successfully addressed.</analysis>

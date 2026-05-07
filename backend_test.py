@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://hrmsplatform.preview.emergentagent.com/api"
+BASE_URL = "https://modular-refactor-25.preview.emergentagent.com/api"
 
 # Test credentials
 EMPLOYEE_CREDENTIALS = {
