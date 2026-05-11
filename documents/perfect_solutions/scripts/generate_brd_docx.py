@@ -154,6 +154,102 @@ def add_image(doc, path, width_inches=6.4, caption=None):
         cr.font.color.rgb = GRAY
 
 
+def add_screenshot(doc, path, label, caption, width_inches=6.2):
+    """Embed a portal screenshot with a colored label bar and caption."""
+    # Label bar (top, dark blue)
+    tbl = doc.add_table(rows=1, cols=1)
+    tbl.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    cell = tbl.rows[0].cells[0]
+    cell.width = Inches(width_inches)
+    cell.text = ''
+    p = cell.paragraphs[0]
+    r = p.add_run(label)
+    r.bold = True
+    r.font.size = Pt(10)
+    r.font.color.rgb = WHITE
+    r.font.name = 'Calibri'
+    shade_cell(cell, "1E3A8A")
+    set_cell_border(cell, color="1E3A8A", sz="4")
+    # Image
+    p2 = doc.add_paragraph()
+    p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p2.paragraph_format.space_before = Pt(0)
+    p2.paragraph_format.space_after = Pt(2)
+    p2.add_run().add_picture(path, width=Inches(width_inches))
+    # Caption
+    c = doc.add_paragraph()
+    c.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    c.paragraph_format.space_before = Pt(0)
+    cr = c.add_run(caption)
+    cr.italic = True
+    cr.font.size = Pt(9.5)
+    cr.font.color.rgb = GRAY
+
+
+SCREENSHOTS_DIR = f"{ASSETS}/screenshots"
+
+PORTAL_SHOTS = [
+    ("01_tenant_landing.png", "Screen A1 — Tenant Landing",
+     "Branded landing page for hr.perfectsolutions.com — logo, brand colors, and tagline applied automatically by the multi-tenant theming engine."),
+    ("02_login.png", "Screen A2 — Login",
+     "Login experience inherits the tenant brand. Tenant slug captured implicitly; only Perfect Solutions credentials are accepted."),
+    ("03_signup.png", "Screen A3 — Admin Signup (Invite-Code Gated)",
+     "New tenant admins must present a tenant-specific invite code to register, enforcing the secure onboarding flow."),
+    ("04_admin_dashboard.png", "Screen A4 — Admin Dashboard",
+     "Unified admin landing — KPIs, recent activity, and quick access to operations modules."),
+    ("05_admin_employees.png", "Screen A5 — Employee Directory (Admin)",
+     "Searchable, filterable directory with role and department context. Drives every people-related workflow."),
+    ("06_admin_timesheets.png", "Screen A6 — Timesheet Approvals (Admin / Manager)",
+     "Pending timesheet review queue. Approve, reject, or request changes; bulk actions supported."),
+    ("07_admin_leave.png", "Screen A7 — Leave Approval Queue (Admin / Manager)",
+     "Pending leave requests with balance, overlap, and policy context for one-click decisions."),
+    ("08_admin_tickets.png", "Screen A8 — Tickets / Helpdesk (Admin View)",
+     "Internal helpdesk with categorization, SLA visibility, and threaded responses."),
+    ("09_admin_calendar.png", "Screen A9 — Unified Calendar",
+     "Approved leaves, company events, and scheduled meetings on a single calendar — Day, Week, Month, Agenda views."),
+    ("10_admin_projects.png", "Screen A10 — Projects & Allocation",
+     "Project list with capacity and allocation overview — drives the utilization reports."),
+    ("11_employee_dashboard.png", "Screen A11 — Employee Dashboard",
+     "Self-service home: clock in/out, pending requests, announcements, quick actions."),
+    ("12_employee_leave.png", "Screen A12 — Employee Leave",
+     "Real-time leave balance with request submission, status tracking, and PDF export."),
+    ("13_employee_documents.png", "Screen A13 — Document Vault",
+     "PIN-secured personal document vault — payslips, offer letters, signed policies."),
+    ("14_employee_timesheet.png", "Screen A14 — Employee Timesheet",
+     "Daily/weekly entry with project tagging, drafts, and submit-for-approval workflow."),
+    ("15_employee_tickets.png", "Screen A15 — Employee Tickets",
+     "Raise and track internal support tickets; threaded comments and status updates."),
+]
+
+
+def add_portal_appendix(doc):
+    """Append the full portal walkthrough section."""
+    add_page_break(doc)
+    add_heading(doc, "Appendix A — Portal Walkthrough (Screenshots)", level=1)
+    add_para(doc,
+        "This appendix presents annotated screen captures from the live Perfect Solutions tenant of the AurborBloom "
+        "HRMS portal. Screens are grouped by role to illustrate how the platform satisfies the requirements stated "
+        "earlier in this document. All screens are rendered on the perfectsolutions tenant with full brand styling "
+        "(logo, primary color #1E3A8A) applied automatically.")
+
+    add_heading(doc, "A.1 Public / Tenant-Branded Pages", level=2)
+    for fn, label, cap in PORTAL_SHOTS[0:3]:
+        add_screenshot(doc, f"{SCREENSHOTS_DIR}/{fn}", label, cap)
+        add_para(doc, "")
+
+    add_page_break(doc)
+    add_heading(doc, "A.2 Admin / Manager Views", level=2)
+    for fn, label, cap in PORTAL_SHOTS[3:10]:
+        add_screenshot(doc, f"{SCREENSHOTS_DIR}/{fn}", label, cap)
+        add_para(doc, "")
+
+    add_page_break(doc)
+    add_heading(doc, "A.3 Employee Self-Service Views", level=2)
+    for fn, label, cap in PORTAL_SHOTS[10:]:
+        add_screenshot(doc, f"{SCREENSHOTS_DIR}/{fn}", label, cap)
+        add_para(doc, "")
+
+
 def add_page_break(doc):
     doc.add_page_break()
 
@@ -363,6 +459,10 @@ def build_brd():
         "and employee retention all flow directly through HR systems. The HRMS is therefore treated as a Tier-1 business "
         "system with stringent uptime, security, and reporting requirements.")
 
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/01_tenant_landing.png",
+                   "Live Capture — Perfect Solutions Tenant Landing (hr.perfectsolutions.com)",
+                   "Figure 6 — The tenant-branded landing page rendered from live multi-tenant infrastructure.")
+
     add_image(doc, f"{ASSETS}/modules.png", width_inches=6.4,
               caption="Figure 5 — HRMS Module Map for Perfect Solutions")
 
@@ -541,6 +641,13 @@ def build_brd():
     add_image(doc, f"{ASSETS}/leave_flow.png", width_inches=6.4,
               caption="Figure 3 — Future-state Leave Request Workflow")
 
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/07_admin_leave.png",
+                   "Live Capture — Leave Approval Queue (Manager View)",
+                   "Figure 7 — Pending leave requests with policy context for one-click decisions.")
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/08_admin_tickets.png",
+                   "Live Capture — Tickets / Internal Helpdesk",
+                   "Figure 8 — Categorized ticket queue with SLA visibility.")
+
     add_page_break(doc)
 
     # 8. Business Requirements
@@ -675,6 +782,7 @@ def build_brd():
     )
 
     out = f"{OUT_DIR}/Perfect_Solutions_BRD_v1.0.docx"
+    add_portal_appendix(doc)
     doc.save(out)
     print(f"BRD DOCX saved → {out}")
     return out

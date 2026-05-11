@@ -33,6 +33,9 @@ add_bullets = mod.add_bullets
 add_numbered = mod.add_numbered
 add_table = mod.add_table
 add_image = mod.add_image
+add_screenshot = mod.add_screenshot
+add_portal_appendix = mod.add_portal_appendix
+SCREENSHOTS_DIR = mod.SCREENSHOTS_DIR
 add_page_break = mod.add_page_break
 add_section_callout = mod.add_section_callout
 setup_header_footer = mod.setup_header_footer
@@ -110,6 +113,10 @@ def build_frd():
     add_image(doc, f"{ASSETS}/architecture.png", width_inches=6.4,
               caption="Figure 1 — System Architecture (Multi-Tenant SaaS)")
 
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/01_tenant_landing.png",
+                   "Live Portal — Tenant Landing (hr.perfectsolutions.com)",
+                   "Figure 1a — Multi-tenant theming rendered live for Perfect Solutions.")
+
     add_heading(doc, "3.1 Technology Stack", level=2)
     add_table(doc, ["Layer", "Technology", "Purpose"],
         [
@@ -166,6 +173,12 @@ def build_frd():
     add_heading(doc, "5.1 Authentication & Onboarding", level=2)
     add_image(doc, f"{ASSETS}/auth_flow.png", width_inches=6.4,
               caption="Figure 2 — Authentication & Tenant Resolution Flow")
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/02_login.png",
+                   "Live Portal — Login",
+                   "Figure 2a — Tenant-branded login experience.")
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/03_signup.png",
+                   "Live Portal — Signup (Invite-Code Gated)",
+                   "Figure 2b — Admin signup requires a valid tenant invite code (FR-001 / FR-002).")
     add_table(doc, ["FR ID", "Functional Requirement", "Priority", "Trace"],
         [
             ["FR-001", "The system shall allow new admins to sign up only when supplied with a valid tenant-specific admin invite code.", "Must", "BR-002"],
@@ -214,6 +227,9 @@ def build_frd():
         ],
         col_widths=[Inches(0.7), Inches(4.4), Inches(0.7), Inches(0.6)]
     )
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/05_admin_employees.png",
+                   "Live Portal — Employee Directory (Admin)",
+                   "Figure 5a — Searchable employee directory with role, department, and status filters.")
 
     # ---- 5.3 Time & Attendance ----
     add_heading(doc, "5.3 Time & Attendance", level=2)
@@ -229,6 +245,12 @@ def build_frd():
         ],
         col_widths=[Inches(0.7), Inches(4.4), Inches(0.7), Inches(0.6)]
     )
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/14_employee_timesheet.png",
+                   "Live Portal — Employee Timesheet (Submitter View)",
+                   "Figure 5b — Daily / weekly time entry with project tagging.")
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/06_admin_timesheets.png",
+                   "Live Portal — Timesheet Approvals (Manager View)",
+                   "Figure 5c — Pending timesheet review queue.")
 
     # ---- 5.4 Leave ----
     add_heading(doc, "5.4 Leave Management", level=2)
@@ -247,6 +269,12 @@ def build_frd():
     )
     add_image(doc, f"{ASSETS}/leave_flow.png", width_inches=6.2,
               caption="Figure 3 — Leave Workflow (re-shown for module context)")
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/12_employee_leave.png",
+                   "Live Portal — Employee Leave (Requester View)",
+                   "Figure 5d — Real-time balance and request submission.")
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/07_admin_leave.png",
+                   "Live Portal — Leave Approval Queue (Manager View)",
+                   "Figure 5e — Manager queue with balance and overlap awareness.")
 
     # ---- 5.5 Tickets ----
     add_heading(doc, "5.5 Tickets / Helpdesk", level=2)
@@ -261,6 +289,12 @@ def build_frd():
         ],
         col_widths=[Inches(0.7), Inches(4.4), Inches(0.7), Inches(0.6)]
     )
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/15_employee_tickets.png",
+                   "Live Portal — Employee Tickets",
+                   "Figure 5f — Raise and track support tickets.")
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/08_admin_tickets.png",
+                   "Live Portal — Admin / Agent Ticket Queue",
+                   "Figure 5g — Admin ticket queue with SLA visibility.")
 
     # ---- 5.6 Calendar ----
     add_heading(doc, "5.6 Calendar & Scheduling", level=2)
@@ -273,6 +307,9 @@ def build_frd():
         ],
         col_widths=[Inches(0.7), Inches(4.4), Inches(0.7), Inches(0.6)]
     )
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/09_admin_calendar.png",
+                   "Live Portal — Unified Calendar",
+                   "Figure 5h — Approved leaves, company events, personal events on one calendar.")
 
     # ---- 5.7 Documents ----
     add_heading(doc, "5.7 Document Vault", level=2)
@@ -285,6 +322,9 @@ def build_frd():
         ],
         col_widths=[Inches(0.7), Inches(4.4), Inches(0.7), Inches(0.6)]
     )
+    add_screenshot(doc, f"{SCREENSHOTS_DIR}/13_employee_documents.png",
+                   "Live Portal — Document Vault",
+                   "Figure 5i — PIN-secured personal document access.")
 
     # ---- 5.8 Performance ----
     add_heading(doc, "5.8 Performance Reviews", level=2)
