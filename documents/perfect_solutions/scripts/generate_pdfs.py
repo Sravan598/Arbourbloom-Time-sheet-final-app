@@ -197,6 +197,103 @@ def figure(path, width=6.4 * inch, caption=None):
     return KeepTogether(elems)
 
 
+# ---------- portal screenshots ----------
+SCREENSHOTS_DIR = f"{ASSETS}/screenshots"
+
+PORTAL_SHOTS = [
+    ("01_tenant_landing.png", "Screen A1 — Tenant Landing",
+     "Branded landing page for hr.perfectsolutions.com — logo, brand colors, and tagline applied automatically by the multi-tenant theming engine."),
+    ("02_login.png", "Screen A2 — Login",
+     "Login experience inherits the tenant brand. Tenant slug captured implicitly; only Perfect Solutions credentials are accepted."),
+    ("03_signup.png", "Screen A3 — Admin Signup (Invite-Code Gated)",
+     "New tenant admins must present a tenant-specific invite code to register, enforcing the secure onboarding flow."),
+    ("04_admin_dashboard.png", "Screen A4 — Admin Dashboard",
+     "Unified admin landing — KPIs, recent activity, and quick access to operations modules."),
+    ("05_admin_employees.png", "Screen A5 — Employee Directory (Admin)",
+     "Searchable, filterable directory with role and department context. Drives every people-related workflow."),
+    ("06_admin_timesheets.png", "Screen A6 — Timesheet Approvals (Admin / Manager)",
+     "Pending timesheet review queue. Approve, reject, or request changes; bulk actions supported."),
+    ("07_admin_leave.png", "Screen A7 — Leave Approval Queue (Admin / Manager)",
+     "Pending leave requests with balance, overlap, and policy context for one-click decisions."),
+    ("08_admin_tickets.png", "Screen A8 — Tickets / Helpdesk (Admin View)",
+     "Internal helpdesk with categorization, SLA visibility, and threaded responses."),
+    ("09_admin_calendar.png", "Screen A9 — Unified Calendar",
+     "Approved leaves, company events, and scheduled meetings on a single calendar — Day, Week, Month, Agenda views."),
+    ("10_admin_projects.png", "Screen A10 — Projects & Allocation",
+     "Project list with capacity and allocation overview — drives the utilization reports."),
+    ("11_employee_dashboard.png", "Screen A11 — Employee Dashboard",
+     "Self-service home: clock in/out, pending requests, announcements, quick actions."),
+    ("12_employee_leave.png", "Screen A12 — Employee Leave",
+     "Real-time leave balance with request submission, status tracking, and PDF export."),
+    ("13_employee_documents.png", "Screen A13 — Document Vault",
+     "PIN-secured personal document vault — payslips, offer letters, signed policies."),
+    ("14_employee_timesheet.png", "Screen A14 — Employee Timesheet",
+     "Daily/weekly entry with project tagging, drafts, and submit-for-approval workflow."),
+    ("15_employee_tickets.png", "Screen A15 — Employee Tickets",
+     "Raise and track internal support tickets; threaded comments and status updates."),
+]
+
+
+def screenshot(path, label, caption, width=6.4 * inch):
+    """Embed a portal screenshot preserving its native aspect ratio."""
+    elems = []
+    try:
+        from PIL import Image as PILImage
+        pw, ph = PILImage.open(path).size
+        ratio = ph / pw
+    except Exception:
+        ratio = 0.47
+    img = Image(path, width=width, height=width * ratio)
+    img.hAlign = 'CENTER'
+    # label bar
+    label_tbl = Table([[Paragraph(f"<b><font color='white'>{label}</font></b>", S['callout'])]],
+                      colWidths=[width])
+    label_tbl.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), PRIMARY),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]))
+    elems.append(label_tbl)
+    elems.append(Spacer(1, 2))
+    elems.append(img)
+    elems.append(Paragraph(caption, S['caption']))
+    elems.append(Spacer(1, 8))
+    return KeepTogether(elems)
+
+
+def portal_appendix(appendix_letter="A"):
+    """Build the Portal Walkthrough appendix flowables."""
+    story = []
+    story.append(PageBreak())
+    story.append(Paragraph(
+        f"Appendix {appendix_letter} — Portal Walkthrough (Screenshots)", S['h1']))
+    story.append(hr())
+    story.append(Paragraph(
+        "This appendix presents annotated screen captures from the live Perfect Solutions tenant of the "
+        "AurborBloom HRMS portal. Screens are grouped by role to illustrate how the platform satisfies the "
+        "requirements stated earlier in this document. All screens are rendered on the <b>perfectsolutions</b> "
+        "tenant with full brand styling (logo, primary color <b>#1E3A8A</b>) applied automatically.",
+        S['body']))
+    story.append(Spacer(1, 6))
+
+    story.append(Paragraph(f"{appendix_letter}.1 Public / Tenant-Branded Pages", S['h2']))
+    for fn, label, cap in PORTAL_SHOTS[0:3]:
+        story.append(screenshot(f"{SCREENSHOTS_DIR}/{fn}", label, cap))
+
+    story.append(PageBreak())
+    story.append(Paragraph(f"{appendix_letter}.2 Admin / Manager Views", S['h2']))
+    for fn, label, cap in PORTAL_SHOTS[3:10]:
+        story.append(screenshot(f"{SCREENSHOTS_DIR}/{fn}", label, cap))
+
+    story.append(PageBreak())
+    story.append(Paragraph(f"{appendix_letter}.3 Employee Self-Service Views", S['h2']))
+    for fn, label, cap in PORTAL_SHOTS[10:]:
+        story.append(screenshot(f"{SCREENSHOTS_DIR}/{fn}", label, cap))
+    return story
+
+
 def cover(doc_type, doc_code, version):
     elems = []
     elems.append(Spacer(1, 0.6 * inch))
@@ -667,6 +764,7 @@ def brd_story():
         ],
         [1.5 * inch, 2.7 * inch, 1.7 * inch, 0.7 * inch]
     ))
+    story += portal_appendix("A")
     return story
 
 
@@ -1192,6 +1290,7 @@ def frd_story():
         ],
         [1.7 * inch, 2.4 * inch, 1.7 * inch, 0.7 * inch]
     ))
+    story += portal_appendix("A")
     return story
 
 

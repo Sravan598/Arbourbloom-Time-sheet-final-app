@@ -578,3 +578,22 @@ Once complete, main.py will orchestrate all modular routes.
 - ✅ Added CORtracker logo to PDF reports (centered header with tagline)
 - ✅ Completed CORChat file attachments (image/document sharing)
 - ✅ Added 12 backend tests for new features (all passing)
+
+
+### May 11, 2026 — Perfect Solutions BRD / FRD with Portal Screenshots ✅
+- ✅ Built automated portal screenshot capture pipeline using headless Chromium (`/app/documents/perfect_solutions/scripts/capture_screenshots.py`) — generates 15 high-resolution screens (public, admin, employee).
+- ✅ Updated `generate_brd_docx.py` and `generate_frd_docx.py` to embed all 15 portal screenshots inline + system diagrams (architecture, ERD, auth flow, modules, leave flow).
+- ✅ Extended `generate_pdfs.py` with a new `screenshot()` flowable + `portal_appendix()` builder; preserves native aspect ratio and adds a branded label bar above each screen.
+- ✅ Re-generated final deliverables (May 11, 2026):
+  - `/app/documents/perfect_solutions/Perfect_Solutions_BRD_v1.0.docx` (3.0 MB, 18 images)
+  - `/app/documents/perfect_solutions/Perfect_Solutions_BRD_v1.0.pdf` (3.6 MB, 24 pages)
+  - `/app/documents/perfect_solutions/Perfect_Solutions_FRD_v1.0.docx` (2.8 MB, 17 images)
+  - `/app/documents/perfect_solutions/Perfect_Solutions_FRD_v1.0.pdf` (3.9 MB, 29 pages)
+
+### Next Priorities (P1)
+- Continue `server.py` → `/app/backend/routes/` modular refactor (resolve duplicate `/auth/signup` route).
+- Super Admin UI for backend-ready features (Usage Metrics, Data Export, Rate Limiting, Webhooks, Encryption, SSL).
+- Custom domain frontend detection (`window.location.hostname` → fetch tenant theme).
+
+### Backlog (P2)
+- Forgot Password via Resend, Ticketing enhancements (email notifications, canned responses, CSAT), Payroll ADP export, CSV employee import, Shift Scheduling, WebSocket-based ticket chat.
