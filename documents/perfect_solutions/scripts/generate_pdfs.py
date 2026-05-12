@@ -101,14 +101,14 @@ def header_footer(canvas_obj, doc):
     canvas_obj.setFillColor(white)
     canvas_obj.setFont('Helvetica-Bold', 10)
     canvas_obj.drawRightString(w - 0.5 * inch, h - 0.3 * inch,
-                               doc.title or "Perfect Solutions • AurborBloom HRMS")
+                               doc.title or "Perfect Solutions HRMS")
     # footer
     canvas_obj.setFillColor(LIGHT_GRAY)
     canvas_obj.rect(0, 0, w, 0.45 * inch, fill=1, stroke=0)
     canvas_obj.setFillColor(GRAY)
     canvas_obj.setFont('Helvetica', 8)
     canvas_obj.drawString(0.5 * inch, 0.2 * inch,
-                          "Perfect Solutions • AurborBloom HRMS  |  © 2026  |  Confidential")
+                          "Perfect Solutions HRMS  |  © 2026  |  Confidential")
     canvas_obj.drawRightString(w - 0.5 * inch, 0.2 * inch,
                                f"Page {doc.page}")
     canvas_obj.restoreState()
@@ -272,7 +272,7 @@ def portal_appendix(appendix_letter="A"):
     story.append(hr())
     story.append(Paragraph(
         "This appendix presents annotated screen captures from the live Perfect Solutions tenant of the "
-        "AurborBloom HRMS portal. Screens are grouped by role to illustrate how the platform satisfies the "
+        "Perfect Solutions HRMS portal. Screens are grouped by role to illustrate how the platform satisfies the "
         "requirements stated earlier in this document. All screens are rendered on the <b>perfectsolutions</b> "
         "tenant with full brand styling (logo, primary color <b>#1E3A8A</b>) applied automatically.",
         S['body']))
@@ -305,7 +305,7 @@ def cover(doc_type, doc_code, version):
     elems.append(Paragraph("Unleashing IT Talent", S['tagline']))
     elems.append(Spacer(1, 0.7 * inch))
     elems.append(Paragraph(doc_type, S['title']))
-    elems.append(Paragraph("AurborBloom HRMS Implementation", S['subtitle']))
+    elems.append(Paragraph("Internal HRMS Implementation", S['subtitle']))
     elems.append(Spacer(1, 0.4 * inch))
 
     info = [
@@ -313,7 +313,7 @@ def cover(doc_type, doc_code, version):
         ["Version", version],
         ["Date", date.today().strftime("%B %d, %Y")],
         ["Classification", "Confidential — Internal Use"],
-        ["Prepared By", "AurborBloom Product & Implementation Team"],
+        ["Prepared By", "IT & Product Implementation Team"],
         ["Prepared For", "Perfect Solutions"],
     ]
     rows = []
@@ -340,7 +340,7 @@ def build_doc(filepath, title):
     doc = BaseDocTemplate(filepath, pagesize=LETTER,
                           leftMargin=0.7 * inch, rightMargin=0.7 * inch,
                           topMargin=0.85 * inch, bottomMargin=0.7 * inch,
-                          title=title, author="AurborBloom Product Team")
+                          title=title, author="Internal Product Team")
     cover_frame = Frame(0.5 * inch, 0.5 * inch, LETTER[0] - 1.0 * inch,
                         LETTER[1] - 1.0 * inch, id='cover')
     body_frame = Frame(0.7 * inch, 0.55 * inch, LETTER[0] - 1.4 * inch,
@@ -367,9 +367,9 @@ def brd_story():
     story.append(styled_table(
         ["Version", "Date", "Author", "Reviewer", "Change"],
         [
-            ["0.1", "2026-01-15", "AurborBloom PM", "Perfect Solutions HR", "Initial draft"],
+            ["0.1", "2026-01-15", "Project Manager", "Perfect Solutions HR", "Initial draft"],
             ["0.5", "2026-01-22", "Implementation Lead", "PS IT Director", "Internal review"],
-            ["1.0", date.today().strftime("%Y-%m-%d"), "AurborBloom PM", "PS Steering Committee", "Approved baseline"],
+            ["1.0", date.today().strftime("%Y-%m-%d"), "Project Manager", "PS Steering Committee", "Approved baseline"],
         ],
         [0.7 * inch, 1.1 * inch, 1.6 * inch, 1.6 * inch, 1.7 * inch]
     ))
@@ -382,8 +382,8 @@ def brd_story():
             ["Head of Human Resources", "Perfect Solutions", "Approver"],
             ["Chief Financial Officer", "Perfect Solutions", "Reviewer"],
             ["Engineering Manager", "Perfect Solutions", "Reviewer"],
-            ["Implementation Lead", "AurborBloom", "Owner"],
-            ["Product Manager", "AurborBloom", "Author"],
+            ["Implementation Lead", "Perfect Solutions IT", "Owner"],
+            ["Product Manager", "Perfect Solutions IT", "Author"],
         ],
         [2.4 * inch, 2.2 * inch, 2.1 * inch]
     ))
@@ -397,12 +397,12 @@ def brd_story():
         "operating with a workforce of approximately 51–250 employees distributed across engineering, sales, marketing, "
         "finance, human resources, and general operations. As the company scales its delivery footprint and onboards "
         "increasingly distributed talent, it has identified the need to consolidate its people-operations stack onto a "
-        "single, multi-tenant SaaS platform — AurborBloom HRMS.",
+        "single, multi-tenant SaaS platform — Perfect Solutions HRMS.",
         S['body']))
     story.append(Paragraph(
         "This Business Requirements Document (BRD) captures the consolidated set of business goals, stakeholder "
         "expectations, success metrics, scope boundaries, and business-level requirements that must be satisfied by "
-        "the AurborBloom HRMS deployment for Perfect Solutions. It serves as the contractual foundation upon which "
+        "the Perfect Solutions HRMS deployment. It serves as the contractual foundation upon which "
         "the Functional Requirements Document (FRD), system design, and acceptance test cases will be built.",
         S['body']))
     story.append(Spacer(1, 6))
@@ -459,7 +459,7 @@ def brd_story():
     story.append(hr())
     story.append(Paragraph(
         "The following stakeholder map identifies the primary actors who will interact with, sponsor, govern, or be "
-        "impacted by the AurborBloom HRMS deployment for Perfect Solutions.", S['body']))
+        "impacted by the Perfect Solutions HRMS deployment.", S['body']))
     story.append(styled_table(
         ["Stakeholder", "Role", "Influence", "Interest", "Engagement"],
         [
@@ -521,7 +521,7 @@ def brd_story():
         ["#", "Business Goal", "KPI", "Baseline", "Target (T+6m)"],
         [
             ["BG-01", "Centralize all HR data into a single platform",
-             "% of HR processes on AurborBloom", "0%", "≥ 95%"],
+             "% of HR processes digitized in HRMS", "0%", "≥ 95%"],
             ["BG-02", "Automate attendance / timesheet capture",
              "Manual time-entry corrections / month", "~120", "< 15"],
             ["BG-03", "Reduce leave processing cycle time",
@@ -550,7 +550,7 @@ def brd_story():
     story.append(hr())
     story.append(Paragraph("6.1 In Scope", S['h2']))
     story += bullets([
-        "Multi-tenant deployment of AurborBloom HRMS for the perfectsolutions tenant.",
+        "Multi-tenant deployment of Perfect Solutions HRMS for the perfectsolutions tenant.",
         "White-label branding: logo, primary/secondary colors, custom domain, email sender, browser tab title.",
         "Modules: Auth & RBAC, Employee Directory, Time & Attendance, Leave, Tickets, Calendar, Projects, Documents, Performance, Reports, Chat.",
         "Departments: General, Engineering, HR, Sales, Marketing, Finance.",
@@ -593,7 +593,7 @@ def brd_story():
     story.append(hr())
     story.append(Paragraph(
         "The table below summarizes the most impactful HR processes that will transition from manual / semi-digital "
-        "to fully automated on AurborBloom HRMS.", S['body']))
+        "to fully automated on Perfect Solutions HRMS.", S['body']))
     story.append(styled_table(
         ["Process", "Current State (As-Is)", "Future State (To-Be)", "Expected Benefit"],
         [
@@ -689,7 +689,7 @@ def brd_story():
             ["R-02", "Master-data quality issues delay migration", "4", "4", "16",
              "Data-cleansing sprint, phased migration with rollback.", "PMO"],
             ["R-03", "DNS / CNAME setup delays go-live", "2", "3", "6",
-             "Pre-validate DNS; fallback to *.aurborbloom.com.", "IT"],
+             "Pre-validate DNS; fallback to *.hr.perfectsolutions.com.", "IT"],
             ["R-04", "Security incident exposes PII", "2", "5", "10",
              "Encryption, RBAC, audit log, SOC monitoring.", "InfoSec"],
             ["R-05", "Vendor LLM costs exceed budget", "3", "2", "6",
@@ -750,7 +750,7 @@ def brd_story():
     story.append(hr())
     story.append(Paragraph(
         "The undersigned acknowledge that this Business Requirements Document represents the agreed-upon business "
-        "needs of Perfect Solutions for the AurborBloom HRMS implementation. Material changes shall be processed "
+        "needs of Perfect Solutions for the Perfect Solutions HRMS implementation. Material changes shall be processed "
         "via formal change control.", S['body']))
     story.append(Spacer(1, 8))
     story.append(styled_table(
@@ -759,8 +759,8 @@ def brd_story():
             ["Executive Sponsor", "Director, IT Services — Perfect Solutions", "_____________________", "__________"],
             ["Business Owner", "Head of HR — Perfect Solutions", "_____________________", "__________"],
             ["Financial Approver", "CFO — Perfect Solutions", "_____________________", "__________"],
-            ["Implementation Lead", "AurborBloom Delivery", "_____________________", "__________"],
-            ["Product Manager", "AurborBloom Product", "_____________________", "__________"],
+            ["Implementation Lead", "IT Delivery", "_____________________", "__________"],
+            ["Product Manager", "Product Office", "_____________________", "__________"],
         ],
         [1.5 * inch, 2.7 * inch, 1.7 * inch, 0.7 * inch]
     ))
@@ -782,17 +782,17 @@ def frd_story():
     story.append(styled_table(
         ["Version", "Date", "Author", "Reviewer", "Change"],
         [
-            ["0.1", "2026-01-18", "AurborBloom Lead Eng.", "AurborBloom PM", "Initial draft from BRD baseline"],
-            ["0.5", "2026-01-26", "AurborBloom Lead Eng.", "PS Engineering Manager", "Tech review"],
-            ["1.0", date.today().strftime("%Y-%m-%d"), "AurborBloom PM", "PS Steering Committee", "Approved baseline"],
+            ["0.1", "2026-01-18", "Lead Engineer", "Project Manager", "Initial draft from BRD baseline"],
+            ["0.5", "2026-01-26", "Lead Engineer", "PS Engineering Manager", "Tech review"],
+            ["1.0", date.today().strftime("%Y-%m-%d"), "Project Manager", "PS Steering Committee", "Approved baseline"],
         ],
         [0.7 * inch, 1.1 * inch, 1.7 * inch, 1.7 * inch, 1.5 * inch]
     ))
     story.append(Paragraph("1.1 Reference Documents", S['h2']))
     story += bullets([
         "PS-BRD-2026-001 — Perfect Solutions Business Requirements Document, v1.0",
-        "AurborBloom Platform Architecture Specification (Internal)",
-        "AurborBloom Security & Compliance Whitepaper (Internal)",
+        "Perfect Solutions HRMS Architecture Specification (Internal)",
+        "Perfect Solutions HRMS Security & Compliance Whitepaper (Internal)",
         "Perfect Solutions Brand Guidelines (Internal)",
     ])
     story.append(PageBreak())
@@ -803,14 +803,14 @@ def frd_story():
     story.append(Paragraph("2.1 Purpose", S['h2']))
     story.append(Paragraph(
         "This Functional Requirements Document (FRD) translates the business requirements captured in the BRD into "
-        "discrete, testable functional specifications for the AurborBloom HRMS platform deployed for Perfect "
+        "discrete, testable functional specifications for the Perfect Solutions HRMS platform deployed for Perfect "
         "Solutions. Each requirement is uniquely identified, mapped back to one or more business requirements, and "
         "accompanied by acceptance criteria that form the basis of UAT.", S['body']))
     story.append(Paragraph("2.2 Intended Audience", S['h2']))
     story += bullets([
         "Perfect Solutions IT and Engineering teams (technical reviewers)",
         "Perfect Solutions HR Operations (process validators)",
-        "AurborBloom delivery, engineering, and QA teams (implementers)",
+        "Internal delivery, engineering, and QA teams (implementers)",
         "Internal and external auditors (compliance reviewers)",
     ])
     story.append(Paragraph("2.3 Document Conventions", S['h2']))
@@ -826,7 +826,7 @@ def frd_story():
     story.append(Paragraph("3. System Overview", S['h1']))
     story.append(hr())
     story.append(Paragraph(
-        "AurborBloom is a multi-tenant SaaS HRMS comprising a React single-page application, a FastAPI backend, and "
+        "The Perfect Solutions HRMS is a multi-tenant SaaS platform that comprising a React single-page application, a FastAPI backend, and "
         "a MongoDB persistence tier on Kubernetes. For Perfect Solutions the platform is delivered as a fully "
         "white-labeled tenant identified by the slug 'perfectsolutions', accessible at hr.perfectsolutions.com.",
         S['body']))
@@ -862,7 +862,7 @@ def frd_story():
     story.append(hr())
     story.append(Paragraph(
         "Roles below are scoped to the Perfect Solutions tenant. Super Admin is platform-level and reserved for "
-        "AurborBloom operations.", S['body']))
+        "IT operations.", S['body']))
     story.append(styled_table(
         ["Capability", "Super Admin", "Tenant Admin", "HR Mgr.", "People Mgr.", "Employee"],
         [
@@ -1065,7 +1065,7 @@ def frd_story():
         ["US-03", "As HR, I want to bulk import employees from a spreadsheet so that I avoid manual entry during onboarding waves.",
          "Given a CSV in the standard template, when I upload it, then valid rows are imported and errors are downloadable as a per-row report."],
         ["US-04", "As an Admin, I want browser tab titles to display 'Perfect Solutions — HR Portal' so brand identity is preserved.",
-         "Given any page on hr.perfectsolutions.com, then the tab title contains 'Perfect Solutions' and never the generic AurborBloom string."],
+         "Given any page on hr.perfectsolutions.com, then the tab title contains 'Perfect Solutions' and never a generic platform string."],
         ["US-05", "As an Auditor, I want to download an immutable audit log for any date range so that I can reconcile changes.",
          "Given Auditor role, when I request the export, then a CSV with timestamp, actor, action, before/after states is produced."],
         ["US-06", "As an Employee, I want to see my real-time leave balance before I submit a request so that I avoid rejections.",
@@ -1285,8 +1285,8 @@ def frd_story():
             ["Engineering Manager", "Perfect Solutions", "_____________________", "__________"],
             ["IT Security Officer", "Perfect Solutions", "_____________________", "__________"],
             ["Head of HR Operations", "Perfect Solutions", "_____________________", "__________"],
-            ["Lead Engineer", "AurborBloom Engineering", "_____________________", "__________"],
-            ["Product Manager", "AurborBloom Product", "_____________________", "__________"],
+            ["Lead Engineer", "Internal Engineering", "_____________________", "__________"],
+            ["Product Manager", "Product Office", "_____________________", "__________"],
         ],
         [1.7 * inch, 2.4 * inch, 1.7 * inch, 0.7 * inch]
     ))

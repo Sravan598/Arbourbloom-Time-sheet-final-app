@@ -58,9 +58,9 @@ def build_frd():
     add_table(doc,
         ["Version", "Date", "Author", "Reviewer", "Description of Change"],
         [
-            ["0.1", "2026-01-18", "AurborBloom Lead Engineer", "AurborBloom PM", "Initial draft from BRD baseline"],
-            ["0.5", "2026-01-26", "AurborBloom Lead Engineer", "PS Engineering Manager", "Tech review"],
-            ["1.0", date.today().strftime("%Y-%m-%d"), "AurborBloom PM", "PS Steering Committee", "Approved baseline"],
+            ["0.1", "2026-01-18", "Lead Engineer", "Project Manager", "Initial draft from BRD baseline"],
+            ["0.5", "2026-01-26", "Lead Engineer", "PS Engineering Manager", "Tech review"],
+            ["1.0", date.today().strftime("%Y-%m-%d"), "Project Manager", "PS Steering Committee", "Approved baseline"],
         ],
         col_widths=[Inches(0.7), Inches(1.1), Inches(1.7), Inches(1.7), Inches(1.3)]
     )
@@ -68,8 +68,8 @@ def build_frd():
     add_heading(doc, "1.1 Reference Documents", level=2)
     add_bullets(doc, [
         "PS-BRD-2026-001 — Perfect Solutions Business Requirements Document, v1.0",
-        "AurborBloom Platform Architecture Specification (Internal)",
-        "AurborBloom Security & Compliance Whitepaper (Internal)",
+        "Perfect Solutions HRMS Architecture Specification (Internal)",
+        "Perfect Solutions HRMS Security & Compliance Whitepaper (Internal)",
         "Perfect Solutions Brand Guidelines (Internal)",
     ])
 
@@ -80,7 +80,7 @@ def build_frd():
     add_heading(doc, "2.1 Purpose", level=2)
     add_para(doc,
         "This Functional Requirements Document (FRD) translates the business requirements captured in the BRD into "
-        "discrete, testable functional specifications for the AurborBloom HRMS platform as it will be deployed for "
+        "discrete, testable functional specifications for the Perfect Solutions HRMS platform as it will be deployed for "
         "Perfect Solutions. Each requirement is uniquely identified, mapped back to one or more business "
         "requirements, and accompanied by acceptance criteria that form the basis of UAT.")
 
@@ -88,7 +88,7 @@ def build_frd():
     add_bullets(doc, [
         "Perfect Solutions IT and Engineering teams (technical reviewers)",
         "Perfect Solutions HR Operations (process validators)",
-        "AurborBloom delivery, engineering, and QA teams (implementers)",
+        "Internal delivery, engineering, and QA teams (implementers)",
         "Internal and external auditors (compliance reviewers)",
     ])
 
@@ -106,7 +106,7 @@ def build_frd():
     # 3. System overview
     add_heading(doc, "3. System Overview", level=1)
     add_para(doc,
-        "AurborBloom is a multi-tenant SaaS HRMS comprising a React single-page application, a FastAPI backend, and a "
+        "The Perfect Solutions HRMS is a multi-tenant SaaS platform that comprising a React single-page application, a FastAPI backend, and a "
         "MongoDB persistence tier, all deployed on Kubernetes. For Perfect Solutions the platform is delivered as a "
         "fully white-labeled tenant identified by the slug 'perfectsolutions', accessible at the custom domain "
         "hr.perfectsolutions.com. The figure below depicts the overall architecture.")
@@ -147,7 +147,7 @@ def build_frd():
     add_heading(doc, "4. User Roles & Permission Matrix", level=1)
     add_para(doc,
         "Roles below are scoped to the Perfect Solutions tenant. The Super Admin role exists at the platform level "
-        "and is reserved for AurborBloom operations.")
+        "and is reserved for IT operations.")
     add_table(doc, ["Capability", "Super Admin", "Tenant Admin", "HR Manager", "People Manager", "Employee"],
         [
             ["Manage tenants & branding", "YES", "—", "—", "—", "—"],
@@ -365,7 +365,7 @@ def build_frd():
          "Given a CSV in the standard template, when I upload it, then validated rows are imported and errors are downloadable as a per-row report."),
         ("US-04",
          "As an Admin, I want browser tab titles to display 'Perfect Solutions — HR Portal' so that brand identity is preserved.",
-         "Given any page on hr.perfectsolutions.com, then the tab title contains 'Perfect Solutions' and never the generic AurborBloom string."),
+         "Given any page on hr.perfectsolutions.com, then the tab title contains 'Perfect Solutions' and never a generic platform string."),
         ("US-05",
          "As an Auditor, I want to download an immutable audit log for any date range so that I can reconcile changes.",
          "Given Auditor role, when I request the export, then a CSV with timestamp, actor, action, before/after states is produced."),
@@ -581,8 +581,8 @@ def build_frd():
             ["Engineering Manager", "Perfect Solutions", "_____________________", "__________"],
             ["IT Security Officer", "Perfect Solutions", "_____________________", "__________"],
             ["Head of HR Operations", "Perfect Solutions", "_____________________", "__________"],
-            ["Lead Engineer", "AurborBloom Engineering", "_____________________", "__________"],
-            ["Product Manager", "AurborBloom Product", "_____________________", "__________"],
+            ["Lead Engineer", "Internal Engineering", "_____________________", "__________"],
+            ["Product Manager", "Product Office", "_____________________", "__________"],
         ],
         col_widths=[Inches(1.7), Inches(2.4), Inches(1.6), Inches(0.8)]
     )

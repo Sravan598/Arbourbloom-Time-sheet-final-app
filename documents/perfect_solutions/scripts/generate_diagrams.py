@@ -199,7 +199,7 @@ ax.set_title("Figure 5 — HRMS Module Map for Perfect Solutions",
              fontsize=14, fontweight='bold', color=PRIMARY, pad=12)
 
 # central
-styled_box(ax, 4.5, 3.0, 3.0, 1.2, "AurborBloom HRMS\nfor Perfect Solutions", fill=PRIMARY, fontcolor='#FFFFFF', fontsize=12)
+styled_box(ax, 4.5, 3.0, 3.0, 1.2, "Perfect Solutions HRMS\n(Internal Platform)", fill=PRIMARY, fontcolor='#FFFFFF', fontsize=12)
 
 modules = [
     (0.3, 5.5, "Employee\nDirectory"),

@@ -227,7 +227,7 @@ def add_portal_appendix(doc):
     add_page_break(doc)
     add_heading(doc, "Appendix A — Portal Walkthrough (Screenshots)", level=1)
     add_para(doc,
-        "This appendix presents annotated screen captures from the live Perfect Solutions tenant of the AurborBloom "
+        "This appendix presents annotated screen captures from the live Perfect Solutions tenant of the Perfect Solutions "
         "HRMS portal. Screens are grouped by role to illustrate how the platform satisfies the requirements stated "
         "earlier in this document. All screens are rendered on the perfectsolutions tenant with full brand styling "
         "(logo, primary color #1E3A8A) applied automatically.")
@@ -290,7 +290,7 @@ def setup_header_footer(doc, title):
     footer = section.footer
     fp = footer.paragraphs[0]
     fp.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    fr = fp.add_run("Perfect Solutions • AurborBloom HRMS  |  © 2026  |  Page ")
+    fr = fp.add_run("Perfect Solutions HRMS  |  © 2026  |  Page ")
     fr.font.size = Pt(8)
     fr.font.color.rgb = GRAY
     # page number field
@@ -334,7 +334,7 @@ def cover_page(doc, doc_type, doc_code, version):
 
     p5 = doc.add_paragraph()
     p5.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = p5.add_run("AurborBloom HRMS Implementation")
+    r = p5.add_run("Internal HRMS Implementation")
     r.font.size = Pt(16); r.font.color.rgb = GRAY
 
     # info table
@@ -346,7 +346,7 @@ def cover_page(doc, doc_type, doc_code, version):
         ("Version", version),
         ("Date", date.today().strftime("%B %d, %Y")),
         ("Classification", "Confidential — Internal Use"),
-        ("Prepared By", "AurborBloom Product & Implementation Team"),
+        ("Prepared By", "IT & Product Implementation Team"),
     ]
     for i, (k, v) in enumerate(info_data):
         c1 = info.rows[i].cells[0]
@@ -380,9 +380,9 @@ def build_brd():
     add_table(doc,
         ["Version", "Date", "Author", "Reviewer", "Description of Change"],
         [
-            ["0.1", "2026-01-15", "AurborBloom PM", "Perfect Solutions HR", "Initial draft"],
+            ["0.1", "2026-01-15", "Project Manager", "Perfect Solutions HR", "Initial draft"],
             ["0.5", "2026-01-22", "Implementation Lead", "PS IT Director", "Internal review"],
-            ["1.0", date.today().strftime("%Y-%m-%d"), "AurborBloom PM", "PS Steering Committee", "Approved baseline"],
+            ["1.0", date.today().strftime("%Y-%m-%d"), "Project Manager", "PS Steering Committee", "Approved baseline"],
         ],
         col_widths=[Inches(0.7), Inches(1.1), Inches(1.5), Inches(1.5), Inches(1.7)]
     )
@@ -395,8 +395,8 @@ def build_brd():
             ["Head of Human Resources", "Perfect Solutions", "Approver"],
             ["Chief Financial Officer", "Perfect Solutions", "Reviewer"],
             ["Engineering Manager", "Perfect Solutions", "Reviewer"],
-            ["Implementation Lead", "AurborBloom", "Owner"],
-            ["Product Manager", "AurborBloom", "Author"],
+            ["Implementation Lead", "Perfect Solutions IT", "Owner"],
+            ["Product Manager", "Perfect Solutions IT", "Author"],
         ],
         col_widths=[Inches(2.2), Inches(2.0), Inches(2.0)]
     )
@@ -410,11 +410,11 @@ def build_brd():
         "operating with a workforce of approximately 51–250 employees distributed across engineering, sales, marketing, "
         "finance, human resources, and general operations. As the company scales its delivery footprint and onboards "
         "increasingly distributed talent, it has identified the need to consolidate its people-operations stack onto a "
-        "single, multi-tenant SaaS platform — AurborBloom HRMS.")
+        "single, multi-tenant SaaS platform — Perfect Solutions HRMS.")
     add_para(doc,
         "This Business Requirements Document (BRD) captures the consolidated set of business goals, stakeholder "
         "expectations, success metrics, scope boundaries, and business-level requirements that must be satisfied by the "
-        "AurborBloom HRMS deployment for Perfect Solutions. It serves as the contractual foundation upon which the "
+        "Perfect Solutions HRMS deployment. It serves as the contractual foundation upon which the "
         "Functional Requirements Document (FRD), system design, and acceptance test cases will be built.")
     add_section_callout(doc,
         "Key Outcome Targets — reduce HR administrative effort by 60%, eliminate spreadsheet-driven tracking, "
@@ -472,7 +472,7 @@ def build_brd():
     add_heading(doc, "4. Stakeholders & User Personas", level=1)
     add_para(doc,
         "The following stakeholder map identifies the primary actors who will interact with, sponsor, govern, or be "
-        "impacted by the AurborBloom HRMS deployment for Perfect Solutions.")
+        "impacted by the Perfect Solutions HRMS deployment.")
     add_table(doc, ["Stakeholder", "Role", "Influence", "Interest", "Engagement Strategy"],
         [
             ["Director, IT Services", "Executive Sponsor", "High", "High", "Steering committee, monthly review"],
@@ -530,7 +530,7 @@ def build_brd():
     add_table(doc, ["#", "Business Goal", "KPI", "Baseline", "Target (T+6m)"],
         [
             ["BG-01", "Centralize all HR data into a single platform",
-             "% of HR processes on AurborBloom", "0%", "≥ 95%"],
+             "% of HR processes digitized in HRMS", "0%", "≥ 95%"],
             ["BG-02", "Automate attendance and timesheet capture",
              "Manual time-entry corrections / month", "~120", "< 15"],
             ["BG-03", "Reduce leave processing cycle time",
@@ -560,7 +560,7 @@ def build_brd():
     add_heading(doc, "6. Scope of the Engagement", level=1)
     add_heading(doc, "6.1 In Scope", level=2)
     add_bullets(doc, [
-        "Multi-tenant deployment of AurborBloom HRMS for the perfectsolutions tenant.",
+        "Multi-tenant deployment of Perfect Solutions HRMS for the perfectsolutions tenant.",
         "White-label branding: logo, primary/secondary colors, custom domain (hr.perfectsolutions.com), email sender identity, browser tab title.",
         "Modules: Authentication & RBAC, Employee Directory, Time & Attendance, Leave Management, Tickets / Helpdesk, Calendar & Scheduling, Projects & Tasks, Document Vault, Performance Reviews, Reports & Analytics, In-app Chat.",
         "Department configuration: General, Engineering, HR, Sales, Marketing, Finance.",
@@ -574,7 +574,7 @@ def build_brd():
 
     add_heading(doc, "6.2 Out of Scope (Phase 1)", level=2)
     add_bullets(doc, [
-        "Full payroll calculation and statutory tax filing (handled by external payroll provider; AurborBloom will export payroll-ready data).",
+        "Full payroll calculation and statutory tax filing (handled by external payroll provider; the HRMS will export payroll-ready data).",
         "Recruitment / Applicant Tracking System (ATS) — to be evaluated in Phase 2.",
         "Learning Management System (LMS) integration — Phase 2.",
         "Biometric hardware integration — Phase 2.",
@@ -606,7 +606,7 @@ def build_brd():
     add_heading(doc, "7. Business Processes — Current vs Future State", level=1)
     add_para(doc,
         "The table below summarizes the most impactful HR processes that will transition from a manual or semi-digital "
-        "current state to a fully automated future state on AurborBloom HRMS.")
+        "current state to a fully automated future state on Perfect Solutions HRMS.")
     add_table(doc,
         ["Process", "Current State (As-Is)", "Future State (To-Be)", "Expected Benefit"],
         [
@@ -709,7 +709,7 @@ def build_brd():
             ["R-02", "Master-data quality issues delay migration", 4, 4, 16,
              "Data-cleansing sprint and phased migration with rollback.", "PMO"],
             ["R-03", "DNS / CNAME setup delays custom domain go-live", 2, 3, 6,
-             "Pre-validate DNS access early; fallback to *.aurborbloom.com.", "IT"],
+             "Pre-validate DNS access early; fallback to *.hr.perfectsolutions.com.", "IT"],
             ["R-04", "Security incident exposes PII", 2, 5, 10,
              "Encryption at rest + in transit, RBAC, audit log, SOC monitoring.", "InfoSec"],
             ["R-05", "Vendor LLM costs exceed budget", 3, 2, 6,
@@ -767,7 +767,7 @@ def build_brd():
     add_heading(doc, "12. Approval & Sign-off", level=1)
     add_para(doc,
         "The undersigned acknowledge that this Business Requirements Document represents the agreed-upon business "
-        "needs of Perfect Solutions for the AurborBloom HRMS implementation. Material changes to this document shall "
+        "needs of Perfect Solutions for the Perfect Solutions HRMS implementation. Material changes to this document shall "
         "be processed via formal change control.")
     add_para(doc, "")
     add_table(doc, ["Role", "Name", "Signature", "Date"],
@@ -775,8 +775,8 @@ def build_brd():
             ["Executive Sponsor", "Director, IT Services — Perfect Solutions", "_____________________", "__________"],
             ["Business Owner", "Head of Human Resources — Perfect Solutions", "_____________________", "__________"],
             ["Financial Approver", "Chief Financial Officer — Perfect Solutions", "_____________________", "__________"],
-            ["Implementation Lead", "AurborBloom Delivery", "_____________________", "__________"],
-            ["Product Manager", "AurborBloom Product", "_____________________", "__________"],
+            ["Implementation Lead", "IT Delivery", "_____________________", "__________"],
+            ["Product Manager", "Product Office", "_____________________", "__________"],
         ],
         col_widths=[Inches(1.5), Inches(2.6), Inches(1.6), Inches(0.8)]
     )
