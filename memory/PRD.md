@@ -597,3 +597,16 @@ Once complete, main.py will orchestrate all modular routes.
 
 ### Backlog (P2)
 - Forgot Password via Resend, Ticketing enhancements (email notifications, canned responses, CSAT), Payroll ADP export, CSV employee import, Shift Scheduling, WebSocket-based ticket chat.
+
+### June 17, 2026 — AurborBloom Platform BRD & FRD ✅
+- ✅ Created `/app/documents/aurborbloom/` with full generator stack cloned from Perfect Solutions and pivoted to platform/product framing (subject = AurborBloom HRMS itself, not a tenant implementation).
+- ✅ Applied AurborBloom brand palette: Black `#000000` + Gold `#D4AF37` (with light-gold accent `#FEF3C7`).
+- ✅ Captured 15 portal screenshots from the default `aurborbloom` tenant (admin@company.com / employee@test.com) and embedded inline as Appendix A.
+- ✅ Regenerated 5 system diagrams (architecture, ERD, auth flow, modules, leave flow) under the new brand.
+- ✅ Final deliverables (verified text-clean — 0 leftover "Perfect Solutions" hits):
+  - `/app/documents/aurborbloom/AurborBloom_BRD_v1.0.docx` (5.9 MB, 18 imgs)
+  - `/app/documents/aurborbloom/AurborBloom_BRD_v1.0.pdf` (7.0 MB, 24 pages)
+  - `/app/documents/aurborbloom/AurborBloom_FRD_v1.0.docx` (5.6 MB, 17 imgs)
+  - `/app/documents/aurborbloom/AurborBloom_FRD_v1.0.pdf` (7.2 MB, 29 pages)
+- Doc codes: `AB-BRD-2026-001`, `AB-FRD-2026-001`. Tagline: "Where People Bloom".
+
